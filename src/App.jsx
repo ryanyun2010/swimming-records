@@ -23,7 +23,7 @@ export function formatEventLabel(event) {
 
 function formatDate(seconds) {
   if (!seconds) return "";
-  const d = new Date(seconds * 1000);
+  const d = new Date(seconds * 1000 + 100);
   return d.toLocaleDateString("en-US", {
 	  timezone: "UTC",
     year: "numeric",
