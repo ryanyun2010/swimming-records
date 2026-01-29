@@ -135,7 +135,12 @@ export default function AdminPage() {
 		});
 
 		e.target.reset();
-		alert("Record added");
+		alert("Swimmer added");
+		const swimmerRes = await fetch(
+			"https://swimming-api.ryanyun2010.workers.dev/swimmers"
+		);
+		const swimmerData = await swimmerRes.json();
+		setSwimmers(swimmerData);
 	};
 
 
@@ -177,7 +182,7 @@ export default function AdminPage() {
 					<h2>Add Record</h2>
 					<form onSubmit={addRecord}>
 						<select name="swimmer_id" required>
-							<option value="">Select meet</option>
+							<option value="">Select swimmer</option>
 							{swimmers.map((s) => (
 								<option key={s.id} value={s.id}>
 									{s.name} '{s.graduating_year}
