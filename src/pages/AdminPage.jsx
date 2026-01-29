@@ -24,7 +24,7 @@ export default function AdminPage() {
 			const data = await res.json();
 			setUserEmail(data.email);
 			if (data.allowed) {
-				alert(`Authorization successful, welcome, ${data.email}`);
+				alert(`Authorization successful`);
 				setLoginSuccess(true);
 			} else {
 				alert("Unauthorized user");
