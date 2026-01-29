@@ -19,10 +19,10 @@ export default function AdminPage() {
 			},
 		});
 
-		setUserEmail(data.email);
 
 		if (res.ok) {
 			const data = await res.json();
+			setUserEmail(data.email);
 			if (data.allowed) {
 				alert(`Authorization successful, welcome, ${data.email}`);
 				setLoginSuccess(true);
