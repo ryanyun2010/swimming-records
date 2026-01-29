@@ -108,6 +108,27 @@ export default function AdminPage() {
 		e.target.reset();
 		alert("Record added");
 	};
+	
+	const addSwimmer = async (e) => {
+		e.preventDefault();
+		const f = new FormData(e.target);
+
+		await fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify({
+				swimmer_name: f.get("swimmer_name"),
+				graduating_year: Number(f.get("graduating_year")),
+			})
+		});
+
+		e.target.reset();
+		alert("Record added");
+	};
+
 
 	return (
 		<div style={{ padding: 32 }}>
@@ -119,6 +140,19 @@ export default function AdminPage() {
 						Logged in as <b>{userEmail}</b>
 					</p>
 
+					<h2>Add Swimmer</h2>
+
+					<form onSubmit={addSwimmer}>
+						<input name="name" placeholder="Swimmer Name" required />
+						<input
+							name="graduating_year"
+							placeholder="Graduating year"
+							type="number"
+							step="1"
+							required
+						/>
+						<button>Add Swimmer</button>
+					</form>
 					<h2>Add Meet</h2>
 					<form onSubmit={addMeet}>
 						<input name="name" placeholder="Meet name" required />
