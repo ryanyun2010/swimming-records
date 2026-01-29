@@ -139,7 +139,12 @@ export default function AdminPage() {
 		const swimmerRes = await fetch(
 			"https://swimming-api.ryanyun2010.workers.dev/swimmers"
 		);
-		const swimmerData = await swimmerRes.json();
+		try {
+			const swimmerData = await swimmerRes.json();
+		}	 catch (error) {
+			console.error("Failed to parse swimmer data:", error);
+			return;
+		}
 		setSwimmers(swimmerData);
 	};
 
