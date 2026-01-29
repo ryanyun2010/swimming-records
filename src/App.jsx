@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import AdminPage from "./AdminPage"; // your Google login component
+import AdminPage from "./pages/AdminPage"; // your Google login component
 
 // Main page component (your existing app)
 function Home() {
