@@ -51,36 +51,39 @@ export default function AdminPage() {
 
   /* ---------- ADD MEET ---------- */
 		const addMeet = async (e) => {
-			e.preventDefault();
-			const f = new FormData(e.target);
+  e.preventDefault();
+  const f = new FormData(e.target);
 
-			// --- Parse date correctly to avoid timezone shifts ---
-			const [year, month, day] = f.get("date").split("-").map(Number);
-			const dateInSeconds = Date.UTC(year, month - 1, day) / 1000;
+  // Parse the date string from the date picker
+  const [year, month, day] = f.get("date").split("-").map(Number);
 
-			// --- POST to your Worker ---
-			await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({
-					name: f.get("name"),
-					location: f.get("location"),
-					date: dateInSeconds,
-				}),
-			});
+  // Create UTC midnight
+  const dateInSeconds = Date.UTC(year, month - 1, day) / 1000;
 
-			e.target.reset();
+  // POST to your Worker
+  await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      name: f.get("name"),
+      location: f.get("location"),
+      date: dateInSeconds,
+    }),
+  });
 
-			// --- Reload meets for the dropdown ---
-			const meetsRes = await fetch(
-				"https://swimming-api.ryanyun2010.workers.dev/meets"
-			);
-			const meetsData = await meetsRes.json();
-			setMeets(meetsData);
-		};
+  e.target.reset();
+
+  // Reload meets for dropdown
+  const meetsRes = await fetch(
+    "https://swimming-api.ryanyun2010.workers.dev/meets"
+  );
+  const meetsData = await meetsRes.json();
+  setMeets(meetsData);
+};
+
     /* ---------- ADD RECORD ---------- */
   const addRecord = async (e) => {
     e.preventDefault();
