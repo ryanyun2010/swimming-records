@@ -5,17 +5,29 @@ export default function AdminPage() {
   const [token, setToken] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
 
-  const handleLoginSuccess = async (credentialResponse) => {
-    const idToken = credentialResponse.credential;
-    setToken(idToken);
+	const handleLoginSuccess = async (credentialResponse) => {
+		const idToken = credentialResponse.credential;
 
-    // Decode token to get user info (optional)
-    const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-    if (res.ok) {
-      const payload = await res.json();
-      setUserEmail(payload.email); // Store email
-    }
-  };
+		// Send the token to your Worker to verify
+		const res = await fetch("https://swimming-api.ryanyun2010.workers.dev/verify", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${idToken}` // send token in header
+			},
+		});
+
+		if (res.ok) {
+			const data = await res.json();
+			if (data.allowed) {
+				alert(`Welcome, ${data.email}`);
+			} else {
+				alert("Access denied");
+			}
+		} else {
+			alert("Token verification failed");
+		}
+	};
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
@@ -33,4 +45,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
 
