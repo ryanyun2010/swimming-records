@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import AdminPage from "pages/AdminPage"; // your AdminPage component
-import { formatEventLabel, formatDate } from "lib/utils";
+import AdminPage from "./pages/AdminPage"; // your AdminPage component
+import { formatEventLabel, formatDate } from "./lib/utils";
 
 // --- Home Page ---
 function Home() {
