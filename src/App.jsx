@@ -1,6 +1,21 @@
 import { useEffect, useState } from "react";
-import { formatEventLabel } from "./App"; // or keep in utils
 
+function formatEventLabel(event) {
+  const MAP = {
+    "50_free": "50 Free",
+    "50_back": "50 Back",
+    "50_breast": "50 Breast",
+    "50_fly": "50 Fly",
+    "100_free": "100 Free",
+    "100_back": "100 Back",
+    "100_breast": "100 Breast",
+    "100_fly": "100 Fly",
+    "200_free": "200 Free",
+    "200_im": "200 IM",
+    "500_free": "500 Free",
+  };
+  return MAP[event] ?? event;
+}
 // Helper to format Unix timestamp (seconds) to human-readable date
 function formatDate(seconds) {
   if (!seconds) return "";
