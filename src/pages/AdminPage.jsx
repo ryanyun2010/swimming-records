@@ -1,156 +1,118 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 
+const EVENTS = [
+  { value: "50_free", label: "50 Free" },
+  { value: "50_back", label: "50 Back" },
+  { value: "50_breast", label: "50 Breast" },
+  { value: "50_fly", label: "50 Fly" },
+  { value: "100_free", label: "100 Free" },
+  { value: "100_back", label: "100 Back" },
+  { value: "100_breast", label: "100 Breast" },
+  { value: "100_fly", label: "100 Fly" },
+  { value: "200_free", label: "200 Free" },
+  { value: "200_im", label: "200 IM" },
+  { value: "500_free", label: "500 Free" },
+];
+
 export default function AdminPage() {
   const [token, setToken] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
-  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [meets, setMeets] = useState([]);
 
-  /* ---------------- AUTH ---------------- */
-
-  const handleLoginSuccess = async (credentialResponse) => {
-    const idToken = credentialResponse.credential;
+  /* ---------- LOGIN ---------- */
+  const onLogin = async (res) => {
+    const idToken = res.credential;
     setToken(idToken);
 
-    const res = await fetch(
+    const verify = await fetch(
       "https://swimming-api.ryanyun2010.workers.dev/verify",
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+        headers: { Authorization: `Bearer ${idToken}` },
       }
     );
 
-    if (!res.ok) {
-      alert("Token verification failed");
-      return;
-    }
+    if (!verify.ok) return alert("Login failed");
 
-    const data = await res.json();
-    if (!data.allowed) {
-      alert("Unauthorized");
-      return;
-    }
-
+    const data = await verify.json();
     setUserEmail(data.email);
-    setLoginSuccess(true);
+    setLoggedIn(true);
   };
 
-  /* ---------------- FETCH MEETS ---------------- */
-
+  /* ---------- LOAD MEETS ---------- */
   useEffect(() => {
-    if (!loginSuccess) return;
-
+    if (!loggedIn) return;
     fetch("https://swimming-api.ryanyun2010.workers.dev/meets")
-      .then((res) => res.json())
-      .then(setMeets)
-      .catch(() => alert("Failed to load meets"));
-  }, [loginSuccess]);
+      .then((r) => r.json())
+      .then(setMeets);
+  }, [loggedIn]);
 
-  /* ---------------- ADD MEET ---------------- */
-
+  /* ---------- ADD MEET ---------- */
   const addMeet = async (e) => {
     e.preventDefault();
-    const form = new FormData(e.target);
+    const f = new FormData(e.target);
 
-    const dateSeconds = Math.floor(
-      new Date(form.get("date")).getTime() / 1000
-    );
-
-    const res = await fetch(
-      "https://swimming-api.ryanyun2010.workers.dev/meets",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: form.get("name"),
-          location: form.get("location"),
-          date: dateSeconds,
-        }),
-      }
-    );
-
-    if (!res.ok) {
-      alert("Failed to add meet");
-      return;
-    }
+    await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: f.get("name"),
+        location: f.get("location"),
+        date: Math.floor(new Date(f.get("date")).getTime() / 1000),
+      }),
+    });
 
     e.target.reset();
-    const updated = await fetch(
-      "https://swimming-api.ryanyun2010.workers.dev/meets"
-    ).then((r) => r.json());
-    setMeets(updated);
+    setMeets(await fetch("https://swimming-api.ryanyun2010.workers.dev/meets").then(r => r.json()));
   };
 
-  /* ---------------- ADD RECORD ---------------- */
-
+  /* ---------- ADD RECORD ---------- */
   const addRecord = async (e) => {
     e.preventDefault();
-    const form = new FormData(e.target);
+    const f = new FormData(e.target);
 
-    const res = await fetch(
-      "https://swimming-api.ryanyun2010.workers.dev/records",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          swimmer_name: form.get("swimmer"),
-          meet_id: Number(form.get("meet_id")),
-          event: form.get("event"),
-          type: form.get("type"),
-          start: form.get("start"),
-          time: Number(form.get("time")),
-        }),
-      }
-    );
+    await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        swimmer_name: f.get("swimmer"),
+        meet_id: Number(f.get("meet_id")),
+        event: f.get("event"),
+        type: f.get("type"),
+        start: f.get("start"),
+        time: Number(f.get("time")),
+      }),
+    });
 
-    if (!res.ok) {
-      alert("Failed to add record");
-      return;
-    }
-
-    alert("Record added");
     e.target.reset();
+    alert("Record added");
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      {!loginSuccess ? (
-        <GoogleLogin
-          onSuccess={handleLoginSuccess}
-          onError={() => alert("Login failed")}
-        />
+    <div style={{ padding: 32 }}>
+      {!loggedIn ? (
+        <GoogleLogin onSuccess={onLogin} />
       ) : (
         <>
-          <p>
-            Logged in as <strong>{userEmail}</strong>
-          </p>
+          <p>Logged in as <b>{userEmail}</b></p>
 
-          <hr />
-
-          {/* ADD MEET */}
           <h2>Add Meet</h2>
           <form onSubmit={addMeet}>
             <input name="name" placeholder="Meet name" required />
             <input name="location" placeholder="Location" required />
             <input name="date" type="date" required />
-            <button type="submit">Add Meet</button>
+            <button>Add Meet</button>
           </form>
 
-          <hr />
-
-          {/* ADD RECORD */}
-          <h2>Add Swimmer Result</h2>
+          <h2>Add Record</h2>
           <form onSubmit={addRecord}>
             <input name="swimmer" placeholder="Swimmer name" required />
 
@@ -163,7 +125,14 @@ export default function AdminPage() {
               ))}
             </select>
 
-            <input name="event" placeholder="Event (e.g. 100 Free)" required />
+            <select name="event" required>
+              <option value="">Select event</option>
+              {EVENTS.map((e) => (
+                <option key={e.value} value={e.value}>
+                  {e.label}
+                </option>
+              ))}
+            </select>
 
             <select name="type">
               <option value="individual">Individual</option>
@@ -183,7 +152,7 @@ export default function AdminPage() {
               required
             />
 
-            <button type="submit">Add Record</button>
+            <button>Add Record</button>
           </form>
         </>
       )}

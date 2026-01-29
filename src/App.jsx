@@ -1,44 +1,56 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import AdminPage from "./pages/AdminPage"; // your Google login component
+import { formatEventLabel } from "./App"; // or keep in utils
 
-// Main page component (your existing app)
+// Helper to format Unix timestamp (seconds) to human-readable date
+function formatDate(seconds) {
+  if (!seconds) return "";
+  const d = new Date(seconds * 1000);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function Home() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
     fetch("https://swimming-api.ryanyun2010.workers.dev")
       .then((res) => res.json())
-      .then((data) => setRecords(data));
+      .then((data) => setRecords(data))
+      .catch((err) => console.error("Failed to load records", err));
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Swimming Records</h1>
-      <ul>
-        {records.map((r) => (
-          <li key={r.id}>
-            {r.swimmer_name} — {r.event} — {r.time}
-          </li>
-        ))}
-      </ul>
+      {records.length === 0 ? (
+        <p>Loading records...</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {records.map((r) => (
+            <li
+              key={r.id}
+              style={{
+                padding: "0.5rem 0",
+                borderBottom: "1px solid #ddd",
+              }}
+            >
+              <strong>{r.swimmer_name}</strong> —{" "}
+              {formatEventLabel(r.event)} — <strong>{r.time.toFixed(2)}s</strong>
+              <br />
+              <small>
+                Meet: {r.meet_name} | {r.meet_location} |{" "}
+                {formatDate(r.meet_date)}
+              </small>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
-function App() {
-  return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin" element={<AdminPage />} />
-        </Routes>
-      </Router>
-    </GoogleOAuthProvider>
-  );
-}
-
-export default App;
+export default Home;
 
