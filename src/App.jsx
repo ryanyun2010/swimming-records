@@ -25,6 +25,7 @@ function formatDate(seconds) {
   if (!seconds) return "";
   const d = new Date(seconds * 1000);
   return d.toLocaleDateString("en-US", {
+	  timezone: "UTC",
     year: "numeric",
     month: "short",
     day: "numeric",
