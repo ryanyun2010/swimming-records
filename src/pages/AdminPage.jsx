@@ -50,28 +50,38 @@ export default function AdminPage() {
   }, [loggedIn]);
 
   /* ---------- ADD MEET ---------- */
-  const addMeet = async (e) => {
-    e.preventDefault();
-    const f = new FormData(e.target);
+		const addMeet = async (e) => {
+			e.preventDefault();
+			const f = new FormData(e.target);
 
-    await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: f.get("name"),
-        location: f.get("location"),
-        date: Math.floor(new Date(f.get("date")).getTime() / 1000),
-      }),
-    });
+			// --- Parse date correctly to avoid timezone shifts ---
+			const [year, month, day] = f.get("date").split("-").map(Number);
+			const dateInSeconds = Date.UTC(year, month - 1, day) / 1000;
 
-    e.target.reset();
-    setMeets(await fetch("https://swimming-api.ryanyun2010.workers.dev/meets").then(r => r.json()));
-  };
+			// --- POST to your Worker ---
+			await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					name: f.get("name"),
+					location: f.get("location"),
+					date: dateInSeconds,
+				}),
+			});
 
-  /* ---------- ADD RECORD ---------- */
+			e.target.reset();
+
+			// --- Reload meets for the dropdown ---
+			const meetsRes = await fetch(
+				"https://swimming-api.ryanyun2010.workers.dev/meets"
+			);
+			const meetsData = await meetsRes.json();
+			setMeets(meetsData);
+		};
+    /* ---------- ADD RECORD ---------- */
   const addRecord = async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
