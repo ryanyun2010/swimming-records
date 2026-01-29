@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function AdminPage() {
-  const [token, setToken] = useState(null);
-  const [userEmail, setUserEmail] = useState(null);
+	const [token, setToken] = useState(null);
+	const [userEmail, setUserEmail] = useState(null);
+	const [loginSuccess, setLoginSuccess] = useState(false);
 
 	const handleLoginSuccess = async (credentialResponse) => {
 		const idToken = credentialResponse.credential;
@@ -23,9 +24,10 @@ export default function AdminPage() {
 		if (res.ok) {
 			const data = await res.json();
 			if (data.allowed) {
-				alert(`Welcome, ${data.email}`);
+				alert(`Authorization successful, welcome, ${data.email}`);
+				setLoginSuccess(true);
 			} else {
-				alert("Access denied");
+				alert("Unauthorized user");
 			}
 		} else {
 			alert("Token verification failed");
@@ -34,7 +36,7 @@ export default function AdminPage() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      {!token ? (
+      {!loginSuccess ? (
         <GoogleLogin
           onSuccess={handleLoginSuccess}
           onError={() => alert('Login failed')}
