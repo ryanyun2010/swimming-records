@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import AdminPage from "./AdminPage"; // your Google login component
 
-function App() {
+// Main page component (your existing app)
+function Home() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
@@ -23,5 +27,18 @@ function App() {
   );
 }
 
+function App() {
+  return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </Router>
+    </GoogleOAuthProvider>
+  );
+}
 
 export default App;
+
