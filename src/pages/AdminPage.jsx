@@ -34,7 +34,7 @@ export default function AdminPage() {
       }
     );
 
-    if (!verify.ok) return alert("Login failed" + (await verify.text()));
+    if (!verify.ok) return alert("Login failed: " + (await verify.text()));
 
     const data = await verify.json();
     setUserEmail(data.email);
