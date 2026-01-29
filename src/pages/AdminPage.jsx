@@ -7,6 +7,7 @@ export default function AdminPage() {
 
 	const handleLoginSuccess = async (credentialResponse) => {
 		const idToken = credentialResponse.credential;
+		setToken(idToken);
 
 		// Send the token to your Worker to verify
 		const res = await fetch("https://swimming-api.ryanyun2010.workers.dev/verify", {
@@ -16,6 +17,8 @@ export default function AdminPage() {
 				"Authorization": `Bearer ${idToken}` // send token in header
 			},
 		});
+
+		setUserEmail(data.email);
 
 		if (res.ok) {
 			const data = await res.json();
