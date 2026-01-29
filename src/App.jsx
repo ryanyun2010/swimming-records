@@ -4,7 +4,7 @@ function App() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    fetch("https://swimming-api.<your-subdomain>.workers.dev")
+    fetch("https://swimming-api.ryanyun2010.workers.dev")
       .then((res) => res.json())
       .then((data) => setRecords(data));
   }, []);
@@ -15,12 +15,13 @@ function App() {
       <ul>
         {records.map((r) => (
           <li key={r.id}>
-            {r.name} — {r.event} — {r.time}
+            {r.swimmer_name} — {r.event} — {r.time}
           </li>
         ))}
       </ul>
     </div>
   );
 }
+
 
 export default App;
