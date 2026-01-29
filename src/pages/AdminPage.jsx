@@ -20,6 +20,7 @@ export default function AdminPage() {
 	const [userEmail, setUserEmail] = useState(null);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [meets, setMeets] = useState([]);
+	const [swimmers, setSwimmers] = useState([]);
 
 	/* ---------- LOGIN ---------- */
 	const onLogin = async (res) => {
@@ -47,6 +48,14 @@ export default function AdminPage() {
 		fetch("https://swimming-api.ryanyun2010.workers.dev/meets")
 			.then((r) => r.json())
 			.then(setMeets);
+	}, [loggedIn]);
+
+	/* ---------- LOAD SWIMMERS ---------- */
+	useEffect(() => {
+		if (!loggedIn) return;
+		fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers")
+			.then((r) => r.json())
+			.then(setSwimmers);
 	}, [loggedIn]);
 
 	/* ---------- ADD MEET ---------- */
@@ -96,7 +105,7 @@ export default function AdminPage() {
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				swimmer_name: f.get("swimmer"),
+				swimmer_id: f.get("swimmer_id"),
 				meet_id: Number(f.get("meet_id")),
 				event: f.get("event"),
 				type: f.get("type"),
@@ -167,11 +176,14 @@ export default function AdminPage() {
 
 					<h2>Add Record</h2>
 					<form onSubmit={addRecord}>
-						<input
-							name="swimmer"
-							placeholder="Swimmer name"
-							required
-						/>
+						<select name="swimmer_id" required>
+							<option value="">Select meet</option>
+							{swimmers.map((s) => (
+								<option key={s.id} value={s.id}>
+									{s.name} '{s.graduating_year}
+								</option>
+							))}
+				</select>
 
 						<select name="meet_id" required>
 							<option value="">Select meet</option>
