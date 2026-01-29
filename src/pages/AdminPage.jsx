@@ -129,7 +129,7 @@ export default function AdminPage() {
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				swimmer_name: f.get("swimmer_name"),
+				name: f.get("swimmer_name"),
 				graduating_year: Number(f.get("graduating_year")),
 			})
 		});
