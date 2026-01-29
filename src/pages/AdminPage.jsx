@@ -105,7 +105,7 @@ export default function AdminPage() {
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				swimmer_id: f.get("swimmer_id"),
+				swimmer_id: Number(f.get("swimmer_id")),
 				meet_id: Number(f.get("meet_id")),
 				event: f.get("event"),
 				type: f.get("type"),
@@ -129,7 +129,7 @@ export default function AdminPage() {
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				name: f.get("swimmer_name"),
+				name: f.get("name"),
 				graduating_year: Number(f.get("graduating_year")),
 			})
 		});
@@ -139,8 +139,13 @@ export default function AdminPage() {
 		const swimmerRes = await fetch(
 			"https://swimming-api.ryanyun2010.workers.dev/swimmers"
 		);
-		const swimmerData = await swimmerRes.json();
-		setSwimmers(swimmerData);
+		try {
+			const swimmerData = await swimmerRes.json();
+			setSwimmers(swimmerData);
+		}	 catch (error) {
+			console.error("Failed to parse swimmer data:", error);
+			return;
+		}
 	};
 
 
