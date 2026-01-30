@@ -109,7 +109,7 @@ export default function AdminPage() {
 	const find_swimmer_id = (swimmer_name) => {
 		for (let s of swimmers) {
 			if (swimmer_name.includes(s.name)) {
-				return s.id;
+				return Number(s.id);
 			}
 		}
 		return null;
@@ -118,7 +118,7 @@ export default function AdminPage() {
 	const find_meet_id = (meet_name) => {
 		for (let m of meets) {
 			if (meet_name.includes(m.name)) {
-				return m.id;
+				return Number(m.id);
 			}
 		}
 		return null;
@@ -169,7 +169,25 @@ export default function AdminPage() {
 					return;
 				}
 
-				let time = parseFloat(row[8]);
+				let raw_time = row[8];
+				let time = null;
+				let split = raw_time.split(":");
+				if (split.length > 2) {
+					alert(`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`);
+					return;
+				}
+				if (split.length == 2) {
+					let minutes = parseInt(split[0]);
+					let seconds = parseFloat(split[1]);
+					time = minutes * 60 + seconds;
+				} else {
+					time = parseFloat(split[0]);
+				}
+
+				if (time == null || isNaN(time)) {
+					alert(`Failed to parse CSV, Invalid time: ${raw_time}`);
+					return;
+				}
 				let relay_type_raw = row[5].toLowerCase();
 				let relay_type = null;
 	
@@ -189,6 +207,7 @@ export default function AdminPage() {
 					relay_type: relay_type,
 					time: time,
 				});
+				continue;
 			}
 
 			/* non-relays */
@@ -266,17 +285,37 @@ export default function AdminPage() {
 
 
 		}
-
-		await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+		try {
+		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`
+				"Authorization": `Bearer ${token}`
 			},
 			body: JSON.stringify(final_rows)
 		});
-		let records = fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers")
-			.then((r) => r.json())
+			if (!res.ok) {
+				let text = await res.text();
+				alert(`Failed to upload records: ${text}`);
+				return;
+			}
+		} catch (error) {
+			alert(`Failed to upload records: ${error}`);
+			return;
+		}
+		let records = [];
+		try {
+		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
+			if (!res.ok) {
+				let text = await res.text();
+				alert(`Failed to refresh records: ${text}`);
+				return;
+			}
+			records = await res.json();
+		} catch (error) {
+			alert(`Failed to fetch records: ${error}`);
+		}
+			
 
 		for (let relay of relays) {
 			let record_ids = [];

@@ -32,7 +32,7 @@ export function checkIfValidEvent(event) {
 export function findEventLabel(event) {
 	for (const evt of EVENTS) {
 		if (event.includes(evt.label) || evt.alternates.some(alt => event.includes(alt))) {
-			return evt.label;
+			return evt.value;
 		}
 	}
 	return null;
