@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/AdminPage"; // your AdminPage component
-import { formatEventLabel, formatDate } from "./lib/utils";
+import { formatEventLabel, formatDate, formatTime } from "./lib/utils";
 
 // --- Home Page ---
 function Home() {
@@ -43,7 +43,7 @@ function Home() {
 
 						<strong>{r.swimmer_name} '{Number(r.swimmer_year) % 100}</strong> —{" "}
 						{formatEventLabel(r.event)} —{" "}
-					<strong>{Number(r.time).toFixed(2)}s</strong>
+					<strong>{formatTime(r.time)}</strong>
 						<br />
 						<small>
 							Meet: {r.meet_name} | {r.meet_location} |{" "}

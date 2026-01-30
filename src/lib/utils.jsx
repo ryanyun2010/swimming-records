@@ -42,3 +42,11 @@ export function readCSV(file) {
     reader.readAsText(file);
   });
 }
+
+export function formatTime(seconds_t) {
+	if (seconds_t == null || isNaN(seconds_t)) return "";
+	let seconds = Number(seconds_t);
+	const mins = Math.floor(seconds / 60);
+	const secs = (seconds % 60).toFixed(2).padStart(5, "0");
+	return mins > 0 ? `${mins}:${secs}` : secs+"s";
+}
