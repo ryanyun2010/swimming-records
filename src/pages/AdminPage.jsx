@@ -109,7 +109,7 @@ export default function AdminPage() {
 	const find_swimmer_id = (swimmer_name) => {
 		for (let s of swimmers) {
 			if (swimmer_name.includes(s.name)) {
-				return s.id;
+				return Number(s.id);
 			}
 		}
 		return null;
@@ -118,7 +118,7 @@ export default function AdminPage() {
 	const find_meet_id = (meet_name) => {
 		for (let m of meets) {
 			if (meet_name.includes(m.name)) {
-				return m.id;
+				return Number(m.id);
 			}
 		}
 		return null;
@@ -272,7 +272,7 @@ export default function AdminPage() {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`
+				"Authorization": `Bearer ${token}`
 			},
 			body: JSON.stringify(final_rows)
 		});
