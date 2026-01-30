@@ -190,7 +190,7 @@ export default function AdminPage() {
 							<option value="">Select swimmer</option>
 							{swimmers.map((s) => (
 								<option key={s.id} value={s.id}>
-									{s.name} '{s.graduating_year}
+									{s.name} '{s.graduating_year % 100}
 								</option>
 							))}
 				</select>
