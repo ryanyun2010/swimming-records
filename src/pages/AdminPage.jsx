@@ -281,12 +281,12 @@ export default function AdminPage() {
 			return;
 		}
 		let records = [];
-		// try {
-		// records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
-		// 	.then((r) => r.json())
-		// } catch (error) {
-		// 	alert(`Failed to fetch records: ${error}`);
-		// }
+		try {
+		records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
+			.then((r) => r.json())
+		} catch (error) {
+			alert(`Failed to fetch records: ${error}`);
+		}
 			
 
 		for (let relay of relays) {
