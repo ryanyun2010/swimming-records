@@ -40,8 +40,10 @@ function Home() {
 							borderBottom: "1px solid #ddd"
 						}}
 					>
+
 						<strong>{r.swimmer_name} '{r.swimmer_year}</strong> —{" "}
 						{formatEventLabel(r.event)} —{" "}
+					r
 						<strong>{r.time.toFixed(2)}s</strong>
 						<br />
 						<small>
