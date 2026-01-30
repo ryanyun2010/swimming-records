@@ -268,7 +268,7 @@ export default function AdminPage() {
 
 		}
 		try {
-		await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -276,6 +276,11 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		});
+			if (res.status != 200) {
+				let text = await res.text();
+				alert(`Failed to upload records: ${text}`);
+				return;
+			}
 		} catch (error) {
 			alert(`Failed to upload records: ${error}`);
 			return;
