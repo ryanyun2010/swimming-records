@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import {readCSV} from "../lib/utils";
 const EVENTS = [
-	{ value: "50_free", label: "50 Free" },
-	{ value: "50_back", label: "50 Back" },
-	{ value: "50_breast", label: "50 Breast" },
-	{ value: "50_fly", label: "50 Fly" },
-	{ value: "100_free", label: "100 Free" },
-	{ value: "100_back", label: "100 Back" },
-	{ value: "100_breast", label: "100 Breast" },
-	{ value: "100_fly", label: "100 Fly" },
-	{ value: "200_free", label: "200 Free" },
-	{ value: "200_im", label: "200 IM" },
-	{ value: "500_free", label: "500 Free" }
+	{ value: "50_free", label: "50 Free", alternates: [] },
+	{ value: "50_back", label: "50 Back", alternates: [] },
+	{ value: "50_breast", label: "50 Breast", alternates: [] },
+	{ value: "50_fly", label: "50 Fly", alternates: ["50 Butterfly"] },
+	{ value: "100_free", label: "100 Free", alternates: [] },
+	{ value: "100_back", label: "100 Back", alternates: [] },
+	{ value: "100_breast", label: "100 Breast", alternates: [] },
+	{ value: "100_fly", label: "100 Fly", alternates: ["100 Butterfly"] },
+	{ value: "200_free", label: "200 Free", alternates: [] },
+	{ value: "200_im", label: "200 IM", alternates: ["200 Individual Medley"] },
+	{ value: "500_free", label: "500 Free", alternates: [] },
 ];
 
 export default function AdminPage() {
@@ -155,25 +155,26 @@ export default function AdminPage() {
 			}
 			let event_name = row[2];
 			let event_identifier = null;
-			for (ev of EVENTS) {
-				if (event_name.includes(ev.label)) {
+			for (let ev of EVENTS) {
+				if (event_name.includes(ev.label) || ev.alternates.some(alt => event_name.includes(alt))) {
 					event_identifier = ev.value;
 					break;
 				}
 			}
 			
 			let type_raw = row[3].toLowerCase();
-			if (!(type_raw.contains("individual") && !(type_raw.contains("relay")))) {
+			if (!type_raw.includes("individual") && !type_raw.includes("relay")) {
+				console.log(type_raw);
 				alert(`Failed to parse CSV, Invalid type: ${type_raw}`);
 				return;
 			}
-			let type = type_raw.contains("individual") ? "individual" : "relay";
+			let type = type_raw.includes("individual") ? "individual" : "relay";
 			let start_raw = row[4].toLowerCase();
-			if (!(start_raw.contains("flat") && !(start_raw.contains("relay")))) {
+			if (!(start_raw.includes("flat") && !(start_raw.includes("relay")))) {
 				alert(`Failed to parse CSV, Invalid start: ${start_raw}`);
 				return;
 			}
-			let start = start_raw.contains("flat") ? "flat" : "relay";
+			let start = start_raw.includes("flat") ? "flat" : "relay";
 			let time = parseFloat(row[5]);
 			final_rows.push({
 				swimmer_id: swimmer_id,
@@ -320,7 +321,7 @@ export default function AdminPage() {
 					</form>
 					<h2>Add Records</h2>
 					<form onSubmit={addRecordsBulk}>
-				<input name="file" id="csvInput" accept=".csv" />
+				<input name="file" id="csvInput" accept=".csv" type="file"/>
 
 						<button>Add Records</button>
 				</form>
