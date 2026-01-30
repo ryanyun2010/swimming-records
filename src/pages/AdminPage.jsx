@@ -293,7 +293,7 @@ export default function AdminPage() {
 				alert(`Failed to refresh records: ${text}`);
 				return;
 			}
-			records = res.json();
+			records = await res.json();
 		} catch (error) {
 			alert(`Failed to fetch records: ${error}`);
 		}
