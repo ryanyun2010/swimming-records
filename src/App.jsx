@@ -41,7 +41,7 @@ function Home() {
 						}}
 					>
 
-						<strong>{r.swimmer_name} '{r.swimmer_year}</strong> —{" "}
+						<strong>{r.swimmer_name} '{Number(r.swimmer_year) % 100}</strong> —{" "}
 						{formatEventLabel(r.event)} —{" "}
 					<strong>{Number(r.time).toFixed(2)}s</strong>
 						<br />
