@@ -170,11 +170,21 @@ export default function AdminPage() {
 			}
 			let type = type_raw.includes("individual") ? "individual" : "relay";
 			let start_raw = row[4].toLowerCase();
-			if (!(start_raw.includes("flat") && !(start_raw.includes("relay")))) {
+			if (!start_raw.includes("flat") && !start_raw.includes("relay") && !start_raw.includes("fs") && !start_raw.includes("rs")) {
 				alert(`Failed to parse CSV, Invalid start: ${start_raw}`);
 				return;
 			}
-			let start = start_raw.includes("flat") ? "flat" : "relay";
+			let start = null;
+			if (start_raw.includes("fs") || start_raw.includes("rs")) {
+				start = start_raw.includes("fs") ? "flat" : "relay";
+			} else {
+				start = start_raw.includes("flat") ? "flat" : "relay";
+			}
+			if (start == null) {
+				alert(`Failed to parse CSV, Invalid start: ${start_raw}`);
+				return;
+			}
+
 			let time = parseFloat(row[5]);
 			final_rows.push({
 				swimmer_id: swimmer_id,
