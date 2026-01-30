@@ -105,7 +105,7 @@ export default function AdminPage() {
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				swimmer_id: f.get("swimmer_id"),
+				swimmer_id: Number(f.get("swimmer_id")),
 				meet_id: Number(f.get("meet_id")),
 				event: f.get("event"),
 				type: f.get("type"),
