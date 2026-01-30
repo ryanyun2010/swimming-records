@@ -43,7 +43,7 @@ function Home() {
 
 						<strong>{r.swimmer_name} '{r.swimmer_year}</strong> —{" "}
 						{formatEventLabel(r.event)} —{" "}
-					{r}
+					{r.time}
 						<br />
 						<small>
 							Meet: {r.meet_name} | {r.meet_location} |{" "}
