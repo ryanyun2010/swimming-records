@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-
+import {readCSV} from "../lib/utils";
 const EVENTS = [
 	{ value: "50_free", label: "50 Free" },
 	{ value: "50_back", label: "50 Back" },
@@ -104,19 +104,101 @@ export default function AdminPage() {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`
 			},
-			body: JSON.stringify({
+			body: JSON.stringify([{
 				swimmer_id: Number(f.get("swimmer_id")),
 				meet_id: Number(f.get("meet_id")),
 				event: f.get("event"),
 				type: f.get("type"),
 				start: f.get("start"),
 				time: Number(f.get("time"))
-			})
+			}])
 		});
 
 		e.target.reset();
 		alert("Record added");
 	};
+	
+	const addRecordsBulk = async (e) => {
+		e.preventDefault();
+		const f = new FormData(e.target);
+		let file = f.get("file");
+
+		if (!file) return;
+		let read = await readCSV(file);
+		let final_rows = [];
+		for (let i = 1; i < read.length; i++) {
+			let row = read[i];
+			let swimmer_name = row[0];
+			let swimmer_id = null;
+			for (let s of swimmers) {
+				if (swimmer_name.includes(s.name)) {
+					swimmer_id = s.id;
+					break;
+				}
+			}
+			if (swimmer_id == null) {
+				alert(`Failed to parse CSV, Swimmer not found: ${swimmer_name}`);
+				return;
+			}
+
+			let meet_name = row[1];
+			let meet_id = null;
+			for (let m of meets) {
+				if (meet_name.includes(m.name)) {
+					meet_id = m.id;
+					break;
+				}
+			}
+			if (meet_id == null) {
+				alert(`Failed to parse CSV, Meet not found: ${meet_name}`);
+				return;
+			}
+			let event_name = row[2];
+			let event_identifier = null;
+			for (ev of EVENTS) {
+				if (event_name.includes(ev.label)) {
+					event_identifier = ev.value;
+					break;
+				}
+			}
+			
+			let type_raw = row[3].toLowerCase();
+			if (!(type_raw.contains("individual") && !(type_raw.contains("relay")))) {
+				alert(`Failed to parse CSV, Invalid type: ${type_raw}`);
+				return;
+			}
+			let type = type_raw.contains("individual") ? "individual" : "relay";
+			let start_raw = row[4].toLowerCase();
+			if (!(start_raw.contains("flat") && !(start_raw.contains("relay")))) {
+				alert(`Failed to parse CSV, Invalid start: ${start_raw}`);
+				return;
+			}
+			let start = start_raw.contains("flat") ? "flat" : "relay";
+			let time = parseFloat(row[5]);
+			final_rows.push({
+				swimmer_id: swimmer_id,
+				meet_id: meet_id,
+				event: event_identifier,
+				type: type,
+				start: start,
+				time: time
+			});
+
+
+		}
+
+		await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify(final_rows)
+		});
+		e.target.reset();
+		alert("Records added");
+	};
+	
 	
 	const addSwimmer = async (e) => {
 		e.preventDefault();
@@ -147,6 +229,8 @@ export default function AdminPage() {
 			return;
 		}
 	};
+
+
 
 
 	return (
@@ -185,6 +269,7 @@ export default function AdminPage() {
 					</form>
 
 					<h2>Add Record</h2>
+
 					<form onSubmit={addRecord}>
 						<select name="swimmer_id" required>
 							<option value="">Select swimmer</option>
@@ -233,6 +318,12 @@ export default function AdminPage() {
 
 						<button>Add Record</button>
 					</form>
+					<h2>Add Records</h2>
+					<form onSubmit={addRecordsBulk}>
+				<input name="file" id="csvInput" accept=".csv" />
+
+						<button>Add Records</button>
+				</form>
 				</>
 			)}
 		</div>

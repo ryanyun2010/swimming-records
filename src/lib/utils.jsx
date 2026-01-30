@@ -25,3 +25,20 @@ export function formatDate(seconds) {
 		timeZone: "UTC"
 	}).format(d);
 }
+
+export function readCSV(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const rows = reader.result
+        .trim()
+        .split(/\r?\n/)
+        .map(r => r.split(","));
+      resolve(rows);
+    };
+
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
