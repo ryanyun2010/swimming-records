@@ -276,7 +276,7 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		});
-			if (!res.ok()) {
+			if (!res.ok) {
 				let text = await res.text();
 				alert(`Failed to upload records: ${text}`);
 				return;
