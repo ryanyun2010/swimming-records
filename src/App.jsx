@@ -81,11 +81,10 @@ function Home() {
 							borderBottom: "1px solid #ddd"
 						}}
 					>
-
-					<strong>{formatTime(r.time)}</strong>
-						<br />
+					<strong>
 							{r.name} | {r.location} |{" "}
 							{formatDate(r.date)}
+					</strong>
 					</li>
 				))}
 			</ul>
