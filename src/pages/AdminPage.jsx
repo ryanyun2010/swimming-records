@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import {readCSV} from "../lib/utils";
-const EVENTS = [
-	{ value: "50_free", label: "50 Free", alternates: [] },
-	{ value: "50_back", label: "50 Back", alternates: [] },
-	{ value: "50_breast", label: "50 Breast", alternates: [] },
-	{ value: "50_fly", label: "50 Fly", alternates: ["50 Butterfly"] },
-	{ value: "100_free", label: "100 Free", alternates: [] },
-	{ value: "100_back", label: "100 Back", alternates: [] },
-	{ value: "100_breast", label: "100 Breast", alternates: [] },
-	{ value: "100_fly", label: "100 Fly", alternates: ["100 Butterfly"] },
-	{ value: "200_free", label: "200 Free", alternates: [] },
-	{ value: "200_im", label: "200 IM", alternates: ["200 Individual Medley"] },
-	{ value: "500_free", label: "500 Free", alternates: [] },
-];
+import {readCSV, findEventLabel, EVENTS} from "../lib/utils";
+
 
 export default function AdminPage() {
 	const [token, setToken] = useState(null);
@@ -117,8 +105,27 @@ export default function AdminPage() {
 		e.target.reset();
 		alert("Record added");
 	};
+
+	const find_swimmer_id = (swimmer_name) => {
+		for (let s of swimmers) {
+			if (swimmer_name.includes(s.name)) {
+				return s.id;
+			}
+		}
+		return null;
+	};
+
+	const find_meet_id = (meet_name) => {
+		for (let m of meets) {
+			if (meet_name.includes(m.name)) {
+				return m.id;
+			}
+		}
+		return null;
+	}
 	
 	const addRecordsBulk = async (e) => {
+
 		e.preventDefault();
 		const f = new FormData(e.target);
 		let file = f.get("file");
@@ -126,40 +133,83 @@ export default function AdminPage() {
 		if (!file) return;
 		let read = await readCSV(file);
 		let final_rows = [];
+		let relays = [];
+
+
 		for (let i = 1; i < read.length; i++) {
 			let row = read[i];
-			let swimmer_name = row[0];
-			let swimmer_id = null;
-			for (let s of swimmers) {
-				if (swimmer_name.includes(s.name)) {
-					swimmer_id = s.id;
-					break;
-				}
+			/* check if relay */
+				console.log("row", row);
+			if (row.length < 6) {
+				alert(`Failed to parse CSV, Row has insufficient columns: ${row}`);
+				return;
 			}
+			if (row.length == 7 || row.length == 8 || row.length > 9) {
+				alert(`Failed to parse CSV, Row has invalid number of columns: ${row}`);
+				return;
+			}
+			if (row.length ==9) {
+			
+				let swimmer_names = [row[0],row[1],row[2],row[3]];
+				let swimmer_ids = [];
+			
+				for (let swimmer_name of swimmer_names) {
+					let swimmer_id = find_swimmer_id(swimmer_name.trim());
+					if (swimmer_id == null) {
+						alert(`Failed to parse CSV, Swimmer not found: ${swimmer_name}`);
+						return;
+					}
+					swimmer_ids.push(swimmer_id);
+				}
+
+				let meet_name = row[4];
+				let meet_id = find_meet_id(meet_name);
+				if (meet_id == null) {
+					alert(`Failed to parse CSV, Meet not found: ${meet_name}`);
+					return;
+				}
+
+				let time = parseFloat(row[8]);
+				let relay_type_raw = row[5].toLowerCase();
+				let relay_type = null;
+	
+				if (relay_type_raw.includes("200 mr") || relay_type_raw.includes("200 medley relay")) {
+					relay_type = "200_mr";
+				} else if (relay_type_raw.includes("200 fr") || relay_type_raw.includes("200 free relay")) {
+					relay_type = "200_fr";
+				} else if (relay_type_raw.includes("400 fr") || relay_type_raw.includes("400 free relay")) {
+					relay_type = "400_fr";
+				} else {
+					alert(`Failed to parse CSV, Invalid relay type: ${relay_type_raw}`);
+					return;
+				}
+				relays.push({
+					swimmer_ids: swimmer_ids,
+					meet_id: meet_id,
+					relay_type: relay_type,
+					time: time,
+				});
+			}
+
+			/* non-relays */
+			let swimmer_name = row[0];
+			let swimmer_id = find_swimmer_id(swimmer_name);
 			if (swimmer_id == null) {
 				alert(`Failed to parse CSV, Swimmer not found: ${swimmer_name}`);
 				return;
 			}
 
 			let meet_name = row[1];
-			let meet_id = null;
-			for (let m of meets) {
-				if (meet_name.includes(m.name)) {
-					meet_id = m.id;
-					break;
-				}
-			}
+			let meet_id = find_meet_id(meet_name);
 			if (meet_id == null) {
 				alert(`Failed to parse CSV, Meet not found: ${meet_name}`);
 				return;
 			}
 			let event_name = row[2];
-			let event_identifier = null;
-			for (let ev of EVENTS) {
-				if (event_name.includes(ev.label) || ev.alternates.some(alt => event_name.includes(alt))) {
-					event_identifier = ev.value;
-					break;
-				}
+			let event_identifier = findEventLabel(event_name);
+			if (event_identifier == null) {
+				alert(`Failed to parse CSV, Event not found: ${event_name}`);
+				return;
 			}
 			
 			let type_raw = row[3].toLowerCase();
@@ -225,6 +275,74 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		});
+		let records = fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers")
+			.then((r) => r.json())
+
+		for (let relay of relays) {
+			let record_ids = [];
+			for (let record of records) {
+				if (relay.swimmer_ids.includes(record.swimmer_id) &&
+					relay.meet_id == record.meet_id &&
+					record.type == "relay") {
+					let swimmer_num = relay.swimmer_ids.indexOf(record.swimmer_id) + 1;
+					let expected_event = "";
+					if (relay.relay_type == "200_mr") {
+						if (swimmer_num == 1) {
+							expected_event = "50_back";
+						} else if (swimmer_num == 2) {
+							expected_event = "50_breast";
+						} else if (swimmer_num == 3) {
+							expected_event = "50_fly";
+						} else if (swimmer_num == 4) {
+							expected_event = "50_free";
+						}
+					} else if (relay.relay_type == "200_fr") {
+						expected_event = `50_free`;
+					} else if (relay.relay_type == "400_fr") {
+						expected_event = `100_free`;
+					}
+
+					if (record.event == expected_event) {
+						record_ids.push(record.id);
+					} 
+				}
+			}
+			if (record_ids.length < 4) {
+				let swimmer_names = relay.swimmer_ids.map(id => {
+					for (let s of swimmers) {
+						if (s.id == id) return s.name;
+					}
+					return "Unknown";
+				});
+				alert(`Failed to parse CSV, Could not find all relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}`);
+				return;
+			}
+			if (record_ids.length > 4) {
+				let swimmer_names = relay.swimmer_ids.map(id => {
+					for (let s of swimmers) {
+						if (s.id == id) return s.name;
+					}
+					return "Unknown";
+				});
+				alert(`Failed to parse CSV, Found too many relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}, did a swimmer swim multiple legs?`);
+				return;
+			}
+			await fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					record_1_id: record_ids[0],
+					record_2_id: record_ids[1],
+					record_3_id: record_ids[2],
+					record_4_id: record_ids[3],
+					relay_type: relay.relay_type,
+					time: relay.time
+				})
+			});
+		}
 		e.target.reset();
 		alert("Records added");
 	};
