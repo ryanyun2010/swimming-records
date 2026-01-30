@@ -287,8 +287,13 @@ export default function AdminPage() {
 		}
 		let records = [];
 		try {
-		records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
-			.then((r) => r.json())
+		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
+			if (!res.ok) {
+				let text = await res.text();
+				alert(`Failed to refresh records: ${text}`);
+				return;
+			}
+			records = res.json();
 		} catch (error) {
 			alert(`Failed to fetch records: ${error}`);
 		}
