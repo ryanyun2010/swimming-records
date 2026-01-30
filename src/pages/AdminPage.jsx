@@ -189,6 +189,7 @@ export default function AdminPage() {
 					relay_type: relay_type,
 					time: time,
 				});
+				continue;
 			}
 
 			/* non-relays */
