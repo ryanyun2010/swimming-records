@@ -276,7 +276,7 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		});
-		let records = fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers")
+		let records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
 			.then((r) => r.json())
 
 		for (let relay of relays) {
