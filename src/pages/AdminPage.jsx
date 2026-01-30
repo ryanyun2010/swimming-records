@@ -280,8 +280,14 @@ export default function AdminPage() {
 			alert(`Failed to upload records: ${error}`);
 			return;
 		}
-		let records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
+		let records = [];
+		try {
+		records = fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
 			.then((r) => r.json())
+		} catch (error) {
+			alert(`Failed to fetch records: ${error}`);
+		}
+			
 
 		for (let relay of relays) {
 			let record_ids = [];
