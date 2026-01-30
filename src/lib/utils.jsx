@@ -1,18 +1,41 @@
+export const EVENTS = [
+	{ value: "50_free", label: "50 Free", alternates: [] },
+	{ value: "50_back", label: "50 Back", alternates: [] },
+	{ value: "50_breast", label: "50 Breast", alternates: [] },
+	{ value: "50_fly", label: "50 Fly", alternates: ["50 Butterfly"] },
+	{ value: "100_free", label: "100 Free", alternates: [] },
+	{ value: "100_back", label: "100 Back", alternates: [] },
+	{ value: "100_breast", label: "100 Breast", alternates: [] },
+	{ value: "100_fly", label: "100 Fly", alternates: ["100 Butterfly"] },
+	{ value: "200_free", label: "200 Free", alternates: [] },
+	{ value: "200_im", label: "200 IM", alternates: ["200 Individual Medley"] },
+	{ value: "500_free", label: "500 Free", alternates: [] },
+];
 export function formatEventLabel(event) {
-	const MAP = {
-		"50_free": "50 Free",
-		"50_back": "50 Back",
-		"50_breast": "50 Breast",
-		"50_fly": "50 Fly",
-		"100_free": "100 Free",
-		"100_back": "100 Back",
-		"100_breast": "100 Breast",
-		"100_fly": "100 Fly",
-		"200_free": "200 Free",
-		"200_im": "200 IM",
-		"500_free": "500 Free"
-	};
-	return MAP[event] ?? event;
+	for (const evt of EVENTS) {
+		if (evt.value == event) {
+			return evt.label;
+		}
+	}
+	return event;
+}
+
+export function checkIfValidEvent(event) {
+	for (const evt of EVENTS) {
+		if (evt.value == event) {
+			return true;
+		}
+	}
+	return false;
+}
+
+export function findEventLabel(event) {
+	for (const evt of EVENTS) {
+		if (event.includes(evt.label) || evt.alternates.some(alt => event.includes(alt))) {
+			return evt.label;
+		}
+	}
+	return null;
 }
 
 export function formatDate(seconds) {
