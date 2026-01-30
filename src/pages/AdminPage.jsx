@@ -141,11 +141,11 @@ export default function AdminPage() {
 		);
 		try {
 			const swimmerData = await swimmerRes.json();
+			setSwimmers(swimmerData);
 		}	 catch (error) {
 			console.error("Failed to parse swimmer data:", error);
 			return;
 		}
-		setSwimmers(swimmerData);
 	};
 
 
