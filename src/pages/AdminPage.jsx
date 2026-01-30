@@ -169,7 +169,25 @@ export default function AdminPage() {
 					return;
 				}
 
-				let time = parseFloat(row[8]);
+				let raw_time = row[8];
+				let time = null;
+				let split = raw_time.split(":");
+				if (split.length > 2) {
+					alert(`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`);
+					return;
+				}
+				if (split.length == 2) {
+					let minutes = parseInt(split[0]);
+					let seconds = parseFloat(split[1]);
+					time = minutes * 60 + seconds;
+				} else {
+					time = parseFloat(split[0]);
+				}
+
+				if (time == null || isNaN(time)) {
+					alert(`Failed to parse CSV, Invalid time: ${raw_time}`);
+					return;
+				}
 				let relay_type_raw = row[5].toLowerCase();
 				let relay_type = null;
 	
