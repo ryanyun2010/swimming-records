@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import {readCSV, findEventLabel, EVENTS} from "../lib/utils";
+import { readCSV } from "../lib/utils";
+import { assertIsGoogleAuthObject, Swimmer, assertAreSwimmers, Meet, assertAreMeets, findEventFromLabel, EVENTS} from "../lib/defs";
 
 
 export default function AdminPage() {
-	const [token, setToken] = useState(null);
+	const [token, setToken] = useState<String | null>(null);
 	const [userEmail, setUserEmail] = useState(null);
 	const [loggedIn, setLoggedIn] = useState(false);
-	const [meets, setMeets] = useState([]);
-	const [swimmers, setSwimmers] = useState([]);
+	const [meets, setMeets] = useState<Meet[]>([]);
+	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
 
-	/* ---------- LOGIN ---------- */
-	const onLogin = async (res) => {
+	const onLogin = async (res: any) => {
+		try {
+			assertIsGoogleAuthObject(res);
+		} catch (e) {
+			return alert("Login failed: Google gave an invalid response: " + (e as Error).message);
+		}
 		const idToken = res.credential;
 		setToken(idToken);
 
@@ -30,36 +35,39 @@ export default function AdminPage() {
 		setLoggedIn(true);
 	};
 
-	/* ---------- LOAD MEETS ---------- */
+	// load meets & swimmers
 	useEffect(() => {
 		if (!loggedIn) return;
+		try {
 		fetch("https://swimming-api.ryanyun2010.workers.dev/meets")
 			.then((r) => r.json())
-			.then(setMeets);
-	}, [loggedIn]);
-
-	/* ---------- LOAD SWIMMERS ---------- */
-	useEffect(() => {
-		if (!loggedIn) return;
+			.then((r) => {
+				assertAreMeets(r);
+				setMeets(r);});
 		fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers")
 			.then((r) => r.json())
-			.then(setSwimmers);
+			.then((r) => {
+				assertAreSwimmers(r);
+				setSwimmers(r)});
+		}
+		catch (e) {
+			alert("Failed to load data: " + (e as Error).message);
+		}
+			
 	}, [loggedIn]);
 
-	/* ---------- ADD MEET ---------- */
-	const addMeet = async (e) => {
+
+	const addMeet = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const f = new FormData(e.target);
 
-		// Parse the date string from the date picker
-		const [year, month, day] = f.get("date").split("-").map(Number);
+		const [year, month, day] = (f.get("date") as String).split("-").map(Number);
 
-		// Create UTC midnight
 		const dateInSeconds = Date.UTC(year, month - 1, day) / 1000;
 
-		// POST to your Worker
-		await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
-			method: "POST",
+		try {
+			await fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
+				method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`
@@ -69,44 +77,58 @@ export default function AdminPage() {
 				location: f.get("location"),
 				date: dateInSeconds
 			})
-		});
+			});
 
-		e.target.reset();
+			e.target.reset();
+		}
+		catch (error) {
+			alert(`Failed to add meet: ${error}`);
+			return;
+		}
 
-		// Reload meets for dropdown
 		const meetsRes = await fetch(
 			"https://swimming-api.ryanyun2010.workers.dev/meets"
 		);
+		if (!meetsRes.ok) {
+			alert(`Failed to fetch meets: ${await meetsRes.text()}`);
+			return;
+		}
 		const meetsData = await meetsRes.json();
 		setMeets(meetsData);
 	};
 
-	/* ---------- ADD RECORD ---------- */
-	const addRecord = async (e) => {
+	const addRecord = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const f = new FormData(e.target);
-
-		await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
-			method: "POST",
+		try {
+			await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+				method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`
 			},
-			body: JSON.stringify([{
-				swimmer_id: Number(f.get("swimmer_id")),
-				meet_id: Number(f.get("meet_id")),
-				event: f.get("event"),
-				type: f.get("type"),
-				start: f.get("start"),
-				time: Number(f.get("time"))
-			}])
-		});
+			body: JSON.stringify([
+				{
+					swimmer_id: Number(f.get("swimmer_id")),
+					meet_id: Number(f.get("meet_id")),
+					event: f.get("event"),
+					type: f.get("type"),
+					start: f.get("start"),
+					time: Number(f.get("time"))
+				}
+			])
+			});
+		}
+		catch (error) {
+			alert(`Failed to add record: ${error}`);
+			return;
+		}
 
 		e.target.reset();
 		alert("Record added");
 	};
 
-	const find_swimmer_id = (swimmer_name) => {
+	const find_swimmer_id = (swimmer_name: String): number | null => {
 		for (let s of swimmers) {
 			if (swimmer_name.includes(s.name)) {
 				return Number(s.id);
@@ -115,48 +137,51 @@ export default function AdminPage() {
 		return null;
 	};
 
-	const find_meet_id = (meet_name) => {
+	const find_meet_id = (meet_name: String): number | null => {
 		for (let m of meets) {
 			if (meet_name.includes(m.name)) {
 				return Number(m.id);
 			}
 		}
 		return null;
-	}
-	
-	const addRecordsBulk = async (e) => {
+	};
 
+	const addRecordsBulk = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const f = new FormData(e.target);
 		let file = f.get("file");
 
 		if (!file) return;
-		let read = await readCSV(file);
+		let read = await readCSV(file as File);
 		let final_rows = [];
 		let relays = [];
-
 
 		for (let i = 1; i < read.length; i++) {
 			let row = read[i];
 			/* check if relay */
-				console.log("row", row);
+			console.log("row", row);
 			if (row.length < 6) {
-				alert(`Failed to parse CSV, Row has insufficient columns: ${row}`);
+				alert(
+					`Failed to parse CSV, Row has insufficient columns: ${row}`
+				);
 				return;
 			}
 			if (row.length == 7 || row.length == 8 || row.length > 9) {
-				alert(`Failed to parse CSV, Row has invalid number of columns: ${row}`);
+				alert(
+					`Failed to parse CSV, Row has invalid number of columns: ${row}`
+				);
 				return;
 			}
-			if (row.length ==9) {
-			
-				let swimmer_names = [row[0],row[1],row[2],row[3]];
+			if (row.length == 9) {
+				let swimmer_names = [row[0], row[1], row[2], row[3]];
 				let swimmer_ids = [];
-			
+
 				for (let swimmer_name of swimmer_names) {
 					let swimmer_id = find_swimmer_id(swimmer_name.trim());
 					if (swimmer_id == null) {
-						alert(`Failed to parse CSV, Swimmer not found: ${swimmer_name}`);
+						alert(
+							`Failed to parse CSV, Swimmer not found: ${swimmer_name}`
+						);
 						return;
 					}
 					swimmer_ids.push(swimmer_id);
@@ -173,7 +198,9 @@ export default function AdminPage() {
 				let time = null;
 				let split = raw_time.split(":");
 				if (split.length > 2) {
-					alert(`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`);
+					alert(
+						`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`
+					);
 					return;
 				}
 				if (split.length == 2) {
@@ -190,22 +217,33 @@ export default function AdminPage() {
 				}
 				let relay_type_raw = row[5].toLowerCase();
 				let relay_type = null;
-	
-				if (relay_type_raw.includes("200 mr") || relay_type_raw.includes("200 medley relay")) {
+
+				if (
+					relay_type_raw.includes("200 mr") ||
+					relay_type_raw.includes("200 medley relay")
+				) {
 					relay_type = "200_mr";
-				} else if (relay_type_raw.includes("200 fr") || relay_type_raw.includes("200 free relay")) {
+				} else if (
+					relay_type_raw.includes("200 fr") ||
+					relay_type_raw.includes("200 free relay")
+				) {
 					relay_type = "200_fr";
-				} else if (relay_type_raw.includes("400 fr") || relay_type_raw.includes("400 free relay")) {
+				} else if (
+					relay_type_raw.includes("400 fr") ||
+					relay_type_raw.includes("400 free relay")
+				) {
 					relay_type = "400_fr";
 				} else {
-					alert(`Failed to parse CSV, Invalid relay type: ${relay_type_raw}`);
+					alert(
+						`Failed to parse CSV, Invalid relay type: ${relay_type_raw}`
+					);
 					return;
 				}
 				relays.push({
 					swimmer_ids: swimmer_ids,
 					meet_id: meet_id,
 					relay_type: relay_type,
-					time: time,
+					time: time
 				});
 				continue;
 			}
@@ -214,7 +252,9 @@ export default function AdminPage() {
 			let swimmer_name = row[0];
 			let swimmer_id = find_swimmer_id(swimmer_name);
 			if (swimmer_id == null) {
-				alert(`Failed to parse CSV, Swimmer not found: ${swimmer_name}`);
+				alert(
+					`Failed to parse CSV, Swimmer not found: ${swimmer_name}`
+				);
 				return;
 			}
 
@@ -225,21 +265,29 @@ export default function AdminPage() {
 				return;
 			}
 			let event_name = row[2];
-			let event_identifier = findEventLabel(event_name);
+			let event_identifier = findEventFromLabel(event_name);
 			if (event_identifier == null) {
 				alert(`Failed to parse CSV, Event not found: ${event_name}`);
 				return;
 			}
-			
+
 			let type_raw = row[3].toLowerCase();
-			if (!type_raw.includes("individual") && !type_raw.includes("relay")) {
+			if (
+				!type_raw.includes("individual") &&
+				!type_raw.includes("relay")
+			) {
 				console.log(type_raw);
 				alert(`Failed to parse CSV, Invalid type: ${type_raw}`);
 				return;
 			}
 			let type = type_raw.includes("individual") ? "individual" : "relay";
 			let start_raw = row[4].toLowerCase();
-			if (!start_raw.includes("flat") && !start_raw.includes("relay") && !start_raw.includes("fs") && !start_raw.includes("rs")) {
+			if (
+				!start_raw.includes("flat") &&
+				!start_raw.includes("relay") &&
+				!start_raw.includes("fs") &&
+				!start_raw.includes("rs")
+			) {
 				alert(`Failed to parse CSV, Invalid start: ${start_raw}`);
 				return;
 			}
@@ -254,10 +302,12 @@ export default function AdminPage() {
 				return;
 			}
 			let raw_time = row[5];
-			let time = null
+			let time = null;
 			let split = raw_time.split(":");
 			if (split.length > 2) {
-				alert(`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`);
+				alert(
+					`Failed to parse CSV, Invalid time (or time is more than an hour? expected format minutes:seconds): ${raw_time}`
+				);
 				return;
 			}
 			if (split.length == 2) {
@@ -273,7 +323,6 @@ export default function AdminPage() {
 				return;
 			}
 
-
 			final_rows.push({
 				swimmer_id: swimmer_id,
 				meet_id: meet_id,
@@ -282,18 +331,19 @@ export default function AdminPage() {
 				start: start,
 				time: time
 			});
-
-
 		}
 		try {
-		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Authorization": `Bearer ${token}`
-			},
-			body: JSON.stringify(final_rows)
-		});
+			let res = await fetch(
+				"https://swimming-api.ryanyun2010.workers.dev/records",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`
+					},
+					body: JSON.stringify(final_rows)
+				}
+			);
 			if (!res.ok) {
 				let text = await res.text();
 				alert(`Failed to upload records: ${text}`);
@@ -305,7 +355,10 @@ export default function AdminPage() {
 		}
 		let records = [];
 		try {
-		let res = await fetch("https://swimming-api.ryanyun2010.workers.dev/records", {"method": "GET"})
+			let res = await fetch(
+				"https://swimming-api.ryanyun2010.workers.dev/records",
+				{ method: "GET" }
+			);
 			if (!res.ok) {
 				let text = await res.text();
 				alert(`Failed to refresh records: ${text}`);
@@ -315,15 +368,17 @@ export default function AdminPage() {
 		} catch (error) {
 			alert(`Failed to fetch records: ${error}`);
 		}
-			
 
 		for (let relay of relays) {
 			let record_ids = [];
 			for (let record of records) {
-				if (relay.swimmer_ids.includes(record.swimmer_id) &&
+				if (
+					relay.swimmer_ids.includes(record.swimmer_id) &&
 					relay.meet_id == record.meet_id &&
-					record.type == "relay") {
-					let swimmer_num = relay.swimmer_ids.indexOf(record.swimmer_id) + 1;
+					record.type == "relay"
+				) {
+					let swimmer_num =
+						relay.swimmer_ids.indexOf(record.swimmer_id) + 1;
 					let expected_event = "";
 					if (relay.relay_type == "200_mr") {
 						if (swimmer_num == 1) {
@@ -343,27 +398,31 @@ export default function AdminPage() {
 
 					if (record.event == expected_event) {
 						record_ids.push(record.id);
-					} 
+					}
 				}
 			}
 			if (record_ids.length < 4) {
-				let swimmer_names = relay.swimmer_ids.map(id => {
+				let swimmer_names = relay.swimmer_ids.map((id) => {
 					for (let s of swimmers) {
 						if (s.id == id) return s.name;
 					}
 					return "Unknown";
 				});
-				alert(`Failed to parse CSV, Could not find all relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}`);
+				alert(
+					`Failed to parse CSV, Could not find all relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}`
+				);
 				return;
 			}
 			if (record_ids.length > 4) {
-				let swimmer_names = relay.swimmer_ids.map(id => {
+				let swimmer_names = relay.swimmer_ids.map((id) => {
 					for (let s of swimmers) {
 						if (s.id == id) return s.name;
 					}
 					return "Unknown";
 				});
-				alert(`Failed to parse CSV, Found too many relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}, did a swimmer swim multiple legs?`);
+				alert(
+					`Failed to parse CSV, Found too many relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}, did a swimmer swim multiple legs?`
+				);
 				return;
 			}
 			await fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
@@ -385,23 +444,26 @@ export default function AdminPage() {
 		e.target.reset();
 		alert("Records added");
 	};
-	
-	
-	const addSwimmer = async (e) => {
+
+	const addSwimmer = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const f = new FormData(e.target);
-
-		await fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
-			method: "POST",
+		try {
+			await fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
+				method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
 				name: f.get("name"),
-				graduating_year: Number(f.get("graduating_year")),
+				graduating_year: Number(f.get("graduating_year"))
 			})
-		});
+			});
+		} catch (e) {
+			alert(`Failed to add swimmer: ${e}`);
+			return;
+		}
 
 		e.target.reset();
 		alert("Swimmer added");
@@ -411,14 +473,11 @@ export default function AdminPage() {
 		try {
 			const swimmerData = await swimmerRes.json();
 			setSwimmers(swimmerData);
-		}	 catch (error) {
+		} catch (error) {
 			console.error("Failed to parse swimmer data:", error);
 			return;
 		}
 	};
-
-
-
 
 	return (
 		<div style={{ padding: 32 }}>
@@ -433,7 +492,11 @@ export default function AdminPage() {
 					<h2>Add Swimmer</h2>
 
 					<form onSubmit={addSwimmer}>
-						<input name="name" placeholder="Swimmer Name" required />
+						<input
+							name="name"
+							placeholder="Swimmer Name"
+							required
+						/>
 						<input
 							name="graduating_year"
 							placeholder="Graduating year"
@@ -465,7 +528,7 @@ export default function AdminPage() {
 									{s.name} '{s.graduating_year % 100}
 								</option>
 							))}
-				</select>
+						</select>
 
 						<select name="meet_id" required>
 							<option value="">Select meet</option>
@@ -507,10 +570,15 @@ export default function AdminPage() {
 					</form>
 					<h2>Add Records</h2>
 					<form onSubmit={addRecordsBulk}>
-				<input name="file" id="csvInput" accept=".csv" type="file"/>
+						<input
+							name="file"
+							id="csvInput"
+							accept=".csv"
+							type="file"
+						/>
 
 						<button>Add Records</button>
-				</form>
+					</form>
 				</>
 			)}
 		</div>
