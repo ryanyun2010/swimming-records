@@ -1,4 +1,6 @@
-export function formatDate(seconds: number) {
+import { Result } from "neverthrow";
+
+export function formatDate(seconds: number): Result<number, Error> {
 	if (!seconds) return "";
 	const d = new Date(seconds * 1000);
 	return Intl.DateTimeFormat("en-US", {
