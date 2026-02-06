@@ -4,44 +4,50 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/AdminPage"; // your AdminPage component
 import { formatDate } from "./lib/utils";
-import { assertAreTimes, assertAreMeets } from "./lib/defs";
+import { timesSchema, meetsSchema } from "./lib/defs";
+import * as Errors from "./lib/errors";
+import { ResultAsync, okAsync, errAsync } from "neverthrow";
+function zodErrorToHumanReadable(err) {
+    return err.issues
+        .map(i => `${i.path.join(".")}: ${i.message}`)
+        .join("; ");
+}
+function zodParseWith(schema, errFunc) {
+    return (json) => {
+        const parseResult = schema.safeParse(json);
+        if (!parseResult.success) {
+            return errAsync(errFunc(zodErrorToHumanReadable(parseResult.error)));
+        }
+        return okAsync(parseResult.data);
+    };
+}
+function safeFetchAndParse(url, schema, fetchFailErrFunc, zodParseFailErrFunc) {
+    return ResultAsync.fromPromise(fetch(url), (e) => fetchFailErrFunc(JSON.stringify(e)))
+        .andThen(zodParseWith(schema, zodParseFailErrFunc));
+}
 function Home() {
-    const [times, setTimes] = useState([]);
     const [recentMeets, setRecentMeets] = useState([]);
+    const [times, setTimes] = useState([]);
     useEffect(() => {
-        fetch("https://swimming-api.ryanyun2010.workers.dev")
-            .then((res) => {
-            if (!res.ok)
-                throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-            .then((data) => {
-            assertAreTimes(data.times);
+        safeFetchAndParse("https://swimming-api.ryanyun2010.workers.dev", timesSchema, (errMsg) => new Errors.NoResponse(`Failed to recieve a valid response from the records API: ${errMsg}`), (errMsg) => new Errors.MalformedResponse(`Recievied reponse from records API was invalid: ${errMsg}`))
+            .match((data) => {
             setTimes(data);
-        })
-            .catch((err) => {
+        }, (err) => {
             console.error("Failed to load records:", err);
             alert("Failed to load records, see console");
         });
-        fetch("https://swimming-api.ryanyun2010.workers.dev/recent_meets")
-            .then((res) => {
-            if (!res.ok)
-                throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-            .then((data) => {
-            assertAreMeets(data.meets);
+        safeFetchAndParse("https://swimming-api.ryanyun2010.workers.dev/recent_meets", meetsSchema, (errMsg) => new Errors.NoResponse(`Failed to recieve a valid response from the recent meets API: ${errMsg}`), (errMsg) => new Errors.MalformedResponse(`Recievied reponse from recent meets API was invalid: ${errMsg}`))
+            .match((data) => {
             setRecentMeets(data);
-        })
-            .catch((err) => {
-            console.error("Failed to load records:", err);
+        }, (err) => {
+            console.error("Failed to load meet records:", err);
             alert("Failed to load records, see console");
         });
     }, []);
     return (_jsxs("div", { style: { padding: "2rem", fontFamily: "sans-serif" }, children: [_jsx("h1", { children: "Nueva Swimming Records" }), _jsx("h2", { children: "Recent Meets" }), _jsx("ul", { style: { listStyle: "none", padding: 0 }, children: recentMeets.map((r) => (_jsx("li", { style: {
                         padding: "0.5rem 0",
                         borderBottom: "1px solid #ddd"
-                    }, children: _jsxs("strong", { children: [r.name, " | ", r.location, " | ", formatDate(parseInt(r.date))] }) }, r.id))) })] }));
+                    }, children: _jsxs("strong", { children: [r.name, " | ", r.location, " | ", formatDate(r.date)] }) }, r.id))) })] }));
 }
 // --- Main App with routing ---
 function App() {

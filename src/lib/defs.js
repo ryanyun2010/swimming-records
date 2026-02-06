@@ -1,117 +1,4 @@
-export function assertIsMeet(obj) {
-    if (obj == null) {
-        throw new Error("Object is null or undefined");
-    }
-    if (typeof obj !== "object") {
-        throw new Error("Object is not of type object");
-    }
-    if (typeof obj.id !== "number") {
-        throw new Error("id is not a number");
-    }
-    if (typeof obj.name !== "string") {
-        throw new Error("name is not a string");
-    }
-    if (typeof obj.location !== "string") {
-        throw new Error("location is not a string");
-    }
-    if (typeof obj.date !== "string") {
-        throw new Error("date is not a string");
-    }
-}
-export function assertAreMeets(obj) {
-    if (!Array.isArray(obj)) {
-        throw new Error("Object is not an array");
-    }
-    obj.forEach((item, index) => {
-        try {
-            assertIsMeet(item);
-        }
-        catch (e) {
-            throw new Error(`Item at index ${index} is not a valid Meet: ${e.message}`);
-        }
-    });
-}
-export function assertIsTime(obj) {
-    if (obj == null) {
-        throw new Error("Object is null or undefined");
-    }
-    if (typeof obj !== "object") {
-        throw new Error("Object is not of type object");
-    }
-    if (typeof obj.id !== "number") {
-        throw new Error("id is not a number");
-    }
-    if (typeof obj.swimmer_id !== "number") {
-        throw new Error("swimmer_id is not a number");
-    }
-    if (typeof obj.event !== "string") {
-        throw new Error("event is not a string");
-    }
-    if (obj.type !== "relay" && obj.type !== "individual") {
-        throw new Error("type is not a valid SwimType");
-    }
-    if (typeof obj.time !== "number") {
-        throw new Error("time is not a number");
-    }
-    if (obj.start_type !== "relay" && obj.start_type !== "flat") {
-        throw new Error("start_type is not a valid StartType");
-    }
-    if (typeof obj.meet_name !== "string") {
-        throw new Error("meet_name is not a string");
-    }
-    if (typeof obj.meet_date !== "string") {
-        throw new Error("meet_date is not a string");
-    }
-    if (typeof obj.meet_location !== "string") {
-        throw new Error("meet_location is not a string");
-    }
-    if (typeof obj.swimmer_year !== "number") {
-        throw new Error("swimmer_year is not a number");
-    }
-}
-export function assertAreTimes(obj) {
-    if (!Array.isArray(obj)) {
-        throw new Error("Object is not an array");
-    }
-    obj.forEach((item, index) => {
-        try {
-            assertIsTime(item);
-        }
-        catch (e) {
-            throw new Error(`Item at index ${index} is not a valid Time: ${e.message}`);
-        }
-    });
-}
-export function assertIsSwimmer(obj) {
-    if (obj == null) {
-        throw new Error("Object is null or undefined");
-    }
-    if (typeof obj !== "object") {
-        throw new Error("Object is not of type object");
-    }
-    if (typeof obj.id !== "number") {
-        throw new Error("id is not a number");
-    }
-    if (typeof obj.name !== "string") {
-        throw new Error("name is not a string");
-    }
-    if (typeof obj.graduating_year !== "number") {
-        throw new Error("graduating_year is not a number");
-    }
-}
-export function assertAreSwimmers(obj) {
-    if (!Array.isArray(obj)) {
-        throw new Error("Object is not an array");
-    }
-    obj.forEach((item, index) => {
-        try {
-            assertIsSwimmer(item);
-        }
-        catch (e) {
-            throw new Error(`Item at index ${index} is not a valid Swimmer: ${e.message}`);
-        }
-    });
-}
+import { z } from "zod";
 export const EVENTS = [
     { value: "50_free", label: "50 Free", alternates: [] },
     { value: "50_back", label: "50 Back", alternates: [] },
@@ -125,6 +12,113 @@ export const EVENTS = [
     { value: "200_im", label: "200 IM", alternates: ["200 Individual Medley"] },
     { value: "500_free", label: "500 Free", alternates: [] }
 ];
+export const meetSchema = z.object({
+    id: z.coerce.number().int(),
+    name: z.string().min(1, "Name is required"),
+    location: z.string().min(1, "Location is required"),
+    date: z.coerce.number().int("Date must be an integer")
+});
+export const meetsSchema = z.array(meetSchema);
+const allowedEvents = ["50_free", "50_back", "50_breast", "50_fly", "100_free", "100_back", "100_breast", "100_fly", "200_free", "200_im", "500_free"];
+export const recordSchema = z.object({
+    id: z.coerce.number().int(),
+    meet_id: z.coerce.number().int(),
+    swimmer_id: z.coerce.number().int(),
+    event: z.enum(allowedEvents),
+    type: z.enum(["individual", "relay"]),
+    start: z.enum(["flat", "relay"]),
+    time: z.coerce.number().positive()
+});
+export const recordsSchema = z.array(recordSchema);
+export const swimmerSchema = z.object({
+    id: z.coerce.number().int(),
+    name: z.string().min(1, "Name is required"),
+    graduating_year: z.number().int()
+});
+export const swimmersSchema = z.array(swimmerSchema);
+export const relaySchema = z.object({
+    id: z.coerce.number().int(),
+    time: z.coerce.number().positive(),
+    relay_type: z.enum(["200_mr", "200_fr", "400_fr"]),
+    record_1_id: z.coerce.number().int(),
+    record_2_id: z.coerce.number().int(),
+    record_3_id: z.coerce.number().int(),
+    record_4_id: z.coerce.number().int()
+});
+export const relaysSchema = z.array(relaySchema);
+export const timeSchema = z.object({
+    id: z.coerce.number().int(),
+    swimmer_id: z.coerce.number().int(),
+    event: z.enum(allowedEvents),
+    type: z.enum(["individual", "relay"]),
+    time: z.coerce.number().positive(),
+    start_type: z.enum(["flat", "relay"]),
+    meet_name: z.string().min(1, "Meet name is required"),
+    meet_date: z.coerce.number().int(),
+    meet_location: z.string().min(1, "Meet location is required"),
+    swimmer_year: z.coerce.number().int()
+});
+export const timesSchema = z.array(timeSchema);
+export const googleAuthResponseSchema = z.object({
+    credential: z.string()
+});
+export const recordsCSVSchemaNonRelay = z.tuple([
+    z.string().trim().min(1, "Swimmer name is required"),
+    z.string().trim().min(1, "Meet name is required"),
+    z.string().trim().min(1, "Event name is required"),
+    z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+        errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
+    })),
+    z.string().trim().toLowerCase().transform((val) => {
+        if (val == "fs") {
+            return "flat";
+        }
+        else if (val == "rs") {
+            return "relay";
+        }
+    }).pipe(z.enum(["flat", "relay"], {
+        errorMap: () => ({
+            message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
+        })
+    })),
+    z.string().trim().min(1, "Time is required")
+]);
+export const recordsCSVSchemaRelay = z.tuple([
+    z.string().trim().min(1, "Swimmer 1 name is required"),
+    z.string().trim().min(1, "Swimmer 2 name is required"),
+    z.string().trim().min(1, "Swimmer 3 name is required"),
+    z.string().trim().min(1, "Swimmer 4 name is required"),
+    z.string().trim().min(1, "Meet name is required"),
+    z.string().trim().toLowerCase().transform((val) => {
+        if (val == "200 medley relay" || val == "200 mr") {
+            return "200_mr";
+        }
+        else if (val == "200 freestyle relay" || val == "200 fr") {
+            return "200_fr";
+        }
+        else if (val == "400 freestyle relay" || val == "400 fr") {
+            return "400_fr";
+        }
+    }).pipe(z.enum(["200_mr", "200_fr", "400_fr"], {
+        errorMap: () => ({ message: "Relay type must be '200 MR', '200 FR', or '400 FR' or equivalents" })
+    })),
+    z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+        errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
+    })),
+    z.string().trim().toLowerCase().transform((val) => {
+        if (val == "fs") {
+            return "flat";
+        }
+        else if (val == "rs") {
+            return "relay";
+        }
+    }).pipe(z.enum(["flat", "relay"], {
+        errorMap: () => ({
+            message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
+        })
+    })),
+    z.string().trim().min(1, "Time is required")
+]);
 export function formatEventLabel(event) {
     for (const evt of EVENTS) {
         if (evt.value == event) {
@@ -157,15 +151,4 @@ export function findEventFromLabel(event) {
         }
     }
     return null;
-}
-export function assertIsGoogleAuthObject(obj) {
-    if (obj == null) {
-        throw new Error("Object is null or undefined");
-    }
-    if (typeof obj !== "object") {
-        throw new Error("Object is not of type object");
-    }
-    if (typeof obj.credential !== "string") {
-        throw new Error("credential is not a string");
-    }
 }
