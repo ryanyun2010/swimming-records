@@ -79,7 +79,7 @@ export function getResponseJSONAndParse(
 ): ResultAsync<any, ErrorRes> {
 	return getResponseJSON(response, errFunc).andThen(
 		(res) => {
-			console.log("Raw JSON response:", res);
+			console.log("Raw JSON response:", JSON.stringify(res));
 			return zodParseWith(schema, errFunc)(res);
 		}
 	);
