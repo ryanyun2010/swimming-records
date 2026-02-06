@@ -60,6 +60,7 @@ export const relaysSchema = z.array(relaySchema);
 export const timeSchema = z.object({ 
 	id: z.coerce.number().int(),
 	swimmer_id: z.coerce.number().int(),
+	meet_id: z.coerce.number().int(),
 	event: z.enum(allowedEvents),
 	type: z.enum(["individual", "relay"]),
 	time: z.coerce.number().positive(),
@@ -67,6 +68,7 @@ export const timeSchema = z.object({
 	meet_name: z.string().min(1, "Meet name is required"),
 	meet_date: z.coerce.number().int(),
 	meet_location: z.string().min(1, "Meet location is required"),
+	swimmer_name: z.string().min(1, "Swimmer name is required"),
 	swimmer_year: z.coerce.number().int()
 });
 
