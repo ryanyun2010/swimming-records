@@ -25,6 +25,8 @@ function Home() {
 
 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
 
+	const [doneLoading, setDoneLoading] = useState(false);
+
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse(`Failed to fetch swimmers: ${JSON.stringify(e)}`))
 		.andThen((res) => getResponseJSONAndParse(res, swimmersSchema, (e) => new Errors.MalformedResponse(`Failed to parse swimmers response: ${JSON.stringify(e)}`)))
@@ -62,25 +64,31 @@ function Home() {
 				alert("Failed to load records, see console");
 			}
 		);
+
 	}, []);
 	useEffect(() => {
 		setCurMeetInfo(null);
 		setCurSwimmerInfo(null);
-		setCurrentTimes(times);
-		if (searchParams.get("meet_id") != null) {
-			const meet_id = parseInt(searchParams.get("meet_id")!);
-			setCurrentTimes(currentTimes.filter((t) => t.meet_id == meet_id));
-			setCurMeetInfo(meets.find((m) => m.id == meet_id) ?? null);
+		if (searchParams.get("meet_id") != null && searchParams.get("meet_id")!.length > 0) {
+			setCurMeetInfo(meets.find((m) => m.id == parseInt(searchParams.get("meet_id")!)) ?? null);
 		} 
 
-		if (searchParams.get("swimmer_id") != null) {
-			const swimmer_id = searchParams.get("swimmer_id")!;
-			setCurrentTimes(currentTimes.filter((t) => t.swimmer_id == parseInt(swimmer_id)));
-			setCurSwimmerInfo(swimmers.find((s) => s.id == parseInt(swimmer_id)) ?? null);
+		if (searchParams.get("swimmer_id") != null && searchParams.get("swimmer_id")!.length > 0) {
+			setCurSwimmerInfo(swimmers.find((s) => s.id == parseInt(searchParams.get("swimmer_id")!)) ?? null);
+		} 
+	}, [searchParams, swimmers, meets]);
+
+	useEffect(() => {
+		if (curMeetInfo != null && curSwimmerInfo == null) {
+			setCurrentTimes(times.filter((t) => t.meet_id == curMeetInfo.id));
+		} else if (curSwimmerInfo != null && curMeetInfo == null) {
+			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id));
+		} else if (curSwimmerInfo != null && curMeetInfo != null) {
+			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id && t.meet_id == curMeetInfo.id));
 		} else {
-			setCurSwimmerInfo(null);
+			setCurrentTimes([]);
 		}
-	}, [searchParams]);
+	}, [curMeetInfo, curSwimmerInfo, times]);
 
 	function renderHeader() {
 		if (curMeetInfo != null && curSwimmerInfo == null) {
