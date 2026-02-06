@@ -36,6 +36,7 @@ function safeFetchAndParse<T>(
 	zodParseFailErrFunc: (errMsg: string) => ErrorRes
 ): ResultAsync<T, ErrorRes> {
 	return ResultAsync.fromPromise(fetch(url), (e) => fetchFailErrFunc(JSON.stringify(e)))
+				.andThen(response => ResultAsync.fromPromise(response.json(), (e) => fetchFailErrFunc(`Failed to parse JSON: ${JSON.stringify(e)}`)))
 				.andThen(zodParseWith(schema, zodParseFailErrFunc));
 }
 function Home() {
