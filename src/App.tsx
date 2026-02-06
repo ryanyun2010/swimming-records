@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/AdminPage"; // your AdminPage component
-import { formatDate } from "./lib/utils";
+import { formatDate, zodParseWith, getResponseJSONAndParse } from "./lib/utils";
 import { timesSchema, meetsSchema , Time, Meet} from "./lib/defs";
 import { z, ZodError } from "zod";
 import * as Errors from "./lib/errors";
@@ -10,43 +10,15 @@ import { ResultAsync, okAsync, errAsync } from "neverthrow";
 import { ErrorRes } from "./lib/errors";
 
 
-function zodErrorToHumanReadable(err: ZodError): string {
-	return err.issues
-		.map(i => `${i.path.join(".")}: ${i.message}`)
-		.join("; ");
-}
 
-function zodParseWith<T>(
-	schema: z.ZodSchema<T>, 
-	errFunc: (errMsg: string) => ErrorRes
-): (json: unknown) => ResultAsync<T, ErrorRes> {
-	return (json: unknown) => {
-		const parseResult = schema.safeParse(json);
-		if (!parseResult.success) {
-			return errAsync(errFunc(zodErrorToHumanReadable(parseResult.error)));
-		}
-		return okAsync(parseResult.data);
-	};
-}
 
-function safeFetchAndParse<T>(
-	url: string,
-	schema: z.ZodSchema<T>,
-	fetchFailErrFunc: (errMsg: string) => ErrorRes,
-	zodParseFailErrFunc: (errMsg: string) => ErrorRes
-): ResultAsync<T, ErrorRes> {
-	return ResultAsync.fromPromise(fetch(url), (e) => fetchFailErrFunc(JSON.stringify(e)))
-				.andThen(response => ResultAsync.fromPromise(response.json(), (e) => fetchFailErrFunc(`Failed to parse JSON: ${JSON.stringify(e)}`)))
-				.andThen(zodParseWith(schema, zodParseFailErrFunc));
-}
 function Home() {
 	const [recentMeets, setRecentMeets] = useState<Meet[]>([]);
 	const [times, setTimes] = useState<Time[]>([]);
 
 	useEffect(() => {
-		safeFetchAndParse("https://swimming-api.ryanyun2010.workers.dev", timesSchema, 
-						  (errMsg) => new Errors.NoResponse(`Failed to recieve a valid response from the records API: ${errMsg}`), 
-						  (errMsg) => new Errors.MalformedResponse(`Recievied reponse from records API was invalid: ${errMsg}`)) 
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse(`Failed to fetch records: ${JSON.stringify(e)}`))
+		.andThen((res) => getResponseJSONAndParse(res, timesSchema, (e) => new Errors.MalformedResponse(`Failed to parse records response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
 				setTimes(data);
@@ -57,9 +29,8 @@ function Home() {
 			}
 		);
 
-		safeFetchAndParse("https://swimming-api.ryanyun2010.workers.dev/recent_meets", meetsSchema, 
-						  (errMsg) => new Errors.NoResponse(`Failed to recieve a valid response from the recent meets API: ${errMsg}`), 
-						  (errMsg) => new Errors.MalformedResponse(`Recievied reponse from recent meets API was invalid: ${errMsg}`)) 
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/recent_meets"), (e) => new Errors.NoResponse(`Failed to fetch recent meets: ${JSON.stringify(e)}`))
+		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse recent meets response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
 				setRecentMeets(data);

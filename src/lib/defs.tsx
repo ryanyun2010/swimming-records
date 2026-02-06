@@ -63,7 +63,7 @@ export const timeSchema = z.object({
 	event: z.enum(allowedEvents),
 	type: z.enum(["individual", "relay"]),
 	time: z.coerce.number().positive(),
-	start_type: z.enum(["flat", "relay"]),
+	start: z.enum(["flat", "relay"]),
 	meet_name: z.string().min(1, "Meet name is required"),
 	meet_date: z.coerce.number().int(),
 	meet_location: z.string().min(1, "Meet location is required"),
