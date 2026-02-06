@@ -1,42 +1,221 @@
+:root {
+	--accent: rgb(10, 51, 181);
+	--off-white: #f7f8fe;
+	--ink: #0f172a;
+	--muted: #5b6474;
+	--border-strong: rgba(10, 51, 181, 0.32);
+	--border-soft: rgba(10, 51, 181, 0.2);
+}
+
 #root {
-	max-width: 1280px;
+	width: 100%;
+	min-height: 100vh;
+	margin: 0;
+	padding: 0;
+}
+
+.app-shell {
+	min-height: 100vh;
+	width: 100%;
+	overflow-x: hidden;
+	background: linear-gradient(180deg, #ffffff 0%, var(--off-white) 100%);
+	color: var(--ink);
+	font-family: "Sora", "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+}
+
+.app-inner {
+	width: 100%;
 	margin: 0 auto;
-	padding: 2rem;
-	text-align: center;
+	padding: 3rem clamp(1.25rem, 3vw, 3rem) 4rem;
 }
 
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-.logo:hover {
-	filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-	filter: drop-shadow(0 0 2em #61dafbaa);
+.accent-card {
+	background: #ffffff;
+	border-radius: 18px;
+	padding: 1rem 1.2rem;
+	border: 2px solid rgba(10, 51, 181, 0.25);
 }
 
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+.hero-card {
+	padding: 2rem 2.25rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
-	}
+.hero-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1.5rem;
+	flex-wrap: wrap;
 }
 
-.card {
-	padding: 2em;
+.hero-eyebrow {
+	font-size: 0.8rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--accent);
+	font-weight: 600;
 }
 
-.read-the-docs {
-	color: #888;
+.hero-title {
+	margin: 0.6rem 0 0;
+	font-size: 2.4rem;
+	line-height: 1.1;
+}
+
+.hero-subtitle {
+	margin: 0.6rem 0 0;
+	color: var(--muted);
+	max-width: 520px;
+}
+
+.hero-pill {
+	background: var(--accent);
+	color: #fff;
+	padding: 0.8rem 1.1rem;
+	border-radius: 999px;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.section-block {
+	margin-top: 2.5rem;
+}
+
+.section-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.section-bar {
+	width: 36px;
+	height: 4px;
+	background: var(--accent);
+	border-radius: 999px;
+}
+
+.section-title {
+	margin: 0;
+	font-size: 1.4rem;
+}
+
+.card-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 0.9rem;
+}
+
+.meet-card {
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.meet-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.meet-title {
+	font-weight: 600;
+	font-size: 1.05rem;
+}
+
+.meet-meta {
+	color: var(--muted);
+	font-size: 0.95rem;
+}
+
+.back-button {
+	background: transparent;
+	border: 1px solid var(--accent);
+	color: var(--accent);
+	padding: 0.6rem 1rem;
+	border-radius: 999px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.result-card {
+	padding: 1rem 1.2rem;
+}
+
+.result-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.2rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.name-line {
+	font-weight: 600;
+	font-size: 1.05rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+}
+
+.name-link {
+	color: var(--accent);
+	cursor: pointer;
+}
+
+.divider-dot {
+	color: rgba(10, 51, 181, 0.45);
+}
+
+.event-text {
+	color: var(--muted);
+}
+
+.tag-row {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.tag {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--border-soft);
+	color: var(--accent);
+	background: rgba(10, 51, 181, 0.06);
+	font-size: 0.85rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.tag-event {
+	border-color: rgba(74, 111, 165, 0.4);
+	background: rgba(74, 111, 165, 0.14);
+	color: #4A6FA5;
+}
+
+.tag-meta {
+	border-color: rgba(107, 114, 128, 0.35);
+	background: rgba(107, 114, 128, 0.12);
+	color: #6B7280;
+}
+
+.time {
+	font-weight: 700;
+	font-size: 1.1rem;
+	color: var(--ink);
+}
+
+.meta-line {
+	margin-top: 0.45rem;
+	color: var(--muted);
+	font-size: 0.95rem;
 }

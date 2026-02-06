@@ -1,9 +1,10 @@
 import { useEffect, useState} from "react";
+import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useSearchParams} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/AdminPage"; // your AdminPage component
 import { formatDate, zodParseWith, getResponseJSONAndParse ,formatTime} from "./lib/utils";
-import { timesSchema, meetsSchema , Time, Meet, Swimmer, formatEventLabel, swimmersSchema} from "./lib/defs";
+import { timesSchema, meetsSchema , Time, Meet, Swimmer, formatEventLabel, swimmersSchema, Relay, relaySchema} from "./lib/defs";
 import { z, ZodError } from "zod";
 import * as Errors from "./lib/errors";
 import { ResultAsync, okAsync, errAsync } from "neverthrow";
@@ -14,18 +15,21 @@ import { ErrorRes } from "./lib/errors";
 
 function Home() {
 	const [recentMeets, setRecentMeets] = useState<Meet[]>([]);
-	const [meets, setMeets] = useState<Meet[]>([]);
 	const [searchParams, setSearchParams] = useSearchParams();
+	const [currentTimes, setCurrentTimes] = useState<Time[]>([]);
+	const [currentRelays, setCurrentRelays] = useState<Relay[]>([]);
 
 	const [curMeetInfo, setCurMeetInfo] = useState<Meet | null>(null);
 	const [curSwimmerInfo, setCurSwimmerInfo] = useState<Swimmer | null>(null);
 
 	const [times, setTimes] = useState<Time[]>([]);
-	const [currentTimes, setCurrentTimes] = useState<Time[]>([]);
-
 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
+	const [meets, setMeets] = useState<Meet[]>([]);
+	const [relays, setRelays] = useState<Relay[]>([]);
 
-	const [doneLoading, setDoneLoading] = useState(false);
+
+
+
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse(`Failed to fetch swimmers: ${JSON.stringify(e)}`))
@@ -52,8 +56,8 @@ function Home() {
 			}
 		);
 
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/meets"), (e) => new Errors.NoResponse(`Failed to fetch recent meets: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse recent meets response: ${JSON.stringify(e)}`)))
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/meets"), (e) => new Errors.NoResponse(`Failed to fetch meets: ${JSON.stringify(e)}`))
+		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse meets response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
 				setMeets(data);
@@ -61,7 +65,19 @@ function Home() {
 			},
 			(err) => {
 				console.error("Failed to load meet records:", err);
-				alert("Failed to load records, see console");
+				alert("Failed to load meets, see console");
+			}
+		);
+
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays"), (e) => new Errors.NoResponse(`Failed to fetch relays: ${JSON.stringify(e)}`))
+		.andThen((res) => getResponseJSONAndParse(res, z.array(relaySchema), (e) => new Errors.MalformedResponse(`Failed to parse relays response: ${JSON.stringify(e)}`)))
+		.match(
+			(data) => {
+				setRelays(data);
+			},
+			(err) => {
+				console.error("Failed to load relays:", err);
+				alert("Failed to load relays, see console");
 			}
 		);
 
@@ -81,14 +97,36 @@ function Home() {
 	useEffect(() => {
 		if (curMeetInfo != null && curSwimmerInfo == null) {
 			setCurrentTimes(times.filter((t) => t.meet_id == curMeetInfo.id));
+			setCurrentRelays(relays.filter((r) => {
+				const record1 = times.find((t) => t.id == r.record_1_id);
+				const record2 = times.find((t) => t.id == r.record_2_id);
+				const record3 = times.find((t) => t.id == r.record_3_id);
+				const record4 = times.find((t) => t.id == r.record_4_id);
+				return [record1, record2, record3, record4].some((rec) => rec?.meet_id == curMeetInfo.id);
+			}));
 		} else if (curSwimmerInfo != null && curMeetInfo == null) {
 			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id));
+				setCurrentRelays(relays.filter((r) => {
+					const record1 = times.find((t) => t.id == r.record_1_id);
+					const record2 = times.find((t) => t.id == r.record_2_id);
+					const record3 = times.find((t) => t.id == r.record_3_id);
+					const record4 = times.find((t) => t.id == r.record_4_id);
+					return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id);
+				}));
 		} else if (curSwimmerInfo != null && curMeetInfo != null) {
 			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id && t.meet_id == curMeetInfo.id));
+			setCurrentRelays(relays.filter((r) => {
+				const record1 = times.find((t) => t.id == r.record_1_id);
+				const record2 = times.find((t) => t.id == r.record_2_id);
+				const record3 = times.find((t) => t.id == r.record_3_id);
+				const record4 = times.find((t) => t.id == r.record_4_id);
+				return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id && rec?.meet_id == curMeetInfo.id);
+			}));
 		} else {
 			setCurrentTimes([]);
+			setCurrentRelays([]);
 		}
-	}, [curMeetInfo, curSwimmerInfo, times]);
+	}, [curMeetInfo, curSwimmerInfo, times, relays]);
 
 	function renderHeader() {
 		if (curMeetInfo != null && curSwimmerInfo == null) {
@@ -105,51 +143,165 @@ function Home() {
 	
 	if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null) {
 		return (
-			<div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-			<h1>Nueva Swimming Records</h1>
-			<h2>Recent Meets</h2>
-			<ul style={{ listStyle: "none", padding: 0 }}>
-			{recentMeets.map((r) => (
-				<li
-				key={r.id}
-				style={{
-					padding: "0.5rem 0",
-					borderBottom: "1px solid #ddd"
-				}}
-				>
-				<strong>
-				{r.name} | {r.location} | {formatDate(r.date)}
+			<div className="app-shell">
+				<div className="app-inner">
+					<div className="accent-card hero-card">
+						<div className="hero-row">
+							<div>
+								<div className="hero-eyebrow">Nueva Swim & Dive Team</div>
+								<h1 className="hero-title">Swimming Records</h1>
+								<p className="hero-subtitle">Select a meet to see results.</p>
 
-				</strong>
-				</li>
-			))}
-			</ul>
+							</div>
+						</div>
+					</div>
+
+					<div className="section-block">
+						<div className="section-header">
+							<div className="section-bar" />
+							<h2 className="section-title">Recent Meets</h2>
+						</div>
+						<ul className="card-list">
+						{recentMeets.map((r) => (
+							<li
+							key={r.id}
+							className="accent-card meet-card"
+							onClick={() => setSearchParams({ meet_id: r.id.toString() })}
+							>
+								<div className="meet-row">
+									<div className="meet-title">{r.name}</div>
+									<div className="meet-meta">{r.location} · {formatDate(r.date)}</div>
+								</div>
+							</li>
+						))}
+						</ul>
+					</div>
+				</div>
 			</div>
 		);
 	} else {
 		return (
-			<div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-			<h1>Nueva Swimming Records</h1>
-			{
-			renderHeader()	
-			}
-			<ul style={{ listStyle: "none", padding: 0 }}>
-			{currentTimes.map((r) => (
-				<li
-				key={r.id}
-				style={{
-					padding: "0.5rem 0",
-					borderBottom: "1px solid #ddd"
-				}}
-				>
-				<strong>
-				{r.swimmer_name} '{r.swimmer_year % 100} | {formatEventLabel(r.event)} {(r.type == "relay") ? ((r.start) == "flat" ? " | Relay Split, Flat Start" : " | Relay Split, Relay Start ") : ""} | {formatTime(r.time)}
-				</strong>
-				<br></br>
-				{r.meet_name} | {formatDate(r.meet_date)} | {r.meet_location}
-				</li>
-			))}
-			</ul>
+			<div className="app-shell">
+				<div className="app-inner">
+					<div className="accent-card hero-card">
+						<div className="hero-row">
+							<div>
+								<div className="hero-eyebrow">Records View</div>
+								<h1 className="hero-title">Nueva Swimming Records</h1>
+								<div className="hero-subtitle">{renderHeader()}</div>
+							</div>
+							<button
+								type="button"
+								onClick={() => setSearchParams({})}
+								className="back-button"
+							>
+								Back to Meets
+							</button>
+						</div>
+					</div>
+
+					<div className="section-block">
+						<div className="section-header">
+							<div className="section-bar" />
+							<h2 className="section-title">Event Results</h2>
+						</div>
+						<ul className="card-list">
+						{currentTimes.map((r) => (
+							<li
+							key={r.id}
+							className="accent-card result-card"
+							>
+								<div className="result-row">
+									<div className="name-line">
+										<span
+											onClick={() => setSearchParams({ swimmer_id: r.swimmer_id.toString() })}
+											className="name-link"
+										>
+											{r.swimmer_name} '{r.swimmer_year % 100}
+										</span>
+										<span className="divider-dot">•</span>
+										<span className="tag tag-event">{formatEventLabel(r.event)}</span>
+										<div className="tag-row">
+											{(r.type == "relay") ? (
+												<span className="tag tag-meta">{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+											) : (
+												<span className="tag tag-meta">Individual</span>
+											)}
+										</div>
+									</div>
+									<div className="time">{formatTime(r.time)}</div>
+								</div>
+								<div className="meta-line">
+									{r.meet_name} · {formatDate(r.meet_date)} · {r.meet_location}
+								</div>
+							</li>
+						))}
+						{currentRelays.map((r) => {
+							const record1 = times.find((t) => t.id == r.record_1_id);
+							const record2 = times.find((t) => t.id == r.record_2_id);
+							const record3 = times.find((t) => t.id == r.record_3_id);
+							const record4 = times.find((t) => t.id == r.record_4_id);
+								return (
+								<li
+								key={r.id}
+								className="accent-card result-card"
+								>
+									<div className="result-row">
+										<div className="name-line">
+										<span
+											onClick={() => {
+												if (record1) setSearchParams({ swimmer_id: record1.swimmer_id.toString() });
+											}}
+											className="name-link"
+										>
+											{record1?.swimmer_name} '{(record1?.swimmer_year ?? 0) % 100}
+										</span>
+										<span className="divider-dot">•</span>
+										<span
+											onClick={() => {
+												if (record2) setSearchParams({ swimmer_id: record2.swimmer_id.toString() });
+											}}
+											className="name-link"
+										>
+											{record2?.swimmer_name} '{(record2?.swimmer_year ?? 0) % 100}
+										</span>
+										<span className="divider-dot">•</span>
+										<span
+											onClick={() => {
+												if (record3) setSearchParams({ swimmer_id: record3.swimmer_id.toString() });
+											}}
+											className="name-link"
+										>
+											{record3?.swimmer_name} '{(record3?.swimmer_year ?? 0) % 100}
+										</span>
+										<span className="divider-dot">•</span>
+										<span
+											onClick={() => {
+												if (record4) setSearchParams({ swimmer_id: record4.swimmer_id.toString() });
+											}}
+											className="name-link"
+										>
+											{record4?.swimmer_name} '{(record4?.swimmer_year ?? 0) % 100}
+										</span>
+										<span className="divider-dot">•</span>
+										<span className="tag tag-event">
+											{(r.relay_type == "200_mr") ? "200 Medley Relay" : (r.relay_type == "200_fr") ? "200 Freestyle Relay" : "400 Freestyle Relay"}
+										</span>
+										<div className="tag-row">
+											<span className="tag tag-meta">Relay</span>
+										</div>
+										</div>
+										<div className="time">{formatTime(r.time)}</div>
+									</div>
+									<div className="meta-line">
+										{record1?.meet_name ?? ""}{record1?.meet_date ? ` · ${formatDate(record1.meet_date)}` : ""}{record1?.meet_location ? ` · ${record1.meet_location}` : ""}
+									</div>
+								</li>
+							)
+						})}
+						</ul>
+					</div>
+				</div>
 			</div>
 		);
 

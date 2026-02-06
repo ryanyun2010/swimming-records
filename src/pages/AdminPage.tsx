@@ -382,27 +382,12 @@ export default function AdminPage() {
 							}
 
 							if (record.event == expected_event) {
-								record_ids.push(record.id);
+								record_ids[relay.swimmer_ids.indexOf(record.swimmer_id)] = record.id;
 							}
 						}
 					}
-					if (record_ids.length < 4) {
-						let swimmer_names = relay.swimmer_ids.map((id) => {
-							for (let s of swimmers) {
-								if (s.id == id) return s.name;
-							}
-							return "Unknown";
-						});
-						return errAsync(new Errors.MalformedRequest(`Failed to parse CSV, Not enough relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}`));
-					}
-					if (record_ids.length > 4) {
-						let swimmer_names = relay.swimmer_ids.map((id) => {
-							for (let s of swimmers) {
-								if (s.id == id) return s.name;
-							}
-							return "Unknown";
-						});
-						return errAsync(new Errors.MalformedRequest(`Failed to parse CSV, Too many relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}, did a swimmer swim multiple legs?`));
+					if (record_ids.length != 4 || record_ids.includes(undefined)) {
+						return errAsync(new Errors.MalformedResponse(`Failed to find record IDs for relay, did you not provide a relay split for one or more of the swimmers?: ${JSON.stringify(relay)}`));
 					}
 					return ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
 						method: "POST",

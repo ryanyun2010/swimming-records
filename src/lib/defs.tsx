@@ -140,6 +140,7 @@ export type Time = z.infer<typeof timeSchema>;
 export type Swimmer = z.infer<typeof swimmerSchema>;
 export type Meet = z.infer<typeof meetSchema>;
 export type Record = z.infer<typeof recordSchema>;
+export type Relay = z.infer<typeof relaySchema>;
 
 
 export function formatEventLabel(event: Event): String{
