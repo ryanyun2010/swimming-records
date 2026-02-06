@@ -13,7 +13,6 @@ export const EVENTS = [
 	{ value: "200_im", label: "200 IM", alternates: ["200 Individual Medley"] },
 	{ value: "500_free", label: "500 Free", alternates: [] }
 ];
-const allowedEvents = ["50_free", "50_back", "50_breast", "50_fly", "100_free", "100_back", "100_breast", "100_fly", "200_free", "200_im", "500_free"]
 type Event = "50_free" | "50_back" | "50_breast" | "50_fly" | "100_free" | "100_back" | "100_breast" | "100_fly" | "200_free" | "200_im" | "500_free";
 
 export const meetSchema = z.object({
@@ -25,6 +24,7 @@ export const meetSchema = z.object({
 
 export const meetsSchema = z.array(meetSchema);
 
+const allowedEvents = ["50_free", "50_back", "50_breast", "50_fly", "100_free", "100_back", "100_breast", "100_fly", "200_free", "200_im", "500_free"] as const;
 export const recordSchema = z.object({
 		id: z.coerce.number().int(),
 		meet_id: z.coerce.number().int(),
@@ -72,7 +72,72 @@ export const timeSchema = z.object({
 
 export const timesSchema = z.array(timeSchema);
 
+export const googleAuthResponseSchema = z.object({
+	credential: z.string()
+});
 
+export const recordsCSVSchemaNonRelay =	z.tuple([
+	z.string().trim().min(1, "Swimmer name is required"),
+	z.string().trim().min(1, "Meet name is required"),
+	z.string().trim().min(1, "Event name is required"),
+	z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+		errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
+	})),
+	z.string().trim().toLowerCase().transform((val) => {
+		if (val == "fs") {
+			return "flat";
+		}
+		else if (val == "rs") {
+			return "relay";
+		}}).pipe(z.enum(["flat", "relay"], {
+		errorMap: () => ({
+			message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
+		})
+	})),
+	z.string().trim().min(1, "Time is required")
+]);
+
+export const recordsCSVSchemaRelay = z.tuple([
+	z.string().trim().min(1, "Swimmer 1 name is required"),
+	z.string().trim().min(1, "Swimmer 2 name is required"),
+	z.string().trim().min(1, "Swimmer 3 name is required"),
+	z.string().trim().min(1, "Swimmer 4 name is required"),
+	z.string().trim().min(1, "Meet name is required"),
+	z.string().trim().toLowerCase().transform((val) => {
+		if (val == "200 medley relay" || val == "200 mr") {
+			return "200_mr";
+		} else if (val == "200 freestyle relay" || val == "200 fr") {
+			return "200_fr";
+		} else if (val == "400 freestyle relay" || val == "400 fr") {
+			return "400_fr";
+		}
+	}).pipe(z.enum(["200_mr", "200_fr", "400_fr"], {
+		errorMap: () => ({ message: "Relay type must be '200 MR', '200 FR', or '400 FR' or equivalents" })
+	}))
+	,
+	z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+		errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
+	})),
+	z.string().trim().toLowerCase().transform((val) => {
+		if (val == "fs") {
+			return "flat";
+		}
+		else if (val == "rs") {
+			return "relay";
+		}}).pipe(z.enum(["flat", "relay"], {
+		errorMap: () => ({
+			message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
+		})
+	})),
+	z.string().trim().min(1, "Time is required")
+]);
+	
+
+
+export type Time = z.infer<typeof timeSchema>;
+export type Swimmer = z.infer<typeof swimmerSchema>;
+export type Meet = z.infer<typeof meetSchema>;
+export type Record = z.infer<typeof recordSchema>;
 
 
 export function formatEventLabel(event: Event): String{
@@ -114,11 +179,3 @@ export function findEventFromLabel(event: any): Event | null {
 }
 
 
-export interface GoogleAuthObject {
-	credential: string;	
-}
-export function assertIsGoogleAuthObject(obj: any): asserts obj is GoogleAuthObject {
-	if (obj == null) { throw new Error("Object is null or undefined"); }
-	if (typeof obj !== "object") { throw new Error("Object is not of type object"); }
-	if (typeof obj.credential !== "string") { throw new Error("credential is not a string"); }
-}

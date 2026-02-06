@@ -3,14 +3,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/AdminPage"; // your AdminPage component
 import { formatDate } from "./lib/utils";
-import { timesSchema, timeSchema, meetSchema, meetsSchema } from "./lib/defs";
+import { timesSchema, meetsSchema , Time, Meet} from "./lib/defs";
 import { z, ZodError } from "zod";
 import * as Errors from "./lib/errors";
 import { ResultAsync, okAsync, errAsync } from "neverthrow";
 import { ErrorRes } from "./lib/errors";
 
-type Time = z.infer<typeof timeSchema>;
-type Meet = z.infer<typeof meetSchema>;
 
 function zodErrorToHumanReadable(err: ZodError): string {
 	return err.issues
@@ -87,6 +85,7 @@ function Home() {
 					>
 						<strong>
 							{r.name} | {r.location} | {formatDate(r.date)}
+
 						</strong>
 					</li>
 				))}

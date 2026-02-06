@@ -42,3 +42,9 @@ export class InternalDatabase extends ErrorRes {
 		super(message, "InternalDatabaseError", 520);
 	}
 }
+
+export class FileReadError extends ErrorRes {
+	constructor(message: string) {
+		super(message, "FileReadError", 500);
+	}
+}
