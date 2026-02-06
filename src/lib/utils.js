@@ -57,7 +57,7 @@ export function getResponseJSON(response, errFunc = (e) => new Errors.MalformedR
 }
 export function getResponseJSONAndParse(response, schema, errFunc = (e) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`)) {
     return getResponseJSON(response, errFunc).andThen((res) => {
-        console.log("Raw JSON response:", res);
+        console.log("Raw JSON response:", JSON.stringify(res));
         return zodParseWith(schema, errFunc)(res);
     });
 }
