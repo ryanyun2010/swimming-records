@@ -83,7 +83,7 @@ export const recordsCSVSchemaNonRelay =	z.tuple([
 	z.string().trim().min(1, "Meet name is required"),
 	z.string().trim().min(1, "Event name is required"),
 	z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
-		error: () => ({ message: "Type must be 'individual' or 'relay'" })
+		errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
 	})),
 	z.string().trim().toLowerCase().transform((val) => {
 		if (val == "fs") {
@@ -92,7 +92,7 @@ export const recordsCSVSchemaNonRelay =	z.tuple([
 		else if (val == "rs") {
 			return "relay";
 		}}).pipe(z.enum(["flat", "relay"], {
-		error: () => ({
+		errorMap: () => ({
 			message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
 		})
 	})),
@@ -114,11 +114,11 @@ export const recordsCSVSchemaRelay = z.tuple([
 			return "400_fr";
 		}
 	}).pipe(z.enum(["200_mr", "200_fr", "400_fr"], {
-		error: () => ({ message: "Relay type must be '200 MR', '200 FR', or '400 FR' or equivalents" })
+		errorMap: () => ({ message: "Relay type must be '200 MR', '200 FR', or '400 FR' or equivalents" })
 	}))
 	,
 	z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
-		error: () => ({ message: "Type must be 'individual' or 'relay'" })
+		errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
 	})),
 	z.string().trim().toLowerCase().transform((val) => {
 		if (val == "fs") {
@@ -127,7 +127,7 @@ export const recordsCSVSchemaRelay = z.tuple([
 		else if (val == "rs") {
 			return "relay";
 		}}).pipe(z.enum(["flat", "relay"], {
-		error: () => ({
+		errorMap: () => ({
 			message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
 		})
 	})),
