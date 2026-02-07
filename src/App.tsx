@@ -21,6 +21,7 @@ function Home() {
 
 	const [curMeetInfo, setCurMeetInfo] = useState<Meet | null>(null);
 	const [curSwimmerInfo, setCurSwimmerInfo] = useState<Swimmer | null>(null);
+	const [curRelayInfo, setCurRelayInfo] = useState<{swimmer_names: string[], date: number, event: string} | null>(null);
 
 	const [times, setTimes] = useState<Time[]>([]);
 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
@@ -92,10 +93,38 @@ function Home() {
 		if (searchParams.get("swimmer_id") != null && searchParams.get("swimmer_id")!.length > 0) {
 			setCurSwimmerInfo(swimmers.find((s) => s.id == parseInt(searchParams.get("swimmer_id")!)) ?? null);
 		} 
-	}, [searchParams, swimmers, meets]);
+
+		if (searchParams.get("relay_id") != null && searchParams.get("relay_id")!.length > 0) {
+			const relay = relays.find((r) => r.id == parseInt(searchParams.get("relay_id")!));
+			if (relay) {
+				const record1 = times.find((t) => t.id == relay.record_1_id);
+				const record2 = times.find((t) => t.id == relay.record_2_id);
+				const record3 = times.find((t) => t.id == relay.record_3_id);
+				const record4 = times.find((t) => t.id == relay.record_4_id);
+				const swimmer_names = [record1, record2, record3, record4].map((rec) => rec?.swimmer_name ?? "Unknown");
+				const date = record1?.meet_date ?? Date.now();
+				const event = relay.relay_type == "200_mr" ? "200 Medley Relay" : relay.relay_type == "200_fr" ? "200 Freestyle Relay" : "400 Freestyle Relay";
+				setCurRelayInfo({ swimmer_names, date ,event});
+			} else {
+				setCurRelayInfo(null);
+			}
+		}
+
+	}, [searchParams, swimmers, meets, relays]);
 
 	useEffect(() => {
-		if (curMeetInfo != null && curSwimmerInfo == null) {
+		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
+			const relevantRelays = relays.filter((r) => {
+				const record1 = times.find((t) => t.id == r.record_1_id);
+				const record2 = times.find((t) => t.id == r.record_2_id);
+				const record3 = times.find((t) => t.id == r.record_3_id);
+				const record4 = times.find((t) => t.id == r.record_4_id);
+				return [record1, record2, record3, record4].some((rec) => rec?.meet_date == curRelayInfo.date && formatEventLabel(rec.event) == curRelayInfo.event);
+			});
+			setCurrentRelays(relevantRelays);
+			const relayRecordIds = relevantRelays.flatMap((r) => [r.record_1_id, r.record_2_id, r.record_3_id, r.record_4_id]);
+			setCurrentTimes(times.filter((t) => relayRecordIds.includes(t.id)));
+		} else if (curMeetInfo != null && curSwimmerInfo == null) {
 			setCurrentTimes(times.filter((t) => t.meet_id == curMeetInfo.id));
 			setCurrentRelays(relays.filter((r) => {
 				const record1 = times.find((t) => t.id == r.record_1_id);
@@ -126,10 +155,13 @@ function Home() {
 			setCurrentTimes([]);
 			setCurrentRelays([]);
 		}
-	}, [curMeetInfo, curSwimmerInfo, times, relays]);
+	}, [curMeetInfo, curSwimmerInfo, times, relays, curRelayInfo]);
 
 	function renderHeader() {
-		if (curMeetInfo != null && curSwimmerInfo == null) {
+		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
+			return <h2>Results for Relay: {curRelayInfo.event} | {curRelayInfo.swimmer_names.join(", ")} | {formatDate(curRelayInfo.date)}</h2>
+		}
+		else if (curMeetInfo != null && curSwimmerInfo == null) {
 			return <h2>Results for Meet: {curMeetInfo.name} | {curMeetInfo.location} | {formatDate(curMeetInfo.date)}</h2>
 		} else if (curSwimmerInfo != null && curMeetInfo == null) {
 			return <h2>Results for Swimmer: {curSwimmerInfo.name} '{curSwimmerInfo.graduating_year % 100}</h2>
@@ -139,9 +171,13 @@ function Home() {
 			return <h2>Invalid search params</h2>
 		}
 	}
+	function getRelayID(record_id: number): number | null {
+		const relay = relays.find((r) => r.record_1_id == record_id || r.record_2_id == record_id || r.record_3_id == record_id || r.record_4_id == record_id);
+		return relay ? relay.id : null;
+	}
 
 	
-	if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null) {
+	if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null && searchParams.get("relay_id") == null) {
 		return (
 			<div className="app-shell">
 				<div className="app-inner">
@@ -223,7 +259,7 @@ function Home() {
 										<span className="tag tag-event">{formatEventLabel(r.event)}</span>
 										<div className="tag-row">
 											{(r.type == "relay") ? (
-												<span className="tag tag-meta">{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+												<span className="tag tag-meta" onClick={() => setSearchParams({relay_id: (getRelayID(r.id) ?? "").toString()})}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
 											) : (
 												<span className="tag tag-meta">Individual</span>
 											)}
