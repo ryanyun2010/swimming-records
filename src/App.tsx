@@ -21,7 +21,7 @@ function Home() {
 
 	const [curMeetInfo, setCurMeetInfo] = useState<Meet | null>(null);
 	const [curSwimmerInfo, setCurSwimmerInfo] = useState<Swimmer | null>(null);
-	const [curRelayInfo, setCurRelayInfo] = useState<{swimmer_names: string[], date: number, event: string} | null>(null);
+	const [curRelayInfo, setCurRelayInfo] = useState<{id: number, swimmer_names: string[], date: number, event: string} | null>(null);
 
 	const [times, setTimes] = useState<Time[]>([]);
 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
@@ -86,6 +86,7 @@ function Home() {
 	useEffect(() => {
 		setCurMeetInfo(null);
 		setCurSwimmerInfo(null);
+		setCurRelayInfo(null);
 		if (searchParams.get("meet_id") != null && searchParams.get("meet_id")!.length > 0) {
 			setCurMeetInfo(meets.find((m) => m.id == parseInt(searchParams.get("meet_id")!)) ?? null);
 		} 
@@ -95,7 +96,8 @@ function Home() {
 		} 
 
 		if (searchParams.get("relay_id") != null && searchParams.get("relay_id")!.length > 0) {
-			const relay = relays.find((r) => r.id == parseInt(searchParams.get("relay_id")!));
+			let id = parseInt(searchParams.get("relay_id")!);
+			const relay = relays.find((r) => r.id == id);
 			if (relay) {
 				const record1 = times.find((t) => t.id == relay.record_1_id);
 				const record2 = times.find((t) => t.id == relay.record_2_id);
@@ -104,26 +106,26 @@ function Home() {
 				const swimmer_names = [record1, record2, record3, record4].map((rec) => rec?.swimmer_name ?? "Unknown");
 				const date = record1?.meet_date ?? Date.now();
 				const event = relay.relay_type == "200_mr" ? "200 Medley Relay" : relay.relay_type == "200_fr" ? "200 Freestyle Relay" : "400 Freestyle Relay";
-				setCurRelayInfo({ swimmer_names, date ,event});
-			} else {
-				setCurRelayInfo(null);
-			}
+				setCurRelayInfo({id, swimmer_names, date ,event});
+			} 
 		}
 
 	}, [searchParams, swimmers, meets, relays]);
 
 	useEffect(() => {
 		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
-			const relevantRelays = relays.filter((r) => {
-				const record1 = times.find((t) => t.id == r.record_1_id);
-				const record2 = times.find((t) => t.id == r.record_2_id);
-				const record3 = times.find((t) => t.id == r.record_3_id);
-				const record4 = times.find((t) => t.id == r.record_4_id);
-				return [record1, record2, record3, record4].some((rec) => rec?.meet_date == curRelayInfo.date && formatEventLabel(rec.event) == curRelayInfo.event);
-			});
-			setCurrentRelays(relevantRelays);
-			const relayRecordIds = relevantRelays.flatMap((r) => [r.record_1_id, r.record_2_id, r.record_3_id, r.record_4_id]);
-			setCurrentTimes(times.filter((t) => relayRecordIds.includes(t.id)));
+			const relay = relays.find((r) => r.id == curRelayInfo.id);
+			if (relay) {
+				const record1 = times.find((t) => t.id == relay.record_1_id);
+				const record2 = times.find((t) => t.id == relay.record_2_id);
+				const record3 = times.find((t) => t.id == relay.record_3_id);
+				const record4 = times.find((t) => t.id == relay.record_4_id);
+				setCurrentTimes([record1, record2, record3, record4].filter((t): t is Time => t !== undefined));
+				setCurrentRelays(relays.filter((r) => r.id == curRelayInfo.id));
+			} else {
+				setCurrentTimes([]);
+				setCurrentRelays([]);
+			}
 		} else if (curMeetInfo != null && curSwimmerInfo == null) {
 			setCurrentTimes(times.filter((t) => t.meet_id == curMeetInfo.id));
 			setCurrentRelays(relays.filter((r) => {
@@ -259,7 +261,7 @@ function Home() {
 										<span className="tag tag-event">{formatEventLabel(r.event)}</span>
 										<div className="tag-row">
 											{(r.type == "relay") ? (
-												<span className="tag tag-meta" onClick={() => setSearchParams({relay_id: (getRelayID(r.id) ?? "").toString()})}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+												<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: (getRelayID(r.id) ?? "").toString()})}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
 											) : (
 												<span className="tag tag-meta">Individual</span>
 											)}
