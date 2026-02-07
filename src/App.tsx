@@ -326,7 +326,7 @@ function Home() {
 											{(r.relay_type == "200_mr") ? "200 Medley Relay" : (r.relay_type == "200_fr") ? "200 Freestyle Relay" : "400 Freestyle Relay"}
 										</span>
 										<div className="tag-row">
-											<span className="tag tag-meta">Relay</span>
+											<span className="tag tag-meta" style={{cursor: "pointer"}} onClick={ () => setSearchParams({relay_id: r.id.toString()}) }>Relay</span>
 										</div>
 										</div>
 										<div className="time">{formatTime(r.time)}</div>
