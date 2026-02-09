@@ -321,17 +321,9 @@ export default function AdminPage() {
 						}
 					}
 				}
-				return okAsync([] as string[][]);
+				return okAsync(final_rows);
 			}
-		).match(
-			(_) => {},
-			(err) => {
-				alert(`Failed to parse CSV, see console for details.`);
-				console.error("Failed to parse CSV: " + JSON.stringify(err));
-			}
-		);
-
-		console.log("Final parsed rows: " + JSON.stringify(final_rows));
+		).andThen((final_rows) => 
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
 			method: "POST",
 			headers: {
@@ -340,6 +332,7 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		}), (error) => new Errors.NoResponse("No response from server: " + JSON.stringify(error)))
+				 )
 		.andThen((res) => {
 			if (!res.ok) {
 				return errAsync(new Errors.Unauthorized("Could not upload record: " + JSON.stringify(res)));
