@@ -306,6 +306,11 @@ function Home() {
 		const relay = Object.values(relays).find((r) => r.record_1_id == record_id || r.record_2_id == record_id || r.record_3_id == record_id || r.record_4_id == record_id);
 		return relay ? relay.id : null;
 	}
+	function formatChange(change: number | null | undefined): string {
+		if (change === null || change === undefined) return "";
+		const sign = change < 0 ? "-" : "+";
+		return `${sign}${formatTime(Math.abs(change))}`;
+	}
 
 	
 	if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null && searchParams.get("relay_id") == null) {
@@ -378,6 +383,8 @@ function Home() {
 							const isSchoolRecordFirst = r.current_SR?.change === null;
 							const isPersonalRecord = r.current_PR != null && r.current_PR.change !== null;
 							const isFirstTimeSwim = r.current_PR?.change === null;
+							const srDelta = formatChange(r.current_SR?.change);
+							const prDelta = formatChange(r.current_PR?.change);
 							return (
 								<li
 								key={r.id}
@@ -400,9 +407,9 @@ function Home() {
 													<span className="tag tag-meta">Individual</span>
 												)}
 												{isSchoolRecord ? (
-													isSchoolRecordFirst ? <span className="tag tag-sr-first">School Record: First Time</span> : <span className="tag tag-sr">School Record</span>
+													isSchoolRecordFirst ? <span className="tag tag-sr-first">School Record: First Time</span> : <span className="tag tag-sr">School Record {srDelta}</span>
 												) : null}
-												{isPersonalRecord ? <span className="tag tag-pr">PR</span> : null}
+												{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
 												{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
 											</div>
 										</div>
