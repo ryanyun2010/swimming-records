@@ -143,7 +143,7 @@ export type Record = z.infer<typeof recordSchema>;
 export type Relay = z.infer<typeof relaySchema>;
 
 
-export function formatEventLabel(event: Event): String{
+export function formatEventLabel(event: string): String{
 	for (const evt of EVENTS) {
 		if (evt.value == event) {
 			return evt.label;

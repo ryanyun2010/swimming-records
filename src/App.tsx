@@ -10,25 +10,42 @@ import * as Errors from "./lib/errors";
 import { ResultAsync, okAsync, errAsync } from "neverthrow";
 import { ErrorRes } from "./lib/errors";
 
-
+interface ParsedTime {
+	id: number,
+	swimmer_id: number,
+	meet_id: number,
+	event: string,
+	type: string,
+	time: number,
+	start: string,
+	meet_name: string,
+	meet_date: number,
+	meet_location: string,
+	swimmer_name: string,
+	swimmer_year: number,
+	current_PR: {change: number | null} | null,
+	current_SR: {change: number | null} | null,
+	previous_PR: {change: number | null, til: number}[] | null,
+	previous_SR: {change: number | null, til: number}[] | null
+}
 
 
 function Home() {
 	const [recentMeets, setRecentMeets] = useState<Meet[]>([]);
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [currentTimes, setCurrentTimes] = useState<Time[]>([]);
+	const [currentTimes, setCurrentTimes] = useState<ParsedTime[]>([]);
 	const [currentRelays, setCurrentRelays] = useState<Relay[]>([]);
 
 	const [curMeetInfo, setCurMeetInfo] = useState<Meet | null>(null);
 	const [curSwimmerInfo, setCurSwimmerInfo] = useState<Swimmer | null>(null);
 	const [curRelayInfo, setCurRelayInfo] = useState<{id: number, swimmer_names: string[], date: number, event: string} | null>(null);
 
-	const [times, setTimes] = useState<Time[]>([]);
-	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
-	const [meets, setMeets] = useState<Meet[]>([]);
-	const [relays, setRelays] = useState<Relay[]>([]);
+	const [rawTimes, setRawTimes] = useState<Record<number, Time>>([]);
+	const [swimmers, setSwimmers] = useState<Record<number,Swimmer>>([]);
+	const [meets, setMeets] = useState<Record<number,Meet>>([]);
+	const [relays, setRelays] = useState<Record<number, Relay>>([]);
 
-
+	const [parsedTimes, setParsedTimes] = useState<Record<number,ParsedTime>>({});
 
 
 
@@ -37,7 +54,10 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, swimmersSchema, (e) => new Errors.MalformedResponse(`Failed to parse swimmers response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data);
+				setSwimmers(data.reduce((acc: Record<number, Swimmer>, swimmer: Swimmer) => {;
+					acc[swimmer.id] = swimmer;
+					return acc;
+				}, {}));
 			},
 			(err) => {
 				console.error("Failed to load swimmers:", err);
@@ -49,7 +69,10 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, timesSchema, (e) => new Errors.MalformedResponse(`Failed to parse records response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setTimes(data);
+				setRawTimes(data.reduce((acc: Record<number, Time>, time: Time) => {
+					acc[time.id] = time;
+					return acc;
+				}, {}));
 			},
 			(err) => {
 				console.error("Failed to load records:", err);
@@ -61,7 +84,10 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse meets response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setMeets(data);
+				setMeets(data.reduce((acc: Record<number, Meet>, meet: Meet) => {
+					acc[meet.id] = meet;
+					return acc;
+				}, {}));
 				setRecentMeets(data.sort((a: Meet, b: Meet) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5));
 			},
 			(err) => {
@@ -74,7 +100,10 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, z.array(relaySchema), (e) => new Errors.MalformedResponse(`Failed to parse relays response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setRelays(data);
+				setRelays(data.reduce((acc: Record<number, Relay>, relay: Relay) => {
+					acc[relay.id] = relay;
+					return acc;
+				}, {}));
 			},
 			(err) => {
 				console.error("Failed to load relays:", err);
@@ -83,26 +112,125 @@ function Home() {
 		);
 
 	}, []);
+
+	useEffect(() => {
+		let parsedTimes = Object.values(rawTimes).reduce((acc: Record<number, ParsedTime>, time: Time) => {
+			acc[time.id] = {
+				...time,
+				current_PR: null,
+				current_SR: null,
+				previous_PR: null,
+				previous_SR: null
+			}
+			return acc;
+		},{});
+
+
+		let byEvent: Record<string, {date: number, record_id: number, time: number}[]>  = {};
+		let byPersonByEvent: Record<string, Record<string,{date: number,record_id: number, time: number}[]>>  = {};
+		for (let entry of Object.entries(rawTimes)) {
+			const time = entry[1];
+			let evt_identifier = time.event + "|" + time.type + (time.start == "relay") ? "|relay": "";
+
+			byEvent[evt_identifier] = [...(byEvent[evt_identifier] ?? []), {date: time.meet_date, record_id: time.id, time: time.time}];
+			if (!byPersonByEvent[time.swimmer_name]) {
+				byPersonByEvent[time.swimmer_name] = {};
+			}
+			byPersonByEvent[time.swimmer_name][evt_identifier] = [...(byPersonByEvent[time.swimmer_name][evt_identifier] ?? []), {date: time.meet_date, record_id: time.id, time: time.time}];
+
+		}
+
+		for (let event of Object.entries(byEvent)) {
+			const times = [...event[1]].sort((a: {date: number, record_id: number, time: number}, b: {date: number, record_id: number, time:number}) => a.date - b.date);
+			let cur_best = null;
+			let potential_SRs = [];
+			for (let time of times) {
+				if (cur_best == null || time.time < cur_best.time) {
+					cur_best = time;
+					potential_SRs.push(time);
+				}
+			}
+			if (!cur_best) {
+				continue;
+			}
+			if (cur_best.record_id in parsedTimes) {
+				if (potential_SRs.length > 1) {
+					parsedTimes[cur_best.record_id].current_SR = {change: cur_best.time - potential_SRs[potential_SRs.length - 2].time};
+				} else { 
+					parsedTimes[cur_best.record_id].current_SR = {change: null};
+				}
+			}
+			for (let i = 0; i < potential_SRs.length -1; i++) {
+				let time = potential_SRs[i];
+				if (time.record_id in parsedTimes) {
+					if (i > 0) {
+						parsedTimes[time.record_id].previous_SR = [...(parsedTimes[time.record_id].previous_SR ?? []), {change: time.time - potential_SRs[i-1].time, til: potential_SRs[i+1].date}]; 
+					} else {
+						parsedTimes[time.record_id].previous_SR = [...(parsedTimes[time.record_id].previous_SR ?? []), {change: null, til: potential_SRs[i+1].date}]; 
+					}
+				}
+			}
+		}
+
+		for (let swimmer of Object.entries(byPersonByEvent)) {
+			const byEventStore = swimmer[1];
+			for (let event of Object.entries(byEventStore)) {
+				const times = [...event[1]].sort((a: {date: number, record_id: number, time: number}, b: {date: number, record_id: number, time:number}) => a.date - b.date);
+				let cur_best = null;
+				let potential_PRs = [];
+				for (let time of times) {
+					if (cur_best == null || time.time < cur_best.time) {
+						cur_best = time;
+						potential_PRs.push(time);
+					}
+				}
+				if (!cur_best) {
+					continue;
+				}
+				if (cur_best.record_id in parsedTimes) {
+					if (potential_PRs.length > 1) {
+						parsedTimes[cur_best.record_id].current_PR = {change: cur_best.time - potential_PRs[potential_PRs.length - 2].time};
+					} else { 
+						parsedTimes[cur_best.record_id].current_PR = {change: null};
+					}
+				}
+				for (let i = 0; i < potential_PRs.length -1; i++) {
+					let time = potential_PRs[i];
+					if (time.record_id in parsedTimes) {
+						if (i > 0) {
+							parsedTimes[time.record_id].previous_PR = [...(parsedTimes[time.record_id].previous_PR ?? []), {change: time.time - potential_PRs[i-1].time, til: potential_PRs[i+1].date}]; 
+						} else {
+							parsedTimes[time.record_id].previous_PR = [...(parsedTimes[time.record_id].previous_PR ?? []), {change: null, til: potential_PRs[i+1].date}]; 
+						}
+					}
+				}
+			}
+		}
+		setParsedTimes(parsedTimes);
+		
+	}, [rawTimes, swimmers, meets, relays]);
+
 	useEffect(() => {
 		setCurMeetInfo(null);
 		setCurSwimmerInfo(null);
 		setCurRelayInfo(null);
 		if (searchParams.get("meet_id") != null && searchParams.get("meet_id")!.length > 0) {
-			setCurMeetInfo(meets.find((m) => m.id == parseInt(searchParams.get("meet_id")!)) ?? null);
+			setCurMeetInfo(meets[parseInt(searchParams.get("meet_id")!)] ?? null);
 		} 
 
 		if (searchParams.get("swimmer_id") != null && searchParams.get("swimmer_id")!.length > 0) {
-			setCurSwimmerInfo(swimmers.find((s) => s.id == parseInt(searchParams.get("swimmer_id")!)) ?? null);
+			setCurSwimmerInfo(swimmers[parseInt(searchParams.get("swimmer_id")!)] ?? null);
 		} 
 
 		if (searchParams.get("relay_id") != null && searchParams.get("relay_id")!.length > 0) {
+
 			let id = parseInt(searchParams.get("relay_id")!);
-			const relay = relays.find((r) => r.id == id);
+			const relay = relays[id] ?? null;
 			if (relay) {
-				const record1 = times.find((t) => t.id == relay.record_1_id);
-				const record2 = times.find((t) => t.id == relay.record_2_id);
-				const record3 = times.find((t) => t.id == relay.record_3_id);
-				const record4 = times.find((t) => t.id == relay.record_4_id);
+				const record1 = parsedTimes[relay.record_1_id];
+				const record2 = parsedTimes[relay.record_2_id];
+				const record3 = parsedTimes[relay.record_3_id];
+				const record4 = parsedTimes[relay.record_4_id];
 				const swimmer_names = [record1, record2, record3, record4].map((rec) => rec?.swimmer_name ?? "Unknown");
 				const date = record1?.meet_date ?? Date.now();
 				const event = relay.relay_type == "200_mr" ? "200 Medley Relay" : relay.relay_type == "200_fr" ? "200 Freestyle Relay" : "400 Freestyle Relay";
@@ -114,50 +242,51 @@ function Home() {
 
 	useEffect(() => {
 		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
-			const relay = relays.find((r) => r.id == curRelayInfo.id);
+			const relay = relays[curRelayInfo.id] ?? null;
 			if (relay) {
-				const record1 = times.find((t) => t.id == relay.record_1_id);
-				const record2 = times.find((t) => t.id == relay.record_2_id);
-				const record3 = times.find((t) => t.id == relay.record_3_id);
-				const record4 = times.find((t) => t.id == relay.record_4_id);
-				setCurrentTimes([record1, record2, record3, record4].filter((t): t is Time => t !== undefined));
-				setCurrentRelays(relays.filter((r) => r.id == curRelayInfo.id));
+				const record1 = parsedTimes[relay.record_1_id];
+				const record2 = parsedTimes[relay.record_2_id];
+				const record3 = parsedTimes[relay.record_3_id];
+				const record4 = parsedTimes[relay.record_4_id];
+				setCurrentTimes([record1, record2, record3, record4].filter((t): t is ParsedTime => t !== undefined));
+				setCurrentRelays(relays[curRelayInfo.id] ? [relays[curRelayInfo.id]] : []);
 			} else {
 				setCurrentTimes([]);
 				setCurrentRelays([]);
 			}
 		} else if (curMeetInfo != null && curSwimmerInfo == null) {
-			setCurrentTimes(times.filter((t) => t.meet_id == curMeetInfo.id));
-			setCurrentRelays(relays.filter((r) => {
-				const record1 = times.find((t) => t.id == r.record_1_id);
-				const record2 = times.find((t) => t.id == r.record_2_id);
-				const record3 = times.find((t) => t.id == r.record_3_id);
-				const record4 = times.find((t) => t.id == r.record_4_id);
+			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.meet_id == curMeetInfo.id));
+			setCurrentRelays(Object.values(relays).filter((r) => {
+				const record1 = parsedTimes[r.record_1_id];
+				const record2 = parsedTimes[r.record_2_id];
+				const record3 = parsedTimes[r.record_3_id];
+				const record4 = parsedTimes[r.record_4_id];
 				return [record1, record2, record3, record4].some((rec) => rec?.meet_id == curMeetInfo.id);
 			}));
 		} else if (curSwimmerInfo != null && curMeetInfo == null) {
-			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id));
-				setCurrentRelays(relays.filter((r) => {
-					const record1 = times.find((t) => t.id == r.record_1_id);
-					const record2 = times.find((t) => t.id == r.record_2_id);
-					const record3 = times.find((t) => t.id == r.record_3_id);
-					const record4 = times.find((t) => t.id == r.record_4_id);
-					return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id);
-				}));
+			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.swimmer_id == curSwimmerInfo.id));
+			setCurrentRelays(Object.values(relays).filter((r) => {
+				const record1 = parsedTimes[r.record_1_id];
+				const record2 = parsedTimes[r.record_2_id];
+				const record3 = parsedTimes[r.record_3_id];
+				const record4 = parsedTimes[r.record_4_id];
+				return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id);
+			}));
 		} else if (curSwimmerInfo != null && curMeetInfo != null) {
-			setCurrentTimes(times.filter((t) => t.swimmer_id == curSwimmerInfo.id && t.meet_id == curMeetInfo.id));
-			setCurrentRelays(relays.filter((r) => {
-				const record1 = times.find((t) => t.id == r.record_1_id);
-				const record2 = times.find((t) => t.id == r.record_2_id);
-				const record3 = times.find((t) => t.id == r.record_3_id);
-				const record4 = times.find((t) => t.id == r.record_4_id);
+			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.swimmer_id == curSwimmerInfo.id && t.meet_id == curMeetInfo.id));
+			setCurrentRelays(Object.values(relays).filter((r) => {
+				const record1 = parsedTimes[r.record_1_id];
+				const record2 = parsedTimes[r.record_2_id];
+				const record3 = parsedTimes[r.record_3_id];
+				const record4 = parsedTimes[r.record_4_id];
 				return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id && rec?.meet_id == curMeetInfo.id);
 			}));
 		} else {
 			setCurrentTimes([]);
 			setCurrentRelays([]);
 		}
-	}, [curMeetInfo, curSwimmerInfo, times, relays, curRelayInfo]);
+	}, [curMeetInfo, curSwimmerInfo, parsedTimes, relays, curRelayInfo]);
+
 
 	function renderHeader() {
 		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
@@ -174,7 +303,7 @@ function Home() {
 		}
 	}
 	function getRelayID(record_id: number): number | null {
-		const relay = relays.find((r) => r.record_1_id == record_id || r.record_2_id == record_id || r.record_3_id == record_id || r.record_4_id == record_id);
+		const relay = Object.values(relays).find((r) => r.record_1_id == record_id || r.record_2_id == record_id || r.record_3_id == record_id || r.record_4_id == record_id);
 		return relay ? relay.id : null;
 	}
 
@@ -275,10 +404,10 @@ function Home() {
 							</li>
 						))}
 						{currentRelays.map((r) => {
-							const record1 = times.find((t) => t.id == r.record_1_id);
-							const record2 = times.find((t) => t.id == r.record_2_id);
-							const record3 = times.find((t) => t.id == r.record_3_id);
-							const record4 = times.find((t) => t.id == r.record_4_id);
+							const record1 = parsedTimes[r.record_1_id];
+							const record2 = parsedTimes[r.record_2_id];
+							const record3 = parsedTimes[r.record_3_id];
+							const record4 = parsedTimes[r.record_4_id];
 								return (
 								<li
 								key={r.id}
