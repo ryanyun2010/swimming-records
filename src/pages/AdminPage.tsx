@@ -334,16 +334,8 @@ export default function AdminPage() {
 				return errAsync(new Errors.Unauthorized("Could not upload record: " + JSON.stringify(res)));
 			}
 			return okAsync(res);
-		})
-		.match(
-			(_) => {},
-			(err) => {
-				alert(`Failed to upload new records, see console for details.`);
-				console.error("Failed to upload new records: " + JSON.stringify(err));
-			}
-		);
-
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse("Failed to fetch records after upload, no response from server: " + JSON.stringify(e))).andThen((r) => getResponseJSONAndParse(r, recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg))).andThen(
+		}).andThen(() => ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse("Failed to fetch records after upload, no response from server: " + JSON.stringify(e))))
+			.andThen((r) => getResponseJSONAndParse(r, recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg))).andThen(
 			(records) => {
 				for (let relay of relays) {
 					let record_ids = [];
@@ -397,17 +389,15 @@ export default function AdminPage() {
 					}), (error) => new Errors.NoResponse("Failed to add relay, no response from server: " + JSON.stringify(error)))
 				}
 				return okAsync({});
-
-		}).match(
-			(_) => {
-				alert("Records succesfully added");
-			},
+		})
+		.match(
+			(_) => {alert("Successfully uploaded records");},
 			(err) => {
-				alert(`Failed to add relay records, see console for details.`);
-				console.error("Failed to add relay records: " + JSON.stringify(err));
+				alert(`Failed to upload new records, see console for details.`);
+				console.error("Failed to upload new records: " + JSON.stringify(err));
 			}
-		);
-		
+		)
+
 		e.target.reset();
 	};
 
