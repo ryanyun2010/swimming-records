@@ -372,7 +372,8 @@ export default function AdminPage() {
 					if (record_ids.length != 4 || record_ids.includes(undefined)) {
 						return errAsync(new Errors.MalformedResponse(`Failed to find record IDs for relay, did you not provide a relay split for one or more of the swimmers?: ${JSON.stringify(relay)}`));
 					}
-					return ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
+					let err = null;
+					ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
 						method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -386,7 +387,10 @@ export default function AdminPage() {
 						relay_type: relay.relay_type,
 						time: relay.time
 					})
-					}), (error) => new Errors.NoResponse("Failed to add relay, no response from server: " + JSON.stringify(error)))
+					}), (error) => new Errors.NoResponse("Failed to add relay, no response from server: " + JSON.stringify(error))).match( () => {} , (e) => {err = e;} );
+					if (err) {
+						return errAsync(new Errors.MalformedResponse(`Failed to add relay: ${JSON.stringify(relay)}, error: ${JSON.stringify(err)}`));
+					}
 				}
 				return okAsync({});
 		})
