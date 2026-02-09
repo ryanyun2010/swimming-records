@@ -307,7 +307,6 @@ export default function AdminPage() {
 						row_results.push(parseCSVRowAsNonRelay(row));
 					}
 				}
-				console.log("Parsed CSV data: " + JSON.stringify({final_rows, relays}));
 				return okAsync(final_rows);
 			}
 		).andThen(() => ResultAsync.combine(row_results))
@@ -317,6 +316,7 @@ export default function AdminPage() {
 		})
 		.andThen((relaysParsed) => {
 			relays = relaysParsed;
+			console.log("Parsed CSV data: " + JSON.stringify({final_rows, relays}));
 			return okAsync({});
 		}).andThen(() => 
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
