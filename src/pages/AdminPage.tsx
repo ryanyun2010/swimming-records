@@ -321,6 +321,7 @@ export default function AdminPage() {
 						}
 					}
 				}
+				console.log("Parsed CSV data: " + JSON.stringify({final_rows, relays}));
 				return okAsync(final_rows);
 			}
 		).andThen((final_rows) => 
