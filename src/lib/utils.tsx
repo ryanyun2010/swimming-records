@@ -63,7 +63,7 @@ export function zodParseWith<T>(
 	};
 }
 export function getResponseJSON(
-	response: any, 
+	response: Response, 
 	errFunc: (errMsg: string) => ErrorRes = (e: string) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`)
 ): ResultAsync<any, ErrorRes> {
 	return ResultAsync.fromPromise(
@@ -77,6 +77,9 @@ export function getResponseJSONAndParse(
 	schema: z.ZodSchema<any>,
 	errFunc: (errMsg: string) => ErrorRes = (e: string) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`),
 ): ResultAsync<any, ErrorRes> {
+	if (!(response instanceof Response)) {
+		return errAsync(errFunc(JSON.stringify("response not of type Response")));
+	}
 	return getResponseJSON(response, errFunc).andThen(
 		zodParseWith(schema, errFunc)
 	);
