@@ -287,6 +287,8 @@ export default function AdminPage() {
 
 		let final_rows: { swimmer_id: number, meet_id: number, event: string, type: string, start: string, time: number}[] = [];
 		let relays: { swimmer_ids: number[], meet_id: number, relay_type: string, time: number }[] = [];
+		let row_results: ResultAsync<any, ErrorRes>[] = [];
+		let relay_row_results: ResultAsync<any, ErrorRes>[] = [];
 		readCSV(file as File)
 		.andThen(
 			(read) => {
@@ -300,31 +302,23 @@ export default function AdminPage() {
 						return errAsync(new Errors.MalformedResponse(`Failed to parse CSV, Row has invalid number of columns: ${row}`));
 					}
 					else if (row.length == 9) {
-						let err = null;
-						parseCSVRowAsRelay(row)
-						.match(
-							(d) => {relays.push(d);},
-							(e) => {err = e;}
-						);
-						if (err != null) {
-							return errAsync(new Errors.MalformedResponse(`Failed to parse CSV relay row ${i}: ${JSON.stringify(err)}`));
-						}
+						relay_row_results.push(parseCSVRowAsRelay(row));
 					} else {
-						let err = null;
-						parseCSVRowAsNonRelay(row)
-						.match(
-							(d) => {final_rows.push(d);},
-							(e) => {err = e;}
-						);
-						if (err != null) {
-							return errAsync(new Errors.MalformedResponse(`Failed to parse CSV non-relay row ${i}: ${JSON.stringify(err)}`));
-						}
+						row_results.push(parseCSVRowAsNonRelay(row));
 					}
 				}
 				console.log("Parsed CSV data: " + JSON.stringify({final_rows, relays}));
 				return okAsync(final_rows);
 			}
-		).andThen((final_rows) => 
+		).andThen(() => ResultAsync.combine(row_results))
+		.andThen((rows) => {
+			final_rows = rows;
+			return ResultAsync.combine(relay_row_results);
+		})
+		.andThen((relaysParsed) => {
+			relays = relaysParsed;
+			return okAsync({});
+		}).andThen(() => 
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
 			method: "POST",
 			headers: {
@@ -333,7 +327,8 @@ export default function AdminPage() {
 			},
 			body: JSON.stringify(final_rows)
 		}), (error) => new Errors.NoResponse("No response from server: " + JSON.stringify(error)))
-				 )
+
+			)
 		.andThen((res) => {
 			if (!res.ok) {
 				return errAsync(new Errors.Unauthorized("Could not upload record: " + JSON.stringify(res)));
