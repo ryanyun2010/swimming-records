@@ -290,6 +290,7 @@ export default function AdminPage() {
 		readCSV(file as File)
 		.andThen(
 			(read) => {
+				console.log("Raw CSV data: " + JSON.stringify(read));
 				for (let i = 1; i < read.length; i++) {
 					const row = read[i];
 					if (row.length < 6) { 
