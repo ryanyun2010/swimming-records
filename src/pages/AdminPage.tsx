@@ -343,7 +343,7 @@ export default function AdminPage() {
 			}
 		);
 
-		getResponseJSONAndParse(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg)).andThen(
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse("Failed to fetch records after upload, no response from server: " + JSON.stringify(e))).andThen((r) => getResponseJSONAndParse(r, recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg))).andThen(
 			(records) => {
 				for (let relay of relays) {
 					let record_ids = [];
@@ -437,7 +437,7 @@ export default function AdminPage() {
 
 		e.target.reset();
 
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("Nno response from server: " + JSON.stringify(e)))
+		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("No response from server: " + JSON.stringify(e)))
 			.andThen((r) => getResponseJSONAndParse(r, swimmersSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse swimmers data returned from API: " + errMsg)))
 			.match(
 				(r) => {
