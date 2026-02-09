@@ -209,27 +209,27 @@
 }
 
 .tag-sr {
-	border-color: rgba(249, 115, 22, 0.7);
-	background: rgba(249, 115, 22, 0.2);
-	color: #F97316;
+	border-color: rgba(249, 115, 22, 0.95);
+	background: rgba(249, 115, 22, 0.32);
+	color: #C2410C;
 }
 
 .tag-sr-first {
-	border-color: rgba(249, 115, 22, 0.85);
-	background: rgba(249, 115, 22, 0.32);
-	color: #F97316;
+	border-color: rgba(249, 115, 22, 1);
+	background: rgba(249, 115, 22, 0.42);
+	color: #9A3412;
 }
 
 .tag-pr {
-	border-color: rgba(22, 163, 74, 0.6);
-	background: rgba(22, 163, 74, 0.18);
-	color: #16A34A;
+	border-color: rgba(22, 163, 74, 0.9);
+	background: rgba(22, 163, 74, 0.28);
+	color: #15803D;
 }
 
 .tag-fts {
-	border-color: rgba(250, 204, 21, 0.6);
-	background: rgba(250, 204, 21, 0.2);
-	color: #FACC15;
+	border-color: rgba(250, 204, 21, 0.95);
+	background: rgba(250, 204, 21, 0.32);
+	color: #A16207;
 }
 
 .time {

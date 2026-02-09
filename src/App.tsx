@@ -130,7 +130,7 @@ function Home() {
 		let byPersonByEvent: Record<string, Record<string,{date: number,record_id: number, time: number}[]>>  = {};
 		for (let entry of Object.entries(rawTimes)) {
 			const time = entry[1];
-			let evt_identifier = time.event + "|" + time.type + (time.start == "relay") ? "|relay": "";
+			let evt_identifier = time.event + ((time.type == "relay" && time.start == "relay") ? "|relay": "");
 
 			byEvent[evt_identifier] = [...(byEvent[evt_identifier] ?? []), {date: time.meet_date, record_id: time.id, time: time.time}];
 			if (!byPersonByEvent[time.swimmer_name]) {
@@ -144,9 +144,16 @@ function Home() {
 			const times = [...event[1]].sort((a: {date: number, record_id: number, time: number}, b: {date: number, record_id: number, time:number}) => a.date - b.date);
 			let cur_best = null;
 			let potential_SRs = [];
+
 			for (let time of times) {
 				if (cur_best == null || time.time < cur_best.time) {
 					cur_best = time;
+					if (potential_SRs.length > 0) {
+						if (potential_SRs[potential_SRs.length - 1].date == time.date) {
+							// if there are multiple times on the same day, only the best one can be a SR, so we pop any previous potentials from that day
+							potential_SRs.pop();
+						}
+					}
 					potential_SRs.push(time);
 				}
 			}
@@ -181,6 +188,12 @@ function Home() {
 				for (let time of times) {
 					if (cur_best == null || time.time < cur_best.time) {
 						cur_best = time;
+						if (potential_PRs.length > 0) {
+							if (potential_PRs[potential_PRs.length - 1].date == time.date) {
+								// if there are multiple times on the same day, only the best one can be a PR, so we pop any previous potentials from that day
+								potential_PRs.pop();
+							}
+						}
 						potential_PRs.push(time);
 					}
 				}
@@ -309,7 +322,8 @@ function Home() {
 	function formatChange(change: number | null | undefined): string {
 		if (change === null || change === undefined) return "";
 		const sign = change < 0 ? "-" : "+";
-		return `${sign}${formatTime(Math.abs(change))}`;
+		const seconds = Math.abs(change).toFixed(2);
+		return `${sign}${seconds}s`;
 	}
 
 	
