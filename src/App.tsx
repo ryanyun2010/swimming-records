@@ -25,8 +25,8 @@ interface ParsedTime {
 	swimmer_year: number,
 	current_PR: {change: number | null} | null,
 	current_SR: {change: number | null} | null,
-	previous_PR: {change: number | null, til: number}[] | null,
-	previous_SR: {change: number | null, til: number}[] | null
+	previous_PR: {change: number | null, til: number} | null,
+	previous_SR: {change: number | null, til: number} | null
 }
 
 
@@ -399,6 +399,8 @@ function Home() {
 							const isFirstTimeSwim = r.current_PR?.change === null;
 							const srDelta = formatChange(r.current_SR?.change);
 							const prDelta = formatChange(r.current_PR?.change);
+							const previousPR = r.previous_PR ?? [];
+							const previousSR = r.previous_SR ?? [];
 							return (
 								<li
 								key={r.id}
@@ -421,10 +423,20 @@ function Home() {
 													<span className="tag tag-meta">Individual</span>
 												)}
 												{isSchoolRecord ? (
-													isSchoolRecordFirst ? <span className="tag tag-sr-first">School Record: First Time</span> : <span className="tag tag-sr">School Record {srDelta}</span>
+													isSchoolRecordFirst ? <span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span> : <span className="tag tag-sr">SCHOOL RECORD {srDelta}</span>
 												) : null}
 												{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
 												{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
+												{previousPR.map((prev, idx) => (
+													prev.change === null
+														? <span key={`prev-pr-${idx}`} className="tag tag-fts">FTS</span>
+														: <span key={`prev-pr-${idx}`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(prev.change)}</span>
+												))}
+												{previousSR.map((prev, idx) => (
+													prev.change === null
+														? <span key={`prev-sr-${idx}`} className="tag tag-sr-first">PREVIOUS SCHOOL RECORD: FIRST TIME</span>
+														: <span key={`prev-sr-${idx}`} className="tag tag-sr-prev">PREVIOUS SCHOOL RECORD {formatChange(prev.change)}</span>
+												))}
 											</div>
 										</div>
 										<div className="time">{formatTime(r.time)}</div>

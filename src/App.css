@@ -232,6 +232,18 @@
 	color: #A16207;
 }
 
+.tag-pr-prev {
+	border-color: rgba(22, 163, 74, 0.6);
+	background: rgba(22, 163, 74, 0.16);
+	color: #166534;
+}
+
+.tag-sr-prev {
+	border-color: rgba(249, 115, 22, 0.7);
+	background: rgba(249, 115, 22, 0.2);
+	color: #9A3412;
+}
+
 .time {
 	font-weight: 700;
 	font-size: 1.4rem;
