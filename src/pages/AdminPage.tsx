@@ -16,8 +16,8 @@ export default function AdminPage() {
 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
 
 	const onLogin = (res: any) => {
-		return getResponseJSONAndParse(res, googleAuthResponseSchema, (errMsg) => new Errors.MalformedResponse("Google gave an invalid response: " + errMsg))
-		.map((res) => res.credential)
+		return okAsync(res)
+		.andThen((res) => res.credential ? okAsync(res.credential) : errAsync(new Errors.MalformedResponse("Google login response did not contain credential: " + JSON.stringify(res))))
 		.andThen((idToken) => {
 			setToken(idToken);
 			return ResultAsync.fromPromise(fetch(

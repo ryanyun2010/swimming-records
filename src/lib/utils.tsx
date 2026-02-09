@@ -78,7 +78,7 @@ export function getResponseJSONAndParse(
 	errFunc: (errMsg: string) => ErrorRes = (e: string) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`),
 ): ResultAsync<any, ErrorRes> {
 	if (!(response instanceof Response)) {
-		return errAsync(errFunc("response not of type Response, response was " + JSON.stringify(response)));
+		return errAsync(errFunc("response not of type Response"));
 	}
 	return getResponseJSON(response, errFunc).andThen(
 		zodParseWith(schema, errFunc)
