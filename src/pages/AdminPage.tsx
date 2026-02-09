@@ -330,6 +330,7 @@ export default function AdminPage() {
 			}
 		);
 
+		console.log("Final parsed rows: " + JSON.stringify(final_rows));
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
 			method: "POST",
 			headers: {
