@@ -171,9 +171,9 @@ function Home() {
 				let time = potential_SRs[i];
 				if (time.record_id in parsedTimes) {
 					if (i > 0) {
-						parsedTimes[time.record_id].previous_SR = [...(parsedTimes[time.record_id].previous_SR ?? []), {change: time.time - potential_SRs[i-1].time, til: potential_SRs[i+1].date}]; 
+						parsedTimes[time.record_id].previous_SR = {change: time.time - potential_SRs[i-1].time, til: potential_SRs[i+1].date}; 
 					} else {
-						parsedTimes[time.record_id].previous_SR = [...(parsedTimes[time.record_id].previous_SR ?? []), {change: null, til: potential_SRs[i+1].date}]; 
+						parsedTimes[time.record_id].previous_SR =  {change: null, til: potential_SRs[i+1].date}; 
 					}
 				}
 			}
@@ -211,9 +211,9 @@ function Home() {
 					let time = potential_PRs[i];
 					if (time.record_id in parsedTimes) {
 						if (i > 0) {
-							parsedTimes[time.record_id].previous_PR = [...(parsedTimes[time.record_id].previous_PR ?? []), {change: time.time - potential_PRs[i-1].time, til: potential_PRs[i+1].date}]; 
+							parsedTimes[time.record_id].previous_PR ={change: time.time - potential_PRs[i-1].time, til: potential_PRs[i+1].date}; 
 						} else {
-							parsedTimes[time.record_id].previous_PR = [...(parsedTimes[time.record_id].previous_PR ?? []), {change: null, til: potential_PRs[i+1].date}]; 
+							parsedTimes[time.record_id].previous_PR = {change: null, til: potential_PRs[i+1].date}; 
 						}
 					}
 				}
@@ -399,8 +399,8 @@ function Home() {
 							const isFirstTimeSwim = r.current_PR?.change === null;
 							const srDelta = formatChange(r.current_SR?.change);
 							const prDelta = formatChange(r.current_PR?.change);
-							const previousPR = r.previous_PR ?? [];
-							const previousSR = r.previous_SR ?? [];
+							const previousPR = r.previous_PR ?? null;
+							const previousSR = r.previous_SR ?? null;
 							return (
 								<li
 								key={r.id}
@@ -427,16 +427,18 @@ function Home() {
 												) : null}
 												{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
 												{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
-												{previousPR.map((prev, idx) => (
-													prev.change === null
-														? <span key={`prev-pr-${idx}`} className="tag tag-fts">FTS</span>
-														: <span key={`prev-pr-${idx}`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(prev.change)}</span>
-												))}
-												{previousSR.map((prev, idx) => (
-													prev.change === null
-														? <span key={`prev-sr-${idx}`} className="tag tag-sr-first">PREVIOUS SCHOOL RECORD: FIRST TIME</span>
-														: <span key={`prev-sr-${idx}`} className="tag tag-sr-prev">PREVIOUS SCHOOL RECORD {formatChange(prev.change)}</span>
-												))}
+												{
+													previousPR != null ?
+													(previousPR.change === null
+														? <span key={`prev-pr}`} className="tag tag-fts">FTS</span>
+														: <span key={`prev-pr`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(previousPR.change)}</span>) : null
+												}
+												{ previousSR != null ?
+													(previousSR.change === null
+														? <span key={`prev-sr`} className="tag tag-sr-first">PREVIOUS SCHOOL RECORD: FIRST TIME</span>
+														: <span key={`prev-sr`} className="tag tag-sr-prev">PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
+														</span>) : null
+												}
 											</div>
 										</div>
 										<div className="time">{formatTime(r.time)}</div>
