@@ -373,36 +373,47 @@ function Home() {
 							<h2 className="section-title">Event Results</h2>
 						</div>
 						<ul className="card-list">
-						{currentTimes.map((r) => (
-							<li
-							key={r.id}
-							className="accent-card result-card"
-							>
-								<div className="result-row">
-									<div className="name-line">
-										<span
-											onClick={() => setSearchParams({ swimmer_id: r.swimmer_id.toString() })}
-											className="name-link"
-										>
-											{r.swimmer_name} '{r.swimmer_year % 100}
-										</span>
-										<span className="divider-dot">•</span>
-										<span className="tag tag-event">{formatEventLabel(r.event)}</span>
-										<div className="tag-row">
-											{(r.type == "relay") ? (
-												<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: (getRelayID(r.id) ?? "").toString()})}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
-											) : (
-												<span className="tag tag-meta">Individual</span>
-											)}
+						{currentTimes.map((r) => {
+							const isSchoolRecord = r.current_SR != null;
+							const isSchoolRecordFirst = r.current_SR?.change === null;
+							const isPersonalRecord = r.current_PR != null && r.current_PR.change !== null;
+							const isFirstTimeSwim = r.current_PR?.change === null;
+							return (
+								<li
+								key={r.id}
+								className="accent-card result-card"
+								>
+									<div className="result-row">
+										<div className="name-line">
+											<span
+												onClick={() => setSearchParams({ swimmer_id: r.swimmer_id.toString() })}
+												className="name-link"
+											>
+												{r.swimmer_name} '{r.swimmer_year % 100}
+											</span>
+											<span className="divider-dot">•</span>
+											<span className="tag tag-event">{formatEventLabel(r.event)}</span>
+											<div className="tag-row">
+												{(r.type == "relay") ? (
+													<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: (getRelayID(r.id) ?? "").toString()})}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+												) : (
+													<span className="tag tag-meta">Individual</span>
+												)}
+												{isSchoolRecord ? (
+													isSchoolRecordFirst ? <span className="tag tag-sr-first">School Record: First Time</span> : <span className="tag tag-sr">School Record</span>
+												) : null}
+												{isPersonalRecord ? <span className="tag tag-pr">PR</span> : null}
+												{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
+											</div>
 										</div>
+										<div className="time">{formatTime(r.time)}</div>
 									</div>
-									<div className="time">{formatTime(r.time)}</div>
-								</div>
-								<div className="meta-line">
-									{r.meet_name} · {formatDate(r.meet_date)} · {r.meet_location}
-								</div>
-							</li>
-						))}
+									<div className="meta-line">
+										{r.meet_name} · {formatDate(r.meet_date)} · {r.meet_location}
+									</div>
+								</li>
+							);
+						})}
 						{currentRelays.map((r) => {
 							const record1 = parsedTimes[r.record_1_id];
 							const record2 = parsedTimes[r.record_2_id];
