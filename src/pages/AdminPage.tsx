@@ -531,7 +531,7 @@ export default function AdminPage() {
 							required
 						/>
 
-						<button className = "back-button">Add Record</button>
+						<button className = "back_button">Add Record</button>
 					</form>
 					<h2>Add Records</h2>
 					<form onSubmit={addRecordsBulk}>
@@ -542,7 +542,7 @@ export default function AdminPage() {
 							type="file"
 						/>
 
-						<button className = "back-button">Add Records</button>
+						<button className = "back_button">Add Records</button>
 					</form>
 				</>
 			)}
