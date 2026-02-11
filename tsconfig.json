@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 	"jsx": "react-jsx",
-	"isolatedModules": true
+	"isolatedModules": false
   },
   "include": ["src/**/*"]
 }

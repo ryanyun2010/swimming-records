@@ -469,7 +469,7 @@ export default function AdminPage() {
 							step="1"
 							required
 						/>
-						<button>Add Swimmer</button>
+						<button className="back_button">Add Swimmer</button>
 					</form>
 					<h2>Add Meet</h2>
 					<form onSubmit={addMeet}>
@@ -480,7 +480,7 @@ export default function AdminPage() {
 							required
 						/>
 						<input name="date" type="date" required />
-						<button>Add Meet</button>
+						<button className="back_button">Add Meet</button>
 					</form>
 
 					<h2>Add Record</h2>
@@ -531,7 +531,7 @@ export default function AdminPage() {
 							required
 						/>
 
-						<button>Add Record</button>
+						<button className = "back-button">Add Record</button>
 					</form>
 					<h2>Add Records</h2>
 					<form onSubmit={addRecordsBulk}>
@@ -542,7 +542,7 @@ export default function AdminPage() {
 							type="file"
 						/>
 
-						<button>Add Records</button>
+						<button className = "back-button">Add Records</button>
 					</form>
 				</>
 			)}

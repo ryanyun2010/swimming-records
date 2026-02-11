@@ -56,8 +56,5 @@ export function getResponseJSON(response, errFunc = (e) => new Errors.MalformedR
     return ResultAsync.fromPromise(response.json(), (e) => errFunc(JSON.stringify(e)));
 }
 export function getResponseJSONAndParse(response, schema, errFunc = (e) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`)) {
-    return getResponseJSON(response, errFunc).andThen((res) => {
-        console.log("Raw JSON response:", JSON.stringify(res));
-        return zodParseWith(schema, errFunc)(res);
-    });
+    return getResponseJSON(response, errFunc).andThen(zodParseWith(schema, errFunc));
 }

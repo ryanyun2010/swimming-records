@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { readCSV, getResponseJSONAndParse, zodParseWith } from "../lib/utils";
-import { swimmersSchema, meetsSchema, findEventFromLabel, EVENTS, googleAuthResponseSchema, recordsCSVSchemaNonRelay, recordsCSVSchemaRelay, recordsSchema } from "../lib/defs";
+import { swimmersSchema, meetsSchema, findEventFromLabel, EVENTS, recordsCSVSchemaNonRelay, recordsCSVSchemaRelay, recordsSchema } from "../lib/defs";
 import { z } from "zod";
 import * as Errors from "../lib/errors";
 import { ResultAsync, errAsync, okAsync } from "neverthrow";
@@ -14,8 +14,8 @@ export default function AdminPage() {
     const [meets, setMeets] = useState([]);
     const [swimmers, setSwimmers] = useState([]);
     const onLogin = (res) => {
-        return getResponseJSONAndParse(res, googleAuthResponseSchema, (errMsg) => new Errors.MalformedResponse("Google gave an invalid response: " + errMsg))
-            .map((res) => res.credential)
+        return okAsync(res)
+            .andThen((res) => res.credential ? okAsync(res.credential) : errAsync(new Errors.MalformedResponse("Google login response did not contain credential: " + JSON.stringify(res))))
             .andThen((idToken) => {
             setToken(idToken);
             return ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/verify", {
@@ -231,8 +231,11 @@ export default function AdminPage() {
             return;
         let final_rows = [];
         let relays = [];
+        let row_results = [];
+        let relay_row_results = [];
         readCSV(file)
             .andThen((read) => {
+            console.log("Raw CSV data: " + JSON.stringify(read));
             for (let i = 1; i < read.length; i++) {
                 const row = read[i];
                 if (row.length < 6) {
@@ -242,46 +245,37 @@ export default function AdminPage() {
                     return errAsync(new Errors.MalformedResponse(`Failed to parse CSV, Row has invalid number of columns: ${row}`));
                 }
                 else if (row.length == 9) {
-                    let err = null;
-                    parseCSVRowAsRelay(row)
-                        .match((d) => { relays.push(d); }, (e) => { err = e; });
-                    if (err != null) {
-                        return errAsync(new Errors.MalformedResponse(`Failed to parse CSV relay row ${i}: ${JSON.stringify(err)}`));
-                    }
+                    relay_row_results.push(parseCSVRowAsRelay(row));
                 }
                 else {
-                    let err = null;
-                    parseCSVRowAsNonRelay(row)
-                        .match((d) => { final_rows.push(d); }, (e) => { err = e; });
-                    if (err != null) {
-                        return errAsync(new Errors.MalformedResponse(`Failed to parse CSV non-relay row ${i}: ${JSON.stringify(err)}`));
-                    }
+                    row_results.push(parseCSVRowAsNonRelay(row));
                 }
             }
-            return okAsync([]);
-        }).match((_) => { }, (err) => {
-            alert(`Failed to parse CSV, see console for details.`);
-            console.error("Failed to parse CSV: " + JSON.stringify(err));
-        });
-        ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
+            return okAsync(final_rows);
+        }).andThen(() => ResultAsync.combine(row_results))
+            .andThen((rows) => {
+            final_rows = rows;
+            return ResultAsync.combine(relay_row_results);
+        })
+            .andThen((relaysParsed) => {
+            relays = relaysParsed;
+            console.log("Parsed CSV data: " + JSON.stringify({ final_rows, relays }));
+            return okAsync({});
+        }).andThen(() => ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`
             },
             body: JSON.stringify(final_rows)
-        }), (error) => new Errors.NoResponse("No response from server: " + JSON.stringify(error)))
+        }), (error) => new Errors.NoResponse("No response from server: " + JSON.stringify(error))))
             .andThen((res) => {
             if (!res.ok) {
                 return errAsync(new Errors.Unauthorized("Could not upload record: " + JSON.stringify(res)));
             }
             return okAsync(res);
-        })
-            .match((_) => { }, (err) => {
-            alert(`Failed to upload new records, see console for details.`);
-            console.error("Failed to upload new records: " + JSON.stringify(err));
-        });
-        getResponseJSONAndParse(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg)).andThen((records) => {
+        }).andThen(() => ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse("Failed to fetch records after upload, no response from server: " + JSON.stringify(e))))
+            .andThen((r) => getResponseJSONAndParse(r, recordsSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse records data returned from API: " + errMsg))).andThen((records) => {
             for (let relay of relays) {
                 let record_ids = [];
                 for (let record of records) {
@@ -311,31 +305,15 @@ export default function AdminPage() {
                             expected_event = `100_free`;
                         }
                         if (record.event == expected_event) {
-                            record_ids.push(record.id);
+                            record_ids[relay.swimmer_ids.indexOf(record.swimmer_id)] = record.id;
                         }
                     }
                 }
-                if (record_ids.length < 4) {
-                    let swimmer_names = relay.swimmer_ids.map((id) => {
-                        for (let s of swimmers) {
-                            if (s.id == id)
-                                return s.name;
-                        }
-                        return "Unknown";
-                    });
-                    return errAsync(new Errors.MalformedRequest(`Failed to parse CSV, Not enough relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}`));
+                if (record_ids.length != 4 || record_ids.includes(undefined)) {
+                    return errAsync(new Errors.MalformedResponse(`Failed to find record IDs for relay, did you not provide a relay split for one or more of the swimmers?: ${JSON.stringify(relay)}`));
                 }
-                if (record_ids.length > 4) {
-                    let swimmer_names = relay.swimmer_ids.map((id) => {
-                        for (let s of swimmers) {
-                            if (s.id == id)
-                                return s.name;
-                        }
-                        return "Unknown";
-                    });
-                    return errAsync(new Errors.MalformedRequest(`Failed to parse CSV, Too many relay split records for ${relay.relay_type} relay with swimmers: ${swimmer_names.join(", ")}, expected 4 but found ${record_ids.length}, did a swimmer swim multiple legs?`));
-                }
-                return ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
+                let err = null;
+                ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -349,14 +327,16 @@ export default function AdminPage() {
                         relay_type: relay.relay_type,
                         time: relay.time
                     })
-                }), (error) => new Errors.NoResponse("Failed to add relay, no response from server: " + JSON.stringify(error)));
+                }), (error) => new Errors.NoResponse("Failed to add relay, no response from server: " + JSON.stringify(error))).match(() => { }, (e) => { err = e; });
+                if (err) {
+                    return errAsync(new Errors.MalformedResponse(`Failed to add relay: ${JSON.stringify(relay)}, error: ${JSON.stringify(err)}`));
+                }
             }
             return okAsync({});
-        }).match((_) => {
-            alert("Records succesfully added");
-        }, (err) => {
-            alert(`Failed to add relay records, see console for details.`);
-            console.error("Failed to add relay records: " + JSON.stringify(err));
+        })
+            .match((_) => { alert("Successfully uploaded records"); }, (err) => {
+            alert(`Failed to upload new records, see console for details.`);
+            console.error("Failed to upload new records: " + JSON.stringify(err));
         });
         e.target.reset();
     };
@@ -380,7 +360,7 @@ export default function AdminPage() {
             console.error("Failed to add swimmer: " + JSON.stringify(err));
         });
         e.target.reset();
-        ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("Nno response from server: " + JSON.stringify(e)))
+        ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("No response from server: " + JSON.stringify(e)))
             .andThen((r) => getResponseJSONAndParse(r, swimmersSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse swimmers data returned from API: " + errMsg)))
             .match((r) => {
             setSwimmers(r);

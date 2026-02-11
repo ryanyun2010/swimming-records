@@ -49,6 +49,7 @@ export const relaysSchema = z.array(relaySchema);
 export const timeSchema = z.object({
     id: z.coerce.number().int(),
     swimmer_id: z.coerce.number().int(),
+    meet_id: z.coerce.number().int(),
     event: z.enum(allowedEvents),
     type: z.enum(["individual", "relay"]),
     time: z.coerce.number().positive(),
@@ -56,6 +57,7 @@ export const timeSchema = z.object({
     meet_name: z.string().min(1, "Meet name is required"),
     meet_date: z.coerce.number().int(),
     meet_location: z.string().min(1, "Meet location is required"),
+    swimmer_name: z.string().min(1, "Swimmer name is required"),
     swimmer_year: z.coerce.number().int()
 });
 export const timesSchema = z.array(timeSchema);
@@ -66,7 +68,13 @@ export const recordsCSVSchemaNonRelay = z.tuple([
     z.string().trim().min(1, "Swimmer name is required"),
     z.string().trim().min(1, "Meet name is required"),
     z.string().trim().min(1, "Event name is required"),
-    z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+    z.string().trim().toLowerCase().transform((val) => {
+        if (val == "relay split") {
+            return "relay";
+        }
+        return val;
+    })
+        .pipe(z.enum(["individual", "relay"], {
         errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
     })),
     z.string().trim().toLowerCase().transform((val) => {
@@ -76,6 +84,7 @@ export const recordsCSVSchemaNonRelay = z.tuple([
         else if (val == "rs") {
             return "relay";
         }
+        return val;
     }).pipe(z.enum(["flat", "relay"], {
         errorMap: () => ({
             message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
@@ -99,10 +108,17 @@ export const recordsCSVSchemaRelay = z.tuple([
         else if (val == "400 freestyle relay" || val == "400 fr") {
             return "400_fr";
         }
+        return val;
     }).pipe(z.enum(["200_mr", "200_fr", "400_fr"], {
         errorMap: () => ({ message: "Relay type must be '200 MR', '200 FR', or '400 FR' or equivalents" })
     })),
-    z.string().trim().toLowerCase().pipe(z.enum(["individual", "relay"], {
+    z.string().trim().toLowerCase().transform((val) => {
+        if (val == "relay split") {
+            return "relay";
+        }
+        return val;
+    })
+        .pipe(z.enum(["individual", "relay"], {
         errorMap: () => ({ message: "Type must be 'individual' or 'relay'" })
     })),
     z.string().trim().toLowerCase().transform((val) => {
@@ -112,6 +128,7 @@ export const recordsCSVSchemaRelay = z.tuple([
         else if (val == "rs") {
             return "relay";
         }
+        return val;
     }).pipe(z.enum(["flat", "relay"], {
         errorMap: () => ({
             message: "Start must be 'flat' (or 'fs'), or 'relay' (or 'rs')"
