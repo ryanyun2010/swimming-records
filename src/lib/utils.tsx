@@ -3,9 +3,8 @@ import { ErrorRes } from "./errors";
 import * as Errors from "./errors";
 import { z, ZodError} from "zod";
 
-export function formatDate(seconds: number): string {
-	if (!seconds) return "";
-	const d = new Date(seconds * 1000);
+export function formatDate(date: string): string {
+	const d = new Date(date);
 	return Intl.DateTimeFormat("en-US", {
 		year: "numeric",
 		month: "short",
