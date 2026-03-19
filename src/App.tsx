@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useSearchParams} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import AdminPage from "./pages/AdminPage"; 
+// import AdminPage from "./pages/AdminPage"; 
 import { formatDate, zodParseWith, getResponseJSONAndParse ,formatTime} from "./lib/utils";
 import { recordProgsSchema, RecordProg, meetsSchema, Meet, relaysSchema, Relay, relayLegsSchema, RelayLeg, swimmersSchema, Swimmer, resultsSchema, Result, eventsSchema, SEvent} from "./lib/defs";
 import { z, ZodError } from "zod";
@@ -649,7 +649,7 @@ function App() {
 			<Router>
 				<Routes>
 					<Route path="/" element={<Home />} />
-					<Route path="/admin" element={<AdminPage />} />
+					{/* <Route path="/admin" element={<AdminPage />} /> */}
 				</Routes>
 			</Router>
 		</GoogleOAuthProvider>
