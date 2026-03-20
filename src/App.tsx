@@ -3,9 +3,8 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useSearchParams} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 // import AdminPage from "./pages/AdminPage"; 
-import { formatDate, zodParseWith, getResponseJSONAndParse ,formatTime} from "./lib/utils";
+import { formatDate, getResponseJSONAndParse, formatTime, fetchAndParse, reducerByID} from "./lib/utils";
 import { recordProgsSchema, RecordProg, meetsSchema, Meet, relaysSchema, Relay, relayLegsSchema, RelayLeg, swimmersSchema, Swimmer, resultsSchema, Result, eventsSchema, SEvent} from "./lib/defs";
-import { z, ZodError } from "zod";
 import * as Errors from "./lib/errors";
 import { ResultAsync } from "neverthrow";
 
@@ -49,6 +48,7 @@ function Home() {
 	const [relayLegs, setRelayLegs] = useState<Record<number, RelayLeg>>({});
 	const [events, setEvents] = useState<Record<number, SEvent>>({});
 	const [recordProgs, setRecordProgs] = useState<RecordProg[]>([]);
+
 	const relayLegIDsByRelayID = useMemo<Record<number, number[]>>(
 		() => {
 			const mapping: Record<number, number[]> = {};
@@ -63,7 +63,6 @@ function Home() {
 	, [relayLegs]);
 
 	const parsedTimes = useMemo<ParsedTime[]>(() => {
-		console.log("Parsing times with results:", results, "swimmers:", swimmers, "meets:", meets, "relays:", relays, "relayLegs:", relayLegs, "events:", events, "recordProgs:", recordProgs);
 		let times: ParsedTime[] = [];
 		for (let result of Object.values(results)) {
 			if (!(result.id in swimmers) || !(result.meet_id in meets)) {
@@ -200,116 +199,50 @@ function Home() {
 		return times;
 	}, [results, swimmers, meets, relays, relayLegs, relayLegIDsByRelayID, events]);
 
-	
 	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/results"), (e) => new Errors.NoResponse(`Failed to fetch results: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, resultsSchema, (e) => new Errors.MalformedResponse(`Failed to parse results response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/record_progressions", recordProgsSchema)
 		.match(
-			(data) => {
-				setResults(data.reduce((acc: Record<number, Result>, result: Result) => {;
-					acc[result.id] = result;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load results:", err);
-				alert("Failed to load results, see console");
-			}
-		)}, []);
+			(data) => setRecordProgs(data),
+			(err) => console.error("Failed to load record progressions:", err)
+		)
 
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse(`Failed to fetch swimmers: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, swimmersSchema, (e) => new Errors.MalformedResponse(`Failed to parse swimmers response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/swimmers", swimmersSchema)
 		.match(
-			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, Swimmer>, swimmer: Swimmer) => {;
-					acc[swimmer.id] = swimmer;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load swimmers:", err);
-				alert("Failed to load swimmers, see console");
-			}
-		)}, []);
+			(data) => setSwimmers(reducerByID(data)),
+			(err) => console.error("Failed to load swimmers:", err)
+		)
 
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/meets"), (e) => new Errors.NoResponse(`Failed to fetch meets: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse meets response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/meets", meetsSchema)
 		.match(
-			(data) => {
-				setMeets(data.reduce((acc: Record<number, Meet>, meet: Meet) => {;
-					acc[meet.id] = meet;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load meets:", err);
-				alert("Failed to load meets, see console");
-			}
-		)}, []);
+			(data) => setMeets(reducerByID(data)),
+			(err) => console.error("Failed to load meets:", err)
+		)
 
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays"), (e) => new Errors.NoResponse(`Failed to fetch relays: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, relaysSchema, (e) => new Errors.MalformedResponse(`Failed to parse relays response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/relays", relaysSchema)
 		.match(
-			(data) => {
-				setRelays(data.reduce((acc: Record<number, Relay>, relay: Relay) => {;
-					acc[relay.id] = relay;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load relay:", err);
-				alert("Failed to load relay, see console");
-			}
-		)}, []);
+			(data) => setRelays(reducerByID(data)),
+			(err) => console.error("Failed to load relay:", err)
+		)
 
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relay_legs"), (e) => new Errors.NoResponse(`Failed to fetch relays legs: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, relayLegsSchema, (e) => new Errors.MalformedResponse(`Failed to parse relay legs response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/relay_legs", relayLegsSchema)
 		.match(
-			(data) => {
-				setRelayLegs(data.reduce((acc: Record<number, RelayLeg>, relayLeg: RelayLeg) => {;
-					acc[relayLeg.id] = relayLeg;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load relay leg:", err);
-				alert("Failed to load relay leg, see console");
-			}
-		)}, []);
+			(data) => setRelayLegs(reducerByID(data)),
+			(err) => console.error("Failed to load relay legs:", err)
+		)
 
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/events"), (e) => new Errors.NoResponse(`Failed to fetch events: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, eventsSchema, (e) => new Errors.MalformedResponse(`Failed to parse events response: ${JSON.stringify(e)}`)))
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/events", eventsSchema)
 		.match(
-			(data) => {
-				setEvents(data.reduce((acc: Record<number, SEvent>, event: SEvent) => {
-					acc[event.id] = event;
-					return acc;
-				}, {}));
-			},
-			(err) => {
-				console.error("Failed to load event:", err);
-				alert("Failed to load event, see console");
-			}
-		)}, []);
-	
-	
-	useEffect(() => {
-		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/records"), (e) => new Errors.NoResponse(`Failed to fetch record progressions: ${JSON.stringify(e)}`))
-		.andThen((res) => getResponseJSONAndParse(res, recordProgsSchema, (e) => new Errors.MalformedResponse(`Failed to parse record progressions response: ${JSON.stringify(e)}`)))
+			(data) => setEvents(reducerByID(data)),
+			(err) => console.error("Failed to load events:", err)
+		)
+
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/results", resultsSchema)
 		.match(
-			(data) => {
-				setRecordProgs(data);
-			},
-			(err) => {
-				console.error("Failed to load record progression:", err);
-				alert("Failed to load record progression, see console");
-			}
-		)}, []);
+			(data) => setResults(reducerByID(data)),
+			(err) => console.error("Failed to load results:", err)
+		)
+	}, []);	
+
 
 
 	useEffect(() => {

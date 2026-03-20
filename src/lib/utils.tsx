@@ -82,3 +82,16 @@ export function getResponseJSONAndParse(
 		zodParseWith(schema, errFunc)
 	);
 }
+
+export function fetchAndParse<T>(url: string, schema: z.ZodSchema<T>): ResultAsync<T, ErrorRes> {
+	return ResultAsync.fromPromise(fetch(url), (e) => new Errors.NoResponse(`Failed to fetch from ${url}: ${JSON.stringify(e)}`))
+	.andThen((res) => getResponseJSONAndParse(res, schema, (e) => new Errors.MalformedResponse(`Failed to parse response from ${url}: ${JSON.stringify(e)}`)));
+}
+
+
+export function reducerByID<T extends IDedObject>(data: T[]): Record<number, T> {
+	return data.reduce((acc: Record<number, T>, dat: T) => {
+		acc[dat.id] = dat;
+		return acc;
+	},{});
+}

@@ -85,3 +85,7 @@ export const swimmerSchema = z.object({
 });
 export const swimmersSchema = z.array(swimmerSchema);
 export type Swimmer = z.infer<typeof swimmerSchema>;
+
+export interface IDedObject {
+	id: number
+}
