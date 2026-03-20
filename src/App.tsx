@@ -215,7 +215,7 @@ function Home() {
 				console.error("Failed to load results:", err);
 				alert("Failed to load results, see console");
 			}
-		)});
+		)}, []);
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse(`Failed to fetch swimmers: ${JSON.stringify(e)}`))
@@ -231,7 +231,7 @@ function Home() {
 				console.error("Failed to load swimmers:", err);
 				alert("Failed to load swimmers, see console");
 			}
-		)});
+		)}, []);
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/meets"), (e) => new Errors.NoResponse(`Failed to fetch meets: ${JSON.stringify(e)}`))
@@ -247,7 +247,7 @@ function Home() {
 				console.error("Failed to load meets:", err);
 				alert("Failed to load meets, see console");
 			}
-		)});
+		)}, []);
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relays"), (e) => new Errors.NoResponse(`Failed to fetch relays: ${JSON.stringify(e)}`))
@@ -263,7 +263,7 @@ function Home() {
 				console.error("Failed to load relay:", err);
 				alert("Failed to load relay, see console");
 			}
-		)});
+		)}, []);
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/relay_legs"), (e) => new Errors.NoResponse(`Failed to fetch relays legs: ${JSON.stringify(e)}`))
@@ -279,7 +279,7 @@ function Home() {
 				console.error("Failed to load relay leg:", err);
 				alert("Failed to load relay leg, see console");
 			}
-		)});
+		)}, []);
 
 	useEffect(() => {
 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/events"), (e) => new Errors.NoResponse(`Failed to fetch events: ${JSON.stringify(e)}`))
@@ -295,7 +295,7 @@ function Home() {
 				console.error("Failed to load event:", err);
 				alert("Failed to load event, see console");
 			}
-		)});
+		)}, []);
 	
 	
 	useEffect(() => {
@@ -309,7 +309,7 @@ function Home() {
 				console.error("Failed to load record progression:", err);
 				alert("Failed to load record progression, see console");
 			}
-		)});
+		)}, []);
 
 
 	useEffect(() => {
