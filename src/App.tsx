@@ -302,10 +302,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, recordProgsSchema, (e) => new Errors.MalformedResponse(`Failed to parse record progressions response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setRecordProgs(data.reduce((acc: Record<number, RecordProg>, record: RecordProg) => {;
-					acc[record.id] = record;
-					return acc;
-				}, {}));
+				setRecordProgs(data);
 			},
 			(err) => {
 				console.error("Failed to load record progression:", err);
