@@ -169,7 +169,7 @@ function Home() {
 					}
 				}
 			}
-			if (!timepid) {
+			if (timepid == null) {
 				console.warn(`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`);
 				continue;
 			}
