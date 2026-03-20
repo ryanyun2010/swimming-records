@@ -205,7 +205,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, resultsSchema, (e) => new Errors.MalformedResponse(`Failed to parse results response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, Result>, result: Result) => {;
+				setResults(data.reduce((acc: Record<number, Result>, result: Result) => {;
 					acc[result.id] = result;
 					return acc;
 				}, {}));
@@ -237,7 +237,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, meetsSchema, (e) => new Errors.MalformedResponse(`Failed to parse meets response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, Meet>, meet: Meet) => {;
+				setMeets(data.reduce((acc: Record<number, Meet>, meet: Meet) => {;
 					acc[meet.id] = meet;
 					return acc;
 				}, {}));
@@ -253,7 +253,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, relaysSchema, (e) => new Errors.MalformedResponse(`Failed to parse relays response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, Relay>, relay: Relay) => {;
+				setRelays(data.reduce((acc: Record<number, Relay>, relay: Relay) => {;
 					acc[relay.id] = relay;
 					return acc;
 				}, {}));
@@ -269,7 +269,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, relayLegsSchema, (e) => new Errors.MalformedResponse(`Failed to parse relay legs response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, RelayLeg>, relayLeg: RelayLeg) => {;
+				setRelayLegs(data.reduce((acc: Record<number, RelayLeg>, relayLeg: RelayLeg) => {;
 					acc[relayLeg.id] = relayLeg;
 					return acc;
 				}, {}));
@@ -285,7 +285,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, eventsSchema, (e) => new Errors.MalformedResponse(`Failed to parse events response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, SEvent>, event: SEvent) => {
+				setEvents(data.reduce((acc: Record<number, SEvent>, event: SEvent) => {
 					acc[event.id] = event;
 					return acc;
 				}, {}));
@@ -302,7 +302,7 @@ function Home() {
 		.andThen((res) => getResponseJSONAndParse(res, recordProgsSchema, (e) => new Errors.MalformedResponse(`Failed to parse record progressions response: ${JSON.stringify(e)}`)))
 		.match(
 			(data) => {
-				setSwimmers(data.reduce((acc: Record<number, RecordProg>, record: RecordProg) => {;
+				setRecordProgs(data.reduce((acc: Record<number, RecordProg>, record: RecordProg) => {;
 					acc[record.id] = record;
 					return acc;
 				}, {}));
