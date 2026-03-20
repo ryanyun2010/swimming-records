@@ -63,6 +63,7 @@ function Home() {
 	, [relayLegs]);
 
 	const parsedTimes = useMemo<ParsedTime[]>(() => {
+		console.log("Parsing times with results:", results, "swimmers:", swimmers, "meets:", meets, "relays:", relays, "relayLegs:", relayLegs, "events:", events, "recordProgs:", recordProgs);
 		let times: ParsedTime[] = [];
 		for (let result of Object.values(results)) {
 			if (!(result.id in swimmers) || !(result.meet_id in meets)) {
