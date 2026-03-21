@@ -30,7 +30,6 @@ interface ParsedTime {
 	previous_SR: {change: number | null, til: string} | null
 }
 
-
 function Home() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,22 +48,19 @@ function Home() {
 	const [events, setEvents] = useState<Record<number, SEvent>>({});
 	const [recordProgs, setRecordProgs] = useState<RecordProg[]>([]);
 
-
-	const parsedTimes = useMemo<ParsedTime[]>(() => {
+	function parseTimes(): Res<ParsedTime[], Errors.ErrorRes> {
 		let times: ParsedTime[] = [];
 		for (let result of Object.values(results)) {
 			if (!(result.id in swimmers) || !(result.meet_id in meets)) {
-				console.warn(`Skipping result ${result.id} due to missing swimmer or meet info for swimmer_id ${result.swimmer_id} or meet_id ${result.meet_id}`);
-				continue;
+				return err(new Errors.NotFound(`Missing swimmer or meet info for result ${result.id}`));
 			}
 			if (!(result.event_id in events)){
-				console.warn(`Skipping result ${result.id} due to missing event info for event_id ${result.event_id}`);
-				continue;
+				return err(new Errors.NotFound(`Missing event info for result ${result.id}`));
 			}
 			const swimmer = swimmers[result.swimmer_id];
 			const meet = meets[result.meet_id];
 			const event = events[result.event_id];
-			
+
 			const parsedTime: ParsedTime = {
 				swimmer_id: result.swimmer_id,
 				meet_id: result.meet_id,
@@ -90,8 +86,7 @@ function Home() {
 		}
 		for (let relayLeg of Object.values(relayLegs)) {
 			if (!(relayLeg.swimmer_id in swimmers) || !(relays[relayLeg.relay_id]) || !(relays[relayLeg.relay_id].meet_id in meets)) {
-				console.warn(`Skipping relay leg ${relayLeg.id} due to missing swimmer, relay, or meet info for swimmer_id ${relayLeg.swimmer_id}, relay_id ${relayLeg.relay_id}, or meet_id ${relays[relayLeg.relay_id]?.meet_id}`);
-				continue;
+				return err(new Errors.NotFound(`Missing swimmer, relay, or meet info for relay leg ${relayLeg.id}`));
 			}
 			const swimmer = swimmers[relayLeg.swimmer_id];
 			const relay = relays[relayLeg.relay_id];
@@ -141,8 +136,7 @@ function Home() {
 				continue;
 			}
 			if (!(recordProg.swimmer_id in swimmers) || !(recordProg.meet_id in meets) || !(recordProg.event_id in events)) {
-				console.warn(`Skipping record prog ${recordProg.id} due to missing swimmer, meet, or event info for swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, or event_id ${recordProg.event_id}`);
-				continue;
+				return err(new Errors.NotFound(`Missing swimmer, meet, or event info for record prog ${recordProg.id}`));
 			}
 			let timepid = null;
 			for (let i = 0; i < times.length; i++ ) {
@@ -157,8 +151,7 @@ function Home() {
 				}
 			}
 			if (timepid == null) {
-				console.warn(`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`);
-				continue;
+				return err(new Errors.NotFound(`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`));
 			}
 			let timep = times[timepid];
 
@@ -184,8 +177,16 @@ function Home() {
 			}
 			last_SR_bests[recordProg.event_id] = timepid;
 		}
-		return times;
-	}, [results, swimmers, meets, relays, relayLegs, events]);
+		return ok(times);
+	}
+
+	const parsedTimes = useMemo<ParsedTime[]>(() => parseTimes().match(
+		(times) => times,
+		(err) => {
+			console.error("Failed to parse times:", err);
+			return [];
+		}
+	), [results, swimmers, meets, relays, relayLegs, events, recordProgs]);
 
 	const PTIndicesAndRLIDsByRelayID = useMemo<Record<number, number[][]>>( // first array in value is indices of parsedTimes that correspond to relay legs of the relay, second array is the corresponding relay leg ids, both arrays are in same order
 		() => {
