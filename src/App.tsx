@@ -18,8 +18,6 @@ function Home() {
 
 	const [searchParams, setSearchParams] = useSearchParams();
 
-
-
 	const data = useSwimData();
 	const parsedTimes = useParsedTimes(data).match(
 		(times) => times,

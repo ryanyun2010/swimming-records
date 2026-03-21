@@ -134,27 +134,29 @@ export function useParsedTimes(data: SwimData) {
 			}
 			let timep = times[timepid];
 
-			let last_best = last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? 'indiv'}`];
-			if (last_best !== undefined) {
-				let last_best_cur = times[last_best].current_PR ?? {change: null};
-				times[last_best].previous_PR = {change: last_best_cur.change, til: timep.meet_date};
-				times[last_best].current_PR = null;
-				timep.current_PR = {change: timep.time - times[last_best].time};
+			if (!recordProg.school_record){
+				let last_best = last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? 'indiv'}`];
+				if (last_best !== undefined) {
+					let last_best_cur = times[last_best].current_PR ?? {change: null};
+					times[last_best].previous_PR = {change: last_best_cur.change, til: timep.meet_date};
+					times[last_best].current_PR = null;
+					timep.current_PR = {change: timep.time - times[last_best].time};
+				} else {
+					timep.current_PR = {change: null};
+				}
+				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id} ?? 'indiv'`] = timepid;
 			} else {
-				timep.current_PR = {change: null};
+				let last_SR_best = last_SR_bests[recordProg.event_id];
+				if (last_SR_best !== undefined) {
+					let last_SR_best_cur = times[last_SR_best].current_SR ?? {change: null};
+					times[last_SR_best].previous_SR = {change: last_SR_best_cur.change, til: timep.meet_date};
+					times[last_SR_best].current_SR = null;
+					timep.current_SR = {change: timep.time - times[last_SR_best].time};
+				} else {
+					timep.current_SR = {change: null};
+				}
+				last_SR_bests[recordProg.event_id] = timepid;
 			}
-			last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id} ?? 'indiv'`] = timepid;
-
-			let last_SR_best = last_SR_bests[recordProg.event_id];
-			if (last_SR_best !== undefined) {
-				let last_SR_best_cur = times[last_SR_best].current_SR ?? {change: null};
-				times[last_SR_best].previous_SR = {change: last_SR_best_cur.change, til: timep.meet_date};
-				times[last_SR_best].current_SR = null;
-				timep.current_SR = {change: timep.time - times[last_SR_best].time};
-			} else {
-				timep.current_SR = {change: null};
-			}
-			last_SR_bests[recordProg.event_id] = timepid;
 		}
 		return ok(times);
 	}, [results,swimmers,meets,relays,relayLegs,events,recordProgs])
