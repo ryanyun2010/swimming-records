@@ -33,7 +33,7 @@ export const relayLegSchema = z.object({
     leg_order: z.coerce.number().int(),
     split_time: z.coerce.number(),
     is_valid: z.coerce.boolean(),
-    invalid_reason: z.string()
+    invalid_reason: z.string().nullable()
 });
 export const relayLegsSchema = z.array(relayLegSchema);
 export const relaySchema = z.object({
@@ -42,7 +42,7 @@ export const relaySchema = z.object({
     meet_id: z.coerce.number().int(),
     time_ms: z.coerce.number(),
     is_valid: z.coerce.boolean(),
-    invalid_reason: z.string()
+    invalid_reason: z.string().nullable()
 });
 export const relaysSchema = z.array(relaySchema);
 export const resultSchema = z.object({
@@ -52,7 +52,7 @@ export const resultSchema = z.object({
     meet_id: z.coerce.number().int(),
     time_ms: z.coerce.number(),
     is_valid: z.coerce.boolean(),
-    invalid_reason: z.string()
+    invalid_reason: z.string().nullable()
 });
 export const resultsSchema = z.array(resultSchema);
 export const swimmerSchema = z.object({

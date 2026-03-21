@@ -2,6 +2,7 @@ import { Result, ResultAsync, okAsync, errAsync} from "neverthrow";
 import { ErrorRes } from "./errors";
 import * as Errors from "./errors";
 import { z, ZodError} from "zod";
+import { IDedObject } from "./defs";
 
 export function formatDate(date: string): string {
 	if (!date) return "";

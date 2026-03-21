@@ -1,7 +1,11 @@
 import { ResultAsync, okAsync, errAsync } from "neverthrow";
 import * as Errors from "./errors";
 export function formatDate(date) {
+    if (!date)
+        return "";
     const d = new Date(date);
+    if (isNaN(d.getTime()))
+        return "";
     return Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "short",
@@ -55,4 +59,14 @@ export function getResponseJSON(response, errFunc = (e) => new Errors.MalformedR
 }
 export function getResponseJSONAndParse(response, schema, errFunc = (e) => new Errors.MalformedResponse(`Failed to parse response JSON: ${e}`)) {
     return getResponseJSON(response, errFunc).andThen(zodParseWith(schema, errFunc));
+}
+export function fetchAndParse(url, schema) {
+    return ResultAsync.fromPromise(fetch(url), (e) => new Errors.NoResponse(`Failed to fetch from ${url}: ${JSON.stringify(e)}`))
+        .andThen((res) => getResponseJSONAndParse(res, schema, (e) => new Errors.MalformedResponse(`Failed to parse response from ${url}: ${JSON.stringify(e)}`)));
+}
+export function reducerByID(data) {
+    return data.reduce((acc, dat) => {
+        acc[dat.id] = dat;
+        return acc;
+    }, {});
 }
