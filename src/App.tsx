@@ -220,7 +220,7 @@ function Home() {
 	}
 
 	useEffect(() => {
-		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/record_progressions", recordProgsSchema)
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/records", recordProgsSchema)
 		.match(
 			(data) => setRecordProgs(data),
 			(err) => console.error("Failed to load record progressions:", err)
