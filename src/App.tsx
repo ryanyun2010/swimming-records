@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, JSX } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useSearchParams} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -6,7 +6,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { formatDate, getResponseJSONAndParse, formatTime, fetchAndParse, reducerByID} from "./lib/utils";
 import { recordProgsSchema, RecordProg, meetsSchema, Meet, relaysSchema, Relay, relayLegsSchema, RelayLeg, swimmersSchema, Swimmer, resultsSchema, Result, eventsSchema, SEvent} from "./lib/defs";
 import * as Errors from "./lib/errors";
-import { ResultAsync } from "neverthrow";
+import { ResultAsync, errAsync, okAsync, Result as Res, ok , err} from "neverthrow";
 
 interface ParsedTime {
 	swimmer_id: number,
@@ -14,9 +14,9 @@ interface ParsedTime {
 	event_name: string,
 	result_id: number | null,
 	relay_leg_id: number | null,
-	type: string,
+	type: string, // "individual" or "relay_leg"
 	time: number,
-	start: string,
+	start: string, // "flat" or "relay"
 	meet_name: string,
 	meet_date: string,
 	meet_location: string,
@@ -49,18 +49,6 @@ function Home() {
 	const [events, setEvents] = useState<Record<number, SEvent>>({});
 	const [recordProgs, setRecordProgs] = useState<RecordProg[]>([]);
 
-	const relayLegIDsByRelayID = useMemo<Record<number, number[]>>(
-		() => {
-			const mapping: Record<number, number[]> = {};
-			for (let relayLeg of Object.values(relayLegs)) {
-				if (!mapping[relayLeg.relay_id]) {
-					mapping[relayLeg.relay_id] = [];
-				}
-				mapping[relayLeg.relay_id].push(relayLeg.id);
-			}
-			return mapping;
-		}
-	, [relayLegs]);
 
 	const parsedTimes = useMemo<ParsedTime[]>(() => {
 		let times: ParsedTime[] = [];
@@ -148,7 +136,7 @@ function Home() {
 		}
 		let last_bests: Record<string, number> = {};
 		let last_SR_bests: Record<number, number> = {};
-		for (let recordProg of recordProgs) {
+		for (let recordProg of recordProgs) { // note record progs are sorted in chronological order by meet date asc server side, so we can just keep track of the last best time as we iterate
 			if (recordProg.type == "relay") {
 				continue;
 			}
@@ -197,7 +185,39 @@ function Home() {
 			last_SR_bests[recordProg.event_id] = timepid;
 		}
 		return times;
-	}, [results, swimmers, meets, relays, relayLegs, relayLegIDsByRelayID, events]);
+	}, [results, swimmers, meets, relays, relayLegs, events]);
+
+	const PTIndicesAndRLIDsByRelayID = useMemo<Record<number, number[][]>>( // first array in value is indices of parsedTimes that correspond to relay legs of the relay, second array is the corresponding relay leg ids, both arrays are in same order
+		() => {
+			const mapping: Record<number, number[][]> = {};
+			for (let i = 0; i < parsedTimes.length; i++) {
+				if (parsedTimes[i].type !== "relay_leg") continue;
+				const time = parsedTimes[i];
+				const relayLeg = relayLegs[time.relay_leg_id!];
+				const relayID = relayLeg.relay_id;
+				if (!mapping[relayID]) {
+					mapping[relayID] = [[],[]];
+				}
+				mapping[relayID][0].push(i);
+				mapping[relayID][1].push(time.relay_leg_id!);
+			}
+			return mapping;
+		}
+	, [parsedTimes, relayLegs]);
+
+	function getParsedTimesForRelay(relayID: number): Res<ParsedTime[], Errors.NotFound> {
+		const indicesAndIDs = PTIndicesAndRLIDsByRelayID[relayID];
+		if (!indicesAndIDs) return err(new Errors.NotFound(`No parsed times found for relay ID ${relayID}`));
+		const indices = indicesAndIDs[0];
+		return ok(indices.map(i => parsedTimes[i]));
+	}
+
+	function getRelayLegsForRelay(relayID: number): Res<RelayLeg[], Errors.NotFound> {
+		const indicesAndIDs = PTIndicesAndRLIDsByRelayID[relayID];
+		if (!indicesAndIDs) return err(new Errors.NotFound(`No relay legs found for relay ID ${relayID}`));
+		const relayLegIDs = indicesAndIDs[1];
+		return ok(relayLegIDs.map(id => relayLegs[id]));
+	}
 
 	useEffect(() => {
 		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/record_progressions", recordProgsSchema)
@@ -243,8 +263,6 @@ function Home() {
 		)
 	}, []);	
 
-
-
 	useEffect(() => {
 		setCurMeetInfo(null);
 		setCurSwimmerInfo(null);
@@ -258,90 +276,69 @@ function Home() {
 		} 
 
 		if (searchParams.get("relay_id") != null && searchParams.get("relay_id")!.length > 0) {
-
 			let id = parseInt(searchParams.get("relay_id")!);
-			
 			const relay = relays[id] ?? null;
 			if (relay) {
-				let relay_leg_ids = relayLegIDsByRelayID[relay.id] ?? [];
-				if (relay_leg_ids.length != 4) { console.warn(`Relay ${relay.id} has ${relay_leg_ids.length} legs, expected 4`); }
-				else {
-					const leg1 = relayLegs[relay_leg_ids[0]];
-					const leg2 = relayLegs[relay_leg_ids[1]];
-					const leg3 = relayLegs[relay_leg_ids[2]];
-					const leg4 = relayLegs[relay_leg_ids[3]];
-					const swimmer_names = [leg1, leg2, leg3, leg4].map((leg) => {
-						const swimmer = swimmers[leg.swimmer_id];
-						return swimmer ? `${swimmer.first_name} ${swimmer.last_name}` : "Unknown";
-					});
-					if (!(relay.meet_id in meets)) {
-						console.warn(`Missing meet info for relay ${relay.id} with meet_id ${relay.meet_id}`);
-					} else {
-						const event = events[relay.event_id]?.name ?? "Unknown Event";
-						setCurRelayInfo({id, swimmer_names, date: meets[relay.meet_id].date ,event});
-					}
-				}
-			} 
+				getRelayLegsForRelay(relay.id)
+				.andThen(
+					(relayLegs: RelayLeg[]) => {
+						if (relayLegs.length != 4) {return err(new Errors.NotFound(`Expected 4 relay legs for relay ${relay.id}, found ${relayLegs.length}`))}
+						return ok(relayLegs.map(leg => swimmers[leg.swimmer_id]));
+					})
+				.map((swimmers: Swimmer[]) => swimmers.map(swimmer => `${swimmer.first_name} ${swimmer.last_name}`))
+				.andThen((swimmer_names: string[]) => {
+					const event = events[relay.event_id];
+					if (!event) return err(new Errors.NotFound(`No event found with ID ${relay.event_id} `));
+					if (!meets[relay.meet_id]) return err(new Errors.NotFound(`No meet found with ID ${relay.meet_id}`));
+					setCurRelayInfo({id, swimmer_names, date: meets[relay.meet_id].date ,event: event.name});
+					return ok(null)})
+				.match(
+					() => {},
+					(err) => console.error(`Failed to load relay info for relay ID ${id}:`, err)
+				);
+
+			}
 		}
 
-	}, [searchParams, swimmers, meets, relays, relayLegs, relayLegIDsByRelayID, events ]);
+	}, [searchParams, swimmers, meets, relays, relayLegs, PTIndicesAndRLIDsByRelayID, events ]);
 
 	useEffect(() => {
-		if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
+		let timesToShow: ParsedTime[] = parsedTimes;
+		let relaysToShow: Relay[] = Object.values(relays);
+
+		if (curRelayInfo != null) {
 			const relay = relays[curRelayInfo.id] ?? null;
-			let relay_leg_ids = relay ? relayLegIDsByRelayID[relay.id] ?? [] : [];
-			if (relay_leg_ids.length != 4) {
-				console.warn(`Relay ${relay?.id} has ${relay_leg_ids.length} legs, expected 4`);
-				setCurrentTimes([]);
-				setCurrentRelays([]);
-				return;
-			}
 			if (relay) {
-				const record1 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[0]) ?? null;
-				const record2 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[1]) ?? null;
-				const record3 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[2]) ?? null;
-				const record4 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[3]) ?? null;
-				setCurrentTimes([record1, record2, record3, record4].filter((t): t is ParsedTime => t !== undefined));
-				setCurrentRelays(relays[curRelayInfo.id] ? [relays[curRelayInfo.id]] : []);
+				getParsedTimesForRelay(relay.id)
+				.match(
+					(data) => {timesToShow = data},
+					(err) => {
+						console.error(`Failed to get parsed times for relay ID ${relay.id}:`, err);
+						timesToShow = [];
+					}
+				);
+				relaysToShow = [relay];
 			} else {
-				setCurrentTimes([]);
-				setCurrentRelays([]);
+				console.warn(`No relay found with ID ${curRelayInfo.id}`);
+				timesToShow = [];
 			}
-		} else if (curMeetInfo != null && curSwimmerInfo == null) {
-			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.meet_id == curMeetInfo.id));
-			setCurrentRelays(Object.values(relays).filter((r) => {
-				let relay_leg_ids = r ? relayLegIDsByRelayID[r.id] ?? [] : [];
-				const record1 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[0]) ?? null;
-				const record2 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[1]) ?? null;
-				const record3 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[2]) ?? null;
-				const record4 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[3]) ?? null;
-				return [record1, record2, record3, record4].some((rec) => rec?.meet_id == curMeetInfo.id);
-			}));
-		} else if (curSwimmerInfo != null && curMeetInfo == null) {
-			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.swimmer_id == curSwimmerInfo.id));
-			setCurrentRelays(Object.values(relays).filter((r) => {
-				let relay_leg_ids = r ? relayLegIDsByRelayID[r.id] ?? [] : [];
-				const record1 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[0]) ?? null;
-				const record2 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[1]) ?? null;
-				const record3 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[2]) ?? null;
-				const record4 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[3]) ?? null;
-				return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id);
-			}));
-		} else if (curSwimmerInfo != null && curMeetInfo != null) {
-			setCurrentTimes(Object.values(parsedTimes).filter((t) => t.swimmer_id == curSwimmerInfo.id && t.meet_id == curMeetInfo.id));
-			setCurrentRelays(Object.values(relays).filter((r) => {
-				let relay_leg_ids = r ? relayLegIDsByRelayID[r.id] ?? [] : [];
-				const record1 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[0]) ?? null;
-				const record2 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[1]) ?? null;
-				const record3 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[2]) ?? null;
-				const record4 = parsedTimes.find((t: ParsedTime) => t.relay_leg_id === relay_leg_ids[3]) ?? null;
-				return [record1, record2, record3, record4].some((rec) => rec?.swimmer_id == curSwimmerInfo.id && rec?.meet_id == curMeetInfo.id);
-			}));
-		} else {
-			setCurrentTimes([]);
-			setCurrentRelays([]);
 		}
-	}, [curMeetInfo, curSwimmerInfo, parsedTimes, relays, curRelayInfo]);
+
+		if (curMeetInfo != null) {
+			timesToShow = timesToShow.filter((t) => t.meet_id == curMeetInfo.id);
+			relaysToShow = relaysToShow.filter((r) => r.meet_id == curMeetInfo.id);
+		}
+
+		if (curSwimmerInfo != null) {
+			timesToShow = timesToShow.filter((t) => t.swimmer_id == curSwimmerInfo.id);
+			relaysToShow = relaysToShow.filter((r) =>getRelayLegsForRelay(r.id).match(
+				(legs) =>  legs.some(leg => leg.swimmer_id == curSwimmerInfo.id),
+				(err) => {console.warn(`Failed to get relay legs for relay ID ${r.id}:`, err); return false;}
+			));
+		}
+		setCurrentTimes(timesToShow);
+		setCurrentRelays(relaysToShow);
+	}, [curMeetInfo, curSwimmerInfo, parsedTimes, relays, curRelayInfo, PTIndicesAndRLIDsByRelayID]);
 
 
 	function renderHeader() {
@@ -365,212 +362,206 @@ function Home() {
 		return `${sign}${seconds}s`;
 	}
 
-	
-	if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null && searchParams.get("relay_id") == null) {
-		return (
-			<div className="app-shell">
-				<div className="app-inner">
-					<div className="accent-card hero-card">
-						<div className="hero-row">
-							<div>
-								<div className="hero-eyebrow">Nueva Swim & Dive Team</div>
-								<h1 className="hero-title">Swimming Records</h1>
-								<p className="hero-subtitle">Select a meet to see results.</p>
+	const [relayCardsToRender, setRelayCardsToRender] = useState<JSX.Element[]>();
 
-							</div>
-						</div>
-					</div>
-
-					<div className="section-block">
-						<div className="section-header">
-							<div className="section-bar" />
-							<h2 className="section-title">Recent Meets</h2>
-						</div>
-						<ul className="card-list">
-						{Object.values(meets).map((r) => (
-							<li
+	useEffect(() => {
+		Res.combine(currentRelays.map((r) => Res.combine([ok(r),getRelayLegsForRelay(r.id)])
+			.map(
+				(rlegs: [Relay, RelayLeg[]]) => [rlegs[0], rlegs[1], rlegs[1].map(leg => swimmers[leg.swimmer_id] ?? undefined)] as [Relay, RelayLeg[], (Swimmer | undefined)[]])
+				.andThen(([r, legs, swimmers]: [Relay, RelayLeg[], (Swimmer | undefined)[]]) => {
+					if (legs.length != 4 || swimmers.length != 4) {
+						return err(new Errors.NotFound(`Expected 4 legs and swimmers for relay ${r.id}, found ${legs.length} legs and ${swimmers.length} swimmers`));
+					}
+					if (swimmers.some(swimmer => swimmer == null)) {
+						return err(new Errors.NotFound(`Missing swimmer info for at least one swimmer in relay ${r.id}`));
+					}
+					const event = events[r.event_id];
+					const meet = meets[r.meet_id];
+					return ok([r, legs, swimmers as Swimmer[], event, meet] as [Relay, RelayLeg[], Swimmer[], SEvent, Meet]);
+				}).map(([r, legs, swimmers, event, meet]: [Relay, RelayLeg[], Swimmer[], SEvent, Meet]) => {
+					const swimmerSpans = swimmers.map((swimmer, i) => (
+						<span
+							key={legs[i]?.swimmer_id ?? i}
+							onClick={() => {
+								if (legs[i]) setSearchParams({ swimmer_id: legs[i].swimmer_id.toString() });
+							}}
+							className="name-link"
+						>
+							{swimmer.first_name} {swimmer.last_name} '{(swimmer.graduating ?? 0) % 100}
+						</span>
+					));
+					return (
+						<li
 							key={r.id}
-							className="accent-card meet-card"
-							onClick={() => setSearchParams({ meet_id: r.id.toString() })}
-							>
-								<div className="meet-row">
-									<div className="meet-title">{r.name}</div>
-									<div className="meet-meta">{r.location} · {formatDate(r.date)}</div>
+							className="accent-card result-card"
+						>
+							<div className="result-row">
+								<div className="name-line">
+									{swimmerSpans.flatMap((node, i) =>
+										i === 0 ? [node] : [<span key={`dot-${r.id}-${i}`} className="divider-dot">•</span>, node]
+								)}
+								<span className="divider-dot">•</span>
+								<span className="tag tag-event">
+									{event.name}
+								</span>
+								<div className="tag-row">
+									<span className="tag tag-meta" style={{cursor: "pointer"}} onClick={ () => setSearchParams({relay_id: r.id.toString()}) }>Relay</span>
 								</div>
-							</li>
-						))}
-						</ul>
-					</div>
-				</div>
-			</div>
-		);
-	} else {
-		return (
-			<div className="app-shell">
-				<div className="app-inner">
-					<div className="accent-card hero-card">
-						<div className="hero-row">
-							<div>
-								<div className="hero-eyebrow">Records View</div>
-								<h1 className="hero-title">Nueva Swimming Records</h1>
-								<div className="hero-subtitle">{renderHeader()}</div>
 							</div>
-							<button
-								type="button"
-								onClick={() => setSearchParams({})}
-								className="back-button"
+							<div className="time">{formatTime(r.time_ms)}</div>
+						</div>
+						<div className="meta-line">
+							{meet?.name ?? ""}{meet?.date ? ` · ${formatDate(meet.date)}` : ""}{meet?.location ? ` · ${meet.location}` : ""}
+						</div>
+					</li>
+		);})))
+		.match(res => setRelayCardsToRender(res), err => {
+			console.error("Failed to get relay cards to render:", err);
+			setRelayCardsToRender([]);
+		});
+	}, [currentRelays, curRelayInfo, events, meets, relays, swimmers, relayLegs]);
+	
+	const [timeCardsToRender, setTimeCardsToRender] = useState<JSX.Element[]>();
+	useEffect(() => {
+		setTimeCardsToRender(currentTimes.map((r) => {
+			const isSchoolRecord = r.current_SR != null;
+			const isSchoolRecordFirst = r.current_SR?.change === null;
+			const isPersonalRecord = r.current_PR != null && r.current_PR.change !== null;
+			const isFirstTimeSwim = r.current_PR?.change === null;
+			const srDelta = formatChange(r.current_SR?.change);
+			const prDelta = formatChange(r.current_PR?.change);
+			const previousPR = r.previous_PR ?? null;
+			const previousSR = r.previous_SR ?? null;
+			return (
+				<li
+				className="accent-card result-card"
+				>
+					<div className="result-row">
+						<div className="name-line">
+							<span
+								onClick={() => setSearchParams({ swimmer_id: r.swimmer_id.toString() })}
+								className="name-link"
 							>
-								Back to Meets
-							</button>
+								{r.swimmer_first_name} {r.swimmer_last_name} '{r.swimmer_year % 100}
+							</span>
+							<span className="divider-dot">•</span>
+							<span className="tag tag-event">{r.event_name}</span>
+							<div className="tag-row">
+								{(r.type == "relay") ? (
+									<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: (r.relay_leg_id ? relayLegs[r.relay_leg_id].relay_id : null) ?? ""}.toString())}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+								) : (
+									<span className="tag tag-meta">Individual</span>
+								)}
+								{isSchoolRecord ? (
+									isSchoolRecordFirst ? <span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span> : <span className="tag tag-sr">SCHOOL RECORD {srDelta}</span>
+								) : null}
+								{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
+								{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
+								{
+									previousPR != null ?
+									(previousPR.change === null
+										? <span key={`prev-pr}`} className="tag tag-fts">FTS</span>
+										: <span key={`prev-pr`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(previousPR.change)}</span>) : null
+								}
+								{ previousSR != null ?
+									(previousSR.change === null
+										? <span key={`prev-sr`} className="tag tag-sr-first">PREVIOUS SCHOOL RECORD: FIRST TIME</span>
+										: <span key={`prev-sr`} className="tag tag-sr-prev">PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
+										</span>) : null
+								}
+							</div>
 						</div>
+						<div className="time">{formatTime(r.time)}</div>
 					</div>
+					<div className="meta-line">
+						{r.meet_name} · {formatDate(r.meet_date)} · {r.meet_location}
+					</div>
+				</li>
+			)}));
+	}, [currentTimes, curMeetInfo, curSwimmerInfo, curRelayInfo, swimmers, meets, relays, relayLegs, events]);
 
-					<div className="section-block">
-						<div className="section-header">
-							<div className="section-bar" />
-							<h2 className="section-title">Event Results</h2>
+
+
+	const [toRender, setToRender] = useState<JSX.Element>();
+	useEffect(() => {
+		if (searchParams.get("meet_id") == null && searchParams.get("swimmer_id") == null && searchParams.get("relay_id") == null) {
+			setToRender(
+				<div className="app-shell">
+					<div className="app-inner">
+						<div className="accent-card hero-card">
+							<div className="hero-row">
+								<div>
+									<div className="hero-eyebrow">Nueva Swim & Dive Team</div>
+									<h1 className="hero-title">Swimming Records</h1>
+									<p className="hero-subtitle">Select a meet to see results.</p>
+
+								</div>
+							</div>
 						</div>
-						<ul className="card-list">
-						{currentTimes.map((r) => {
-							const isSchoolRecord = r.current_SR != null;
-							const isSchoolRecordFirst = r.current_SR?.change === null;
-							const isPersonalRecord = r.current_PR != null && r.current_PR.change !== null;
-							const isFirstTimeSwim = r.current_PR?.change === null;
-							const srDelta = formatChange(r.current_SR?.change);
-							const prDelta = formatChange(r.current_PR?.change);
-							const previousPR = r.previous_PR ?? null;
-							const previousSR = r.previous_SR ?? null;
-							return (
-								<li
-								className="accent-card result-card"
-								>
-									<div className="result-row">
-										<div className="name-line">
-											<span
-												onClick={() => setSearchParams({ swimmer_id: r.swimmer_id.toString() })}
-												className="name-link"
-											>
-												{r.swimmer_first_name} {r.swimmer_last_name} '{r.swimmer_year % 100}
-											</span>
-											<span className="divider-dot">•</span>
-											<span className="tag tag-event">{r.event_name}</span>
-											<div className="tag-row">
-												{(r.type == "relay") ? (
-													<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: (r.relay_leg_id ? relayLegs[r.relay_leg_id].relay_id : null) ?? ""}.toString())}>{(r.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
-												) : (
-													<span className="tag tag-meta">Individual</span>
-												)}
-												{isSchoolRecord ? (
-													isSchoolRecordFirst ? <span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span> : <span className="tag tag-sr">SCHOOL RECORD {srDelta}</span>
-												) : null}
-												{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
-												{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
-												{
-													previousPR != null ?
-													(previousPR.change === null
-														? <span key={`prev-pr}`} className="tag tag-fts">FTS</span>
-														: <span key={`prev-pr`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(previousPR.change)}</span>) : null
-												}
-												{ previousSR != null ?
-													(previousSR.change === null
-														? <span key={`prev-sr`} className="tag tag-sr-first">PREVIOUS SCHOOL RECORD: FIRST TIME</span>
-														: <span key={`prev-sr`} className="tag tag-sr-prev">PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
-														</span>) : null
-												}
-											</div>
-										</div>
-										<div className="time">{formatTime(r.time)}</div>
-									</div>
-									<div className="meta-line">
-										{r.meet_name} · {formatDate(r.meet_date)} · {r.meet_location}
-									</div>
-								</li>
-							);
-						})}
-						{currentRelays.map((r) => {
-							const relay_leg_ids = relayLegIDsByRelayID[r.id] ?? [];
-							const record1 = relayLegs[relay_leg_ids[0]];
-							const record2 = relayLegs[relay_leg_ids[0]];
-							const record3 = relayLegs[relay_leg_ids[0]];
-							const record4 = relayLegs[relay_leg_ids[0]];
-
-							const swimmer1 = record1 ? swimmers[record1.swimmer_id] : null;
-							const swimmer2 = record2 ? swimmers[record2.swimmer_id] : null;
-							const swimmer3 = record3 ? swimmers[record3.swimmer_id] : null;
-							const swimmer4 = record4 ? swimmers[record4.swimmer_id] : null;
-
-							const event = events[r.event_id];
-							const meet = meets[r.meet_id];
-
-							if (!record1 || !record2 || !record3 || !record4 || !swimmer1 || !swimmer2 || !swimmer3 || !swimmer4) {
-								console.warn(`Missing record or swimmer info for relay ${r.id}, skipping render`);
-								return null;
-							}
-								return (
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Recent Meets</h2>
+							</div>
+							<ul className="card-list">
+							{Object.values(meets).map((r) => (
 								<li
 								key={r.id}
-								className="accent-card result-card"
+								className="accent-card meet-card"
+								onClick={() => setSearchParams({ meet_id: r.id.toString() })}
 								>
-									<div className="result-row">
-										<div className="name-line">
-										<span
-											onClick={() => {
-												if (record1) setSearchParams({ swimmer_id: record1.swimmer_id.toString() });
-											}}
-											className="name-link"
-										>
-											{swimmer1.first_name} {swimmer1.last_name} '{(swimmer1.graduating ?? 0) % 100}
-										</span>
-										<span className="divider-dot">•</span>
-										<span
-											onClick={() => {
-												if (record2) setSearchParams({ swimmer_id: record2.swimmer_id.toString() });
-											}}
-											className="name-link"
-										>
-											{swimmer2.first_name} {swimmer2.last_name} '{(swimmer2.graduating ?? 0) % 100}
-										</span>
-										<span className="divider-dot">•</span>
-										<span
-											onClick={() => {
-												if (record3) setSearchParams({ swimmer_id: record3.swimmer_id.toString() });
-											}}
-											className="name-link"
-										>
-											{swimmer3.first_name} {swimmer3.last_name} '{(swimmer3.graduating ?? 0) % 100}
-										</span>
-										<span className="divider-dot">•</span>
-										<span
-											onClick={() => {
-												if (record4) setSearchParams({ swimmer_id: record4.swimmer_id.toString() });
-											}}
-											className="name-link"
-										>
-											{swimmer4.first_name} {swimmer4.last_name} '{(swimmer4.graduating ?? 0) % 100}
-										</span>
-										<span className="divider-dot">•</span>
-										<span className="tag tag-event">
-										{event.name}
-										</span>
-										<div className="tag-row">
-											<span className="tag tag-meta" style={{cursor: "pointer"}} onClick={ () => setSearchParams({relay_id: r.id.toString()}) }>Relay</span>
-										</div>
-										</div>
-										<div className="time">{formatTime(r.time_ms)}</div>
-									</div>
-									<div className="meta-line">
-										{meet?.name ?? ""}{meet?.date ? ` · ${formatDate(meet.date)}` : ""}{meet?.location ? ` · ${meet.location}` : ""}
+									<div className="meet-row">
+										<div className="meet-title">{r.name}</div>
+										<div className="meet-meta">{r.location} · {formatDate(r.date)}</div>
 									</div>
 								</li>
-							)
-						})}
-						</ul>
+							))}
+							</ul>
+						</div>
 					</div>
 				</div>
-			</div>
-		);
+			);
+		} else {
+			setToRender(
+				<div className="app-shell">
+					<div className="app-inner">
+						<div className="accent-card hero-card">
+							<div className="hero-row">
+								<div>
+									<div className="hero-eyebrow">Records View</div>
+									<h1 className="hero-title">Nueva Swimming Records</h1>
+									<div className="hero-subtitle">{renderHeader()}</div>
+								</div>
+								<button
+									type="button"
+									onClick={() => setSearchParams({})}
+									className="back-button"
+								>
+									Back to Meets
+								</button>
+							</div>
+						</div>
 
-	}
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Event Results</h2>
+							</div>
+							<ul className="card-list">
+									{timeCardsToRender}
+									{relayCardsToRender}
+							</ul>
+						</div>
+					</div>
+				</div>
+			);
+
+		}
+
+	}, [searchParams, currentTimes, currentRelays, curMeetInfo, curSwimmerInfo, curRelayInfo, swimmers, meets, relays, relayLegs]);
+
+	return toRender;
+
 }
 
 // --- Main App with routing ---
