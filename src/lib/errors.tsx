@@ -1,6 +1,6 @@
 export class ErrorRes extends Error {
 	name: string;
-	constructor(name: string, message: string) {
+	constructor(message: string, name: string) {
 		super(message);
 		this.name = name;
 	}
