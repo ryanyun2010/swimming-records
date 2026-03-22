@@ -96,3 +96,10 @@ export function reducerByID<T extends IDedObject>(data: T[]): Record<number, T> 
 		return acc;
 	},{});
 }
+
+export function formatChange(change: number | null | undefined): string {
+	if (change === null || change === undefined) return "";
+	const sign = change < 0 ? "-" : "+";
+	const seconds = Math.abs(change).toFixed(2);
+	return `${sign}${seconds}s`;
+}

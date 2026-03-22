@@ -3,12 +3,12 @@ import { SwimData } from "./useSwimData";
 import { Relay } from "../lib/defs";
 import { ParsedTime } from "./useParsedTimes";
 import { RelayHelpers } from "./useRelayHelpers";
-import { SearchParamParser } from "./useSearchParamParser";
+import { SearchParamHandler } from "./useSearchParamHandler";
 
-export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relayHelpers: RelayHelpers, searchParamParser: SearchParamParser) {
+export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relayHelpers: RelayHelpers, searchParamHandler: SearchParamHandler) {
 	const [currentTimes, setCurrentTimes] = useState<ParsedTime[]>([]);
 	const [currentRelays, setCurrentRelays] = useState<Relay[]>([]);
-	const { curRelayInfo, curMeetInfo, curSwimmerInfo } = searchParamParser;
+	const { curRelayInfo, curMeetInfo, curSwimmerInfo } = searchParamHandler;
 	const { relays } = data;
 	const { getParsedTimesForRelay, getRelayLegsForRelay} = relayHelpers;
 

@@ -4,12 +4,14 @@ import * as Errors from "../lib/errors";
 import { SwimData } from "./useSwimData";
 import { Meet, Swimmer, RelayLeg } from "../lib/defs";
 import { RelayHelpers } from "./useRelayHelpers";
+import { useSearchParams} from "react-router-dom";
 
-export function useSearchParamParser(data: SwimData, searchParams: URLSearchParams, relayHelpers: RelayHelpers) {
+export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers) {
 	const { swimmers, meets, relays, relayLegs, events } = data;
 	const [curMeetInfo, setCurMeetInfo] = useState<Meet | null>(null);
 	const [curSwimmerInfo, setCurSwimmerInfo] = useState<Swimmer | null>(null);
 	const [curRelayInfo, setCurRelayInfo] = useState<{id: number, swimmer_names: string[], date: string, event: string} | null>(null);
+	const [searchParams, setSearchParams] = useSearchParams();
 	const { getRelayLegsForRelay } = relayHelpers;
 	useEffect(() => {
 		setCurMeetInfo(null);
@@ -49,7 +51,7 @@ export function useSearchParamParser(data: SwimData, searchParams: URLSearchPara
 		}
 	}, [searchParams, swimmers, meets, relays, relayLegs, events, getRelayLegsForRelay]);
 
-	return useMemo(() => ({curMeetInfo, curSwimmerInfo, curRelayInfo}),[curMeetInfo,curSwimmerInfo,curRelayInfo]); 
+	return useMemo(() => ({curMeetInfo, curSwimmerInfo, curRelayInfo, setSearchParams}),[curMeetInfo,curSwimmerInfo,curRelayInfo, setSearchParams]); 
 }
 
-export type SearchParamParser = ReturnType<typeof useSearchParamParser>;
+export type SearchParamHandler = ReturnType<typeof useSearchParamHandler>;
