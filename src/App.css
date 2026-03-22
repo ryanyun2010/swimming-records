@@ -199,37 +199,37 @@
 .tag-event {
 	border-color: rgba(74, 111, 165, 0.4);
 	background: rgba(74, 111, 165, 0.14);
-	color: #4A6FA5;
+	color: #4a6fa5;
 }
 
 .tag-meta {
 	border-color: rgba(107, 114, 128, 0.35);
 	background: rgba(107, 114, 128, 0.12);
-	color: #6B7280;
+	color: #6b7280;
 }
 
 .tag-sr {
 	border-color: rgba(249, 115, 22, 0.95);
 	background: rgba(249, 115, 22, 0.32);
-	color: #C2410C;
+	color: #c2410c;
 }
 
 .tag-sr-first {
 	border-color: rgba(249, 115, 22, 1);
 	background: rgba(249, 115, 22, 0.42);
-	color: #9A3412;
+	color: #9a3412;
 }
 
 .tag-pr {
 	border-color: rgba(22, 163, 74, 0.9);
 	background: rgba(22, 163, 74, 0.28);
-	color: #15803D;
+	color: #15803d;
 }
 
 .tag-fts {
 	border-color: rgba(250, 204, 21, 0.95);
 	background: rgba(250, 204, 21, 0.32);
-	color: #A16207;
+	color: #a16207;
 }
 
 .tag-pr-prev {
@@ -241,7 +241,7 @@
 .tag-sr-prev {
 	border-color: rgba(249, 115, 22, 0.7);
 	background: rgba(249, 115, 22, 0.2);
-	color: #9A3412;
+	color: #9a3412;
 }
 
 .time {

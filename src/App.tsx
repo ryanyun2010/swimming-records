@@ -1,7 +1,7 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-// import AdminPage from "./pages/AdminPage"; 
+// import AdminPage from "./pages/AdminPage";
 import { useSwimData } from "./hooks/useSwimData";
 import { useParsedTimes } from "./hooks/useParsedTimes";
 import { useRelayHelpers } from "./hooks/useRelayHelpers";
@@ -11,7 +11,6 @@ import { RecentMeets } from "./components/RecentMeets";
 import { Search } from "./components/Search";
 
 function Home() {
-
 	const data = useSwimData();
 	const parsedTimes = useParsedTimes(data).match(
 		(times) => times,
@@ -22,18 +21,29 @@ function Home() {
 	);
 
 	const relayHelpers = useRelayHelpers(parsedTimes, data.relayLegs);
-	const searchParamHandler = useSearchParamHandler(data,relayHelpers);
-	const timeFilterer = useTimeFilterer(parsedTimes,data,relayHelpers,searchParamHandler);
+	const searchParamHandler = useSearchParamHandler(data, relayHelpers);
+	const timeFilterer = useTimeFilterer(
+		parsedTimes,
+		data,
+		relayHelpers,
+		searchParamHandler
+	);
 
-	const {curMeetInfo, curSwimmerInfo, curRelayInfo} = searchParamHandler;
+	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = searchParamHandler;
 	if (curMeetInfo == null && curSwimmerInfo == null && curRelayInfo == null) {
-		return (<RecentMeets data={data} searchParamHandler={searchParamHandler} />);
+		return (
+			<RecentMeets data={data} searchParamHandler={searchParamHandler} />
+		);
 	}
-	return (<Search data={data} 
-					searchParamHandler={searchParamHandler} 
-					relayHelpers={relayHelpers} 
-					curRelays={timeFilterer.currentRelays} 
-					curParsedTimes={timeFilterer.currentTimes} />);
+	return (
+		<Search
+			data={data}
+			searchParamHandler={searchParamHandler}
+			relayHelpers={relayHelpers}
+			curRelays={timeFilterer.currentRelays}
+			curParsedTimes={timeFilterer.currentTimes}
+		/>
+	);
 }
 
 // --- Main App with routing ---
