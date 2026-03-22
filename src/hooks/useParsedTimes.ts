@@ -75,20 +75,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			const event = events[relay.event_id];
 			if (swimmer == null || relay == null || meet == null || event == null) return err(new Errors.NotFound(`Missing swimmer, relay, meet, or event info for relay leg ${relayLeg.id}`));
 
-			let leg_name = "";
-			if (event.name == "200 Medley Relay" || event.name == "200 Freestyle Relay" || event.name == "400 Freestyle Relay") {
-				if (event.name == "200 Medley Relay") {
-					if (relayLeg.leg_order == 1) leg_name = "50 Backstroke";
-					else if (relayLeg.leg_order == 2) leg_name = "50 Breaststroke";
-					else if (relayLeg.leg_order == 3) leg_name = "50 Butterfly";
-					else if (relayLeg.leg_order == 4) leg_name = "50 Freestyle";
-				} else if (event.name == "200 Freestyle Relay") {
-					leg_name = `50 Freestyle`;
-				}
-				else if (event.name == "400 Freestyle Relay") {
-					leg_name = `100 Freestyle`;
-				}
-			}
+			let leg_name = events[relayLeg.event_id].name;
 			const parsedTime: ParsedTime = {
 				swimmer_id: relayLeg.swimmer_id,
 				meet_id: relay.meet_id,

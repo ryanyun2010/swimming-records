@@ -25,7 +25,6 @@ function Home() {
 	const searchParamHandler = useSearchParamHandler(data,relayHelpers);
 	const timeFilterer = useTimeFilterer(parsedTimes,data,relayHelpers,searchParamHandler);
 
-
 	const {curMeetInfo, curSwimmerInfo, curRelayInfo} = searchParamHandler;
 	if (curMeetInfo == null && curSwimmerInfo == null && curRelayInfo == null) {
 		return (<RecentMeets data={data} searchParamHandler={searchParamHandler} />);

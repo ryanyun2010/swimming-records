@@ -42,10 +42,11 @@ export const relayLegSchema = z.object({
 	id: z.coerce.number().int(),
 	relay_id: z.coerce.number().int(),
 	swimmer_id: z.coerce.number().int(),
+	event_id: z.coerce.number().int(),
 	leg_order: z.coerce.number().int(),
 	split_time: z.coerce.number(),
 	is_valid: z.coerce.boolean(), 
-	invalid_reason: z.string().nullable()
+	invalid_reason: z.string().nullable(),
 });
 export const relayLegsSchema = z.array(relayLegSchema);
 export type RelayLeg = z.infer<typeof relayLegSchema>;

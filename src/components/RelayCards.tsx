@@ -76,7 +76,7 @@ export function RelayCards({data, curRelays, searchParamHandler, relayHelpers}: 
 	return curRelays.map((t) => renderRelayCard(t)).reduce((acc: JSX.Element[], cur: Res<JSX.Element, Errors.ErrorRes>) => cur.match(
 		(cards) => [...acc,cards],
 		(err) => {
-			console.warn("Failed to render a relay card for relay ID ${r.id}, skipping render: ", err.toString());
+			console.warn(`Failed to render a relay card, skipping render: `, err.toString());
 			return acc;
 		}),[]);
 }

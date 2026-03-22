@@ -41,3 +41,9 @@ export class InvalidSearchParams extends ErrorRes {
 		super(message, "InvalidSearchParamsError");
 	}
 }
+
+export class Unauthorized extends ErrorRes {
+	constructor(message: string) {
+		super(message, "UnauthorizedError");
+	}
+}

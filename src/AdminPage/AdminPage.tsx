@@ -1,3 +1,25 @@
+import { GoogleAuthSection } from "./components/GoogleAuthSection";
+import { useGoogleLoginHandler } from "./hooks/useGoogleLoginHandler";
+import { useSwimData } from "../hooks/useSwimData";
+import { useDatabaseHandler } from "./hooks/useDatabaseHandler";
+export default function AdminPage(){
+
+	const { onLogin, loggedIn, userEmail } = useGoogleLoginHandler();
+	const data = useSwimData();
+	const databaseHandler = useDatabaseHandler(); 
+
+	return (
+ 		<div style={{ padding: 32 }}>
+			<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
+			{!loggedIn ? null : (
+				<p>loggeeed in !!</p>
+			)}
+		</div>
+	);
+}
+
+
+
 // import { useEffect, useState } from "react";
 // import { GoogleLogin } from "@react-oauth/google";
 // import { readCSV, getResponseJSONAndParse, zodParseWith } from "../lib/utils";
@@ -15,36 +37,6 @@
 // 	const [meets, setMeets] = useState<Meet[]>([]);
 // 	const [swimmers, setSwimmers] = useState<Swimmer[]>([]);
 //
-// 	const onLogin = (res: any) => {
-// 		return okAsync(res)
-// 		.andThen((res) => res.credential ? okAsync(res.credential) : errAsync(new Errors.MalformedResponse("Google login response did not contain credential: " + JSON.stringify(res))))
-// 		.andThen((idToken) => {
-// 			setToken(idToken);
-// 			return ResultAsync.fromPromise(fetch(
-// 				"https://swimming-api.ryanyun2010.workers.dev/verify",
-// 				{
-// 					method: "POST",
-// 					headers: { Authorization: `Bearer ${idToken}` }
-// 				}
-// 			), (e) => new Errors.NoResponse("Login failed: Could not reach authentication server: " + JSON.stringify(e)))
-// 		})
-// 		.andThen((verify) => {
-// 			if (!verify.ok) {
-// 				return errAsync(new Errors.Unauthorized("Login failed: " + verify.statusText));
-// 			}
-// 			return okAsync(verify);
-// 		}).andThen((verify) => getResponseJSONAndParse(verify, z.object({email: z.string()}), (errMsg) => new Errors.MalformedResponse("Authentication server returned invalid JSON: " + errMsg))	
-// 		).match(
-// 			(data) => {
-// 				setUserEmail(data.email);
-// 				setLoggedIn(true);
-// 			},
-// 			(err) => {
-// 				alert("Error logging in, see console for details.");
-// 				console.error("Failed to log in: " + JSON.stringify(err));
-// 			}
-// 		)
-// 	};
 //
 // 	// load meets & swimmers
 // 	useEffect(() => {
@@ -405,44 +397,44 @@
 // 		e.target.reset();
 // 	};
 //
-// 	const addSwimmer = (e: React.SubmitEvent<HTMLFormElement>) => {
-// 		e.preventDefault();
-// 		const f = new FormData(e.target);
-//
-// 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
-// 			method: "POST",
-// 			headers: {
-// 				"Content-Type": "application/json",
-// 				Authorization: `Bearer ${token}`
-// 			},
-// 			body: JSON.stringify({
-// 				name: f.get("name"),
-// 				graduating_year: Number(f.get("graduating_year"))
-// 			})
-// 		}), (error) => new Errors.NoResponse("Failed to add swimmer, no response from server: " + JSON.stringify(error))).match(
-// 			(_) => {
-// 				alert("Swimmer sucessfully added");
-// 			},
-// 			(err) => {
-// 				alert("Failed to add swimmer, see console for details.");
-// 				console.error("Failed to add swimmer: " + JSON.stringify(err));
-// 			}
-// 		);
-//
-// 		e.target.reset();
-//
-// 		ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("No response from server: " + JSON.stringify(e)))
-// 			.andThen((r) => getResponseJSONAndParse(r, swimmersSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse swimmers data returned from API: " + errMsg)))
-// 			.match(
-// 				(r) => {
-// 					setSwimmers(r);
-// 				},
-// 				(e) => {
-// 					alert("While attempting to update swimmer list, failed to load swimmers, see console for details.");
-// 					console.error("Failed to load swimmers: " + JSON.stringify(e));
-// 				}
-// 			);
-// 	};
+	// const addSwimmer = (e: React.SubmitEvent<HTMLFormElement>) => {
+	// 	e.preventDefault();
+	// 	const f = new FormData(e.target);
+	//
+	// 	ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
+	// 		method: "POST",
+	// 		headers: {
+	// 			"Content-Type": "application/json",
+	// 			Authorization: `Bearer ${token}`
+	// 		},
+	// 		body: JSON.stringify({
+	// 			name: f.get("name"),
+	// 			graduating_year: Number(f.get("graduating_year"))
+	// 		})
+	// 	}), (error) => new Errors.NoResponse("Failed to add swimmer, no response from server: " + JSON.stringify(error))).match(
+	// 		(_) => {
+	// 			alert("Swimmer sucessfully added");
+	// 		},
+	// 		(err) => {
+	// 			alert("Failed to add swimmer, see console for details.");
+	// 			console.error("Failed to add swimmer: " + JSON.stringify(err));
+	// 		}
+	// 	);
+	//
+	// 	e.target.reset();
+	//
+	// 	ResultAsync.fromPromise(fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers"), (e) => new Errors.NoResponse("No response from server: " + JSON.stringify(e)))
+	// 		.andThen((r) => getResponseJSONAndParse(r, swimmersSchema, (errMsg) => new Errors.MalformedResponse("Failed to parse swimmers data returned from API: " + errMsg)))
+	// 		.match(
+	// 			(r) => {
+	// 				setSwimmers(r);
+	// 			},
+	// 			(e) => {
+	// 				alert("While attempting to update swimmer list, failed to load swimmers, see console for details.");
+	// 				console.error("Failed to load swimmers: " + JSON.stringify(e));
+	// 			}
+	// 		);
+	// };
 //
 // 	return (
 // 		<div style={{ padding: 32 }}>

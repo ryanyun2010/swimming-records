@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { recordProgsSchema, RecordProg, meetsSchema, Meet, relaysSchema, Relay, relayLegsSchema, RelayLeg, swimmersSchema, Swimmer, resultsSchema, Result, eventsSchema, SEvent} from "../lib/defs";
 import { fetchAndParse, reducerByID} from "../lib/utils";
 
@@ -11,7 +11,7 @@ export function useSwimData() {
 	const [events, setEvents] = useState<Record<number, SEvent>>({});
 	const [recordProgs, setRecordProgs] = useState<RecordProg[]>([]);
 
-	useEffect(() => {
+	const fetchData = useCallback(() => {
 		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/records", recordProgsSchema)
 		.match(
 			(data) => setRecordProgs(data),
@@ -53,9 +53,13 @@ export function useSwimData() {
 			(data) => setResults(reducerByID(data)),
 			(err) => console.error("Failed to load results:", err)
 		)
-	}, []);	
+	},[]);
 
-	return useMemo(() => ({ results, swimmers, meets, relays, relayLegs, events, recordProgs }), [results, swimmers, meets, relays, relayLegs, events, recordProgs]);
+	useEffect(fetchData, []);	
+
+
+
+	return useMemo(() => ({ results, swimmers, meets, relays, relayLegs, events, recordProgs, refresher: fetchData}), [results, swimmers, meets, relays, relayLegs, events, recordProgs, fetchData]);
 }
 export type SwimData = ReturnType<typeof useSwimData>;
 

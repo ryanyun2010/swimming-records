@@ -6,13 +6,11 @@ import { RelayHelpers } from "./useRelayHelpers";
 import { SearchParamHandler } from "./useSearchParamHandler";
 
 export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relayHelpers: RelayHelpers, searchParamHandler: SearchParamHandler) {
-	const [currentTimes, setCurrentTimes] = useState<ParsedTime[]>([]);
-	const [currentRelays, setCurrentRelays] = useState<Relay[]>([]);
 	const { curRelayInfo, curMeetInfo, curSwimmerInfo } = searchParamHandler;
 	const { relays } = data;
 	const { getParsedTimesForRelay, getRelayLegsForRelay} = relayHelpers;
 
-	useEffect(() => {
+	const [currentTimes, currentRelays] = useMemo(() => {
 		let timesToShow: ParsedTime[] = parsedTimes;
 		let relaysToShow: Relay[] = Object.values(relays);
 
@@ -46,11 +44,10 @@ export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relay
 				(err) => {console.warn(`While filtering by swimmer, failed to get relay legs for relay ID to determine swimmer ${r.id}:`, err.toString()); return false;}
 			));
 		}
-		setCurrentTimes(timesToShow);
-		setCurrentRelays(relaysToShow);
+		return [timesToShow, relaysToShow];
 	}, [curMeetInfo, curSwimmerInfo, parsedTimes, relays, curRelayInfo, getRelayLegsForRelay, getParsedTimesForRelay]);
 
-	return useMemo(() => ({currentTimes, currentRelays }), [currentTimes, currentRelays])
+	return {currentTimes, currentRelays };
 }
 
 export type TimeFilterer = ReturnType<typeof useTimeFilterer>;
