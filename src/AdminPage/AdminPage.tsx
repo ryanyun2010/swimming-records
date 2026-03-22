@@ -3,10 +3,10 @@ import { useGoogleLoginHandler } from "./hooks/useGoogleLoginHandler";
 import { useSwimData } from "../hooks/useSwimData";
 import { useDatabaseHandler } from "./hooks/useDatabaseHandler";
 export default function AdminPage(){
-
-	const { onLogin, loggedIn, userEmail } = useGoogleLoginHandler();
+	const googleLoginHandler = useGoogleLoginHandler();
+	const { onLogin, loggedIn, userEmail } = googleLoginHandler;
 	const data = useSwimData();
-	const databaseHandler = useDatabaseHandler(); 
+	const databaseHandler = useDatabaseHandler(data, googleLoginHandler); 
 
 	return (
  		<div style={{ padding: 32 }}>

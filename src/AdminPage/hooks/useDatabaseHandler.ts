@@ -42,8 +42,8 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 		);
 	},[refresher, token]);
 
-	const addResult = useCallback((swimmer_id: number, event_id: number, meet_id: number, time_ms: number, is_valid: boolean, invalid_reason: string | null): ResultAsync<null, Errors.ErrorRes> => {
-	}, [refresher, token]);
+	// const addResult = useCallback((swimmer_id: number, event_id: number, meet_id: number, time_ms: number, is_valid: boolean, invalid_reason: string | null): ResultAsync<null, Errors.ErrorRes> => {
+	// }, [refresher, token]);
 
 	return useMemo(() => ({ addSwimmer, addMeet }), [addSwimmer, addMeet]);
 
