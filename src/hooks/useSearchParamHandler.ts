@@ -47,7 +47,7 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 			}
 		}
 		return {curMeetInfo, curSwimmerInfo, curRelayInfo};
-	}, [searchParams, swimmers, meets, relays, relayLegs, events, getRelayLegsForRelay]);
+	}, [searchParams, swimmers, meets, relays, events, getRelayLegsForRelay]);
 
 	return { curMeetInfo, curSwimmerInfo, curRelayInfo, setSearchParams };
 }

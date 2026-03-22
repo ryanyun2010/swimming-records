@@ -41,8 +41,16 @@ export function TimeCards({data, curParsedTimes, searchParamHandler}: TimeCardsP
 							<span className="divider-dot">•</span>
 							<span className="tag tag-event">{t.event_name}</span>
 							<div className="tag-row">
-								{(t.type == "relay") ? (
-									<span style={{cursor: "pointer"}} className="tag tag-meta" onClick={() => setSearchParams({relay_id: relayLeg?.relay_id ?? ""}.toString())}>{(t.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}</span>
+								{(t.type == "relay_leg") ? (
+									<span
+										style={{ cursor: "pointer" }}
+										className="tag tag-meta"
+										onClick={() => {
+											if (relayLeg) setSearchParams({ relay_id: relayLeg.relay_id.toString() });
+										}}
+									>
+										{(t.start) == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}
+									</span>
 								) : (
 									<span className="tag tag-meta">Individual</span>
 								)}
@@ -54,7 +62,7 @@ export function TimeCards({data, curParsedTimes, searchParamHandler}: TimeCardsP
 								{
 									previousPR != null ?
 									(previousPR.change === null
-										? <span key={`prev-pr}`} className="tag tag-fts">FTS</span>
+										? <span key="prev-pr" className="tag tag-fts">FTS</span>
 										: <span key={`prev-pr`} className="tag tag-pr-prev">PREVIOUS PR {formatChange(previousPR.change)}</span>) : null
 								}
 								{ previousSR != null ?

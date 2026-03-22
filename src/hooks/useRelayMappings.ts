@@ -20,4 +20,3 @@ export function useRelayMappings(parsedTimes: ParsedTime[], relayLegs: Record<nu
 		},[parsedTimes, relayLegs]);
 }
 
-

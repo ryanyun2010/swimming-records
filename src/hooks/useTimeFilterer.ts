@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { SwimData } from "./useSwimData";
 import { Relay } from "../lib/defs";
 import { ParsedTime } from "./useParsedTimes";
