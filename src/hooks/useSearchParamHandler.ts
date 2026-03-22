@@ -7,7 +7,7 @@ import { RelayHelpers } from "./useRelayHelpers";
 import { useSearchParams} from "react-router-dom";
 
 export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers) {
-	const { swimmers, meets, relays, relayLegs, events } = data;
+	const { swimmers, meets, relays, events } = data;
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { getRelayLegsForRelay } = relayHelpers;
 	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = useMemo(() => {
@@ -49,7 +49,7 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 		return {curMeetInfo, curSwimmerInfo, curRelayInfo};
 	}, [searchParams, swimmers, meets, relays, relayLegs, events, getRelayLegsForRelay]);
 
-	return useMemo(() => ({curMeetInfo, curSwimmerInfo, curRelayInfo, setSearchParams}),[curMeetInfo,curSwimmerInfo,curRelayInfo, setSearchParams]); 
+	return { curMeetInfo, curSwimmerInfo, curRelayInfo, setSearchParams };
 }
 
 export type SearchParamHandler = ReturnType<typeof useSearchParamHandler>;
