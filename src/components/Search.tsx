@@ -21,7 +21,7 @@ export function Search({
 	searchParamHandler,
 	relayHelpers,
 	curRelays,
-	curParsedTimes
+	curParsedTimes,
 }: SearchProps): JSX.Element {
 	const { setSearchParams } = searchParamHandler;
 	return (
@@ -31,20 +31,12 @@ export function Search({
 					<div className="hero-row">
 						<div>
 							<div className="hero-eyebrow">Records View</div>
-							<h1 className="hero-title">
-								Nueva Swimming Records
-							</h1>
+							<h1 className="hero-title">Nueva Swimming Records</h1>
 							<div className="hero-subtitle">
-								<Header
-									searchParamHandler={searchParamHandler}
-								/>
+								<Header searchParamHandler={searchParamHandler} />
 							</div>
 						</div>
-						<button
-							type="button"
-							onClick={() => setSearchParams({})}
-							className="back-button"
-						>
+						<button type="button" onClick={() => setSearchParams({})} className="back-button">
 							Back to Meets
 						</button>
 					</div>

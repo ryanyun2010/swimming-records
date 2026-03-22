@@ -17,23 +17,16 @@ function Home() {
 		(err) => {
 			console.error("Failed to parse times:", err.toString());
 			return [];
-		}
+		},
 	);
 
 	const relayHelpers = useRelayHelpers(parsedTimes, data.relayLegs);
 	const searchParamHandler = useSearchParamHandler(data, relayHelpers);
-	const timeFilterer = useTimeFilterer(
-		parsedTimes,
-		data,
-		relayHelpers,
-		searchParamHandler
-	);
+	const timeFilterer = useTimeFilterer(parsedTimes, data, relayHelpers, searchParamHandler);
 
 	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = searchParamHandler;
 	if (curMeetInfo == null && curSwimmerInfo == null && curRelayInfo == null) {
-		return (
-			<RecentMeets data={data} searchParamHandler={searchParamHandler} />
-		);
+		return <RecentMeets data={data} searchParamHandler={searchParamHandler} />;
 	}
 	return (
 		<Search

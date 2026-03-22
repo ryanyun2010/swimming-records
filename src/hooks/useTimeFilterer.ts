@@ -9,7 +9,7 @@ export function useTimeFilterer(
 	parsedTimes: ParsedTime[],
 	data: SwimData,
 	relayHelpers: RelayHelpers,
-	searchParamHandler: SearchParamHandler
+	searchParamHandler: SearchParamHandler,
 ) {
 	const { curRelayInfo, curMeetInfo, curSwimmerInfo } = searchParamHandler;
 	const { relays } = data;
@@ -29,57 +29,40 @@ export function useTimeFilterer(
 					(err) => {
 						console.warn(
 							`Failed to get parsed times for relay ID ${relay.id} while filtering by that relay:`,
-							err.toString()
+							err.toString(),
 						);
 						timesToShow = [];
-					}
+					},
 				);
 				relaysToShow = [relay];
 			} else {
-				console.warn(
-					`When filtering by relay, no relay found with ID ${curRelayInfo.id}`
-				);
+				console.warn(`When filtering by relay, no relay found with ID ${curRelayInfo.id}`);
 				timesToShow = [];
 			}
 		}
 
 		if (curMeetInfo != null) {
-			timesToShow = timesToShow.filter(
-				(t) => t.meet_id == curMeetInfo.id
-			);
-			relaysToShow = relaysToShow.filter(
-				(r) => r.meet_id == curMeetInfo.id
-			);
+			timesToShow = timesToShow.filter((t) => t.meet_id == curMeetInfo.id);
+			relaysToShow = relaysToShow.filter((r) => r.meet_id == curMeetInfo.id);
 		}
 
 		if (curSwimmerInfo != null) {
-			timesToShow = timesToShow.filter(
-				(t) => t.swimmer_id == curSwimmerInfo.id
-			);
+			timesToShow = timesToShow.filter((t) => t.swimmer_id == curSwimmerInfo.id);
 			relaysToShow = relaysToShow.filter((r) =>
 				getRelayLegsForRelay(r.id).match(
-					(legs) =>
-						legs.some((leg) => leg.swimmer_id == curSwimmerInfo.id),
+					(legs) => legs.some((leg) => leg.swimmer_id == curSwimmerInfo.id),
 					(err) => {
 						console.warn(
 							`While filtering by swimmer, failed to get relay legs for relay ID to determine swimmer ${r.id}:`,
-							err.toString()
+							err.toString(),
 						);
 						return false;
-					}
-				)
+					},
+				),
 			);
 		}
 		return [timesToShow, relaysToShow];
-	}, [
-		curMeetInfo,
-		curSwimmerInfo,
-		parsedTimes,
-		relays,
-		curRelayInfo,
-		getRelayLegsForRelay,
-		getParsedTimesForRelay
-	]);
+	}, [curMeetInfo, curSwimmerInfo, parsedTimes, relays, curRelayInfo, getRelayLegsForRelay, getParsedTimesForRelay]);
 
 	return { currentTimes, currentRelays };
 }

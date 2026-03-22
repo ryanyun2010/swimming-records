@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import { ParsedTime } from "./useParsedTimes";
 import { RelayLeg } from "../lib/defs";
 
-export function useRelayMappings(
-	parsedTimes: ParsedTime[],
-	relayLegs: Record<number, RelayLeg>
-) {
+export function useRelayMappings(parsedTimes: ParsedTime[], relayLegs: Record<number, RelayLeg>) {
 	return useMemo<Record<number, number[][]>>(() => {
 		const mapping: Record<number, number[][]> = {};
 		for (let i = 0; i < parsedTimes.length; i++) {

@@ -2,7 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 export function GoogleAuthSection({
 	loggedIn,
 	onLogin,
-	userEmail
+	userEmail,
 }: {
 	loggedIn: boolean;
 	onLogin: (res: any) => void;

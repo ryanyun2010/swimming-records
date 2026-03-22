@@ -14,12 +14,7 @@ type RelayCardsProps = {
 	relayHelpers: RelayHelpers;
 };
 
-export function RelayCards({
-	data,
-	curRelays,
-	searchParamHandler,
-	relayHelpers
-}: RelayCardsProps): JSX.Element[] {
+export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }: RelayCardsProps): JSX.Element[] {
 	const { swimmers, meets, events } = data;
 	const { setSearchParams } = searchParamHandler;
 	const { getRelayLegsForRelay } = relayHelpers;
@@ -28,42 +23,22 @@ export function RelayCards({
 		const legsFailable = getRelayLegsForRelay(r.id);
 		if (legsFailable.isErr())
 			return err(
-				new Errors.NotFound(
-					`Failed to get relay legs for relay ID ${r.id}: ${legsFailable.error.message}`
-				)
+				new Errors.NotFound(`Failed to get relay legs for relay ID ${r.id}: ${legsFailable.error.message}`),
 			);
 
 		const legs = legsFailable.unwrapOr([]);
 		if (legs.length != 4)
-			return err(
-				new Errors.NotFound(
-					`Expected 4 relay legs for relay ID ${r.id}, found ${legs.length}`
-				)
-			);
+			return err(new Errors.NotFound(`Expected 4 relay legs for relay ID ${r.id}, found ${legs.length}`));
 
 		const swimmersForLegs = legs.map((leg) => swimmers[leg.swimmer_id]);
 		if (swimmersForLegs.some((swimmer) => swimmer == null))
-			return err(
-				new Errors.NotFound(
-					`Missing swimmer info for at least one swimmer in relay ID ${r.id}`
-				)
-			);
+			return err(new Errors.NotFound(`Missing swimmer info for at least one swimmer in relay ID ${r.id}`));
 
 		const event = events[r.event_id];
-		if (!event)
-			return err(
-				new Errors.NotFound(
-					`No event found with ID ${r.event_id} for relay ID ${r.id}`
-				)
-			);
+		if (!event) return err(new Errors.NotFound(`No event found with ID ${r.event_id} for relay ID ${r.id}`));
 
 		const meet = meets[r.meet_id];
-		if (!meet)
-			return err(
-				new Errors.NotFound(
-					`No meet found with ID ${r.meet_id} for relay ID ${r.id}`
-				)
-			);
+		if (!meet) return err(new Errors.NotFound(`No meet found with ID ${r.meet_id} for relay ID ${r.id}`));
 
 		const swimmerSpans = swimmersForLegs.map((swimmer, i) => (
 			<span
@@ -71,13 +46,12 @@ export function RelayCards({
 				onClick={() => {
 					if (legs[i])
 						setSearchParams({
-							swimmer_id: legs[i].swimmer_id.toString()
+							swimmer_id: legs[i].swimmer_id.toString(),
 						});
 				}}
 				className="name-link"
 			>
-				{swimmer.first_name} {swimmer.last_name} '
-				{(swimmer.graduating ?? 0) % 100}
+				{swimmer.first_name} {swimmer.last_name} '{(swimmer.graduating ?? 0) % 100}
 			</span>
 		));
 
@@ -89,14 +63,11 @@ export function RelayCards({
 							i === 0
 								? [node]
 								: [
-										<span
-											key={`dot-${r.id}-${i}`}
-											className="divider-dot"
-										>
+										<span key={`dot-${r.id}-${i}`} className="divider-dot">
 											•
 										</span>,
-										node
-									]
+										node,
+									],
 						)}
 						<span className="divider-dot">•</span>
 						<span className="tag tag-event">{event.name}</span>
@@ -106,7 +77,7 @@ export function RelayCards({
 								style={{ cursor: "pointer" }}
 								onClick={() =>
 									setSearchParams({
-										relay_id: r.id.toString()
+										relay_id: r.id.toString(),
 									})
 								}
 							>
@@ -121,7 +92,7 @@ export function RelayCards({
 					{meet?.date ? ` · ${formatDate(meet.date)}` : ""}
 					{meet?.location ? ` · ${meet.location}` : ""}
 				</div>
-			</li>
+			</li>,
 		);
 	}
 
@@ -132,13 +103,10 @@ export function RelayCards({
 				cur.match(
 					(cards) => [...acc, cards],
 					(err) => {
-						console.warn(
-							`Failed to render a relay card, skipping render: `,
-							err.toString()
-						);
+						console.warn(`Failed to render a relay card, skipping render: `, err.toString());
 						return acc;
-					}
+					},
 				),
-			[]
+			[],
 		);
 }

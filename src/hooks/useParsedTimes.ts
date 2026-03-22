@@ -26,37 +26,22 @@ export interface ParsedTime {
 	previous_SR: { change: number | null; til: string } | null;
 }
 
-export function useParsedTimes(
-	data: SwimData
-): Res<ParsedTime[], Errors.NotFound> {
-	const { results, swimmers, meets, relays, relayLegs, events, recordProgs } =
-		data;
+export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFound> {
+	const { results, swimmers, meets, relays, relayLegs, events, recordProgs } = data;
 	return useMemo(() => {
 		let times: ParsedTime[] = [];
 		for (let result of Object.values(results)) {
 			if (!(result.id in swimmers) || !(result.meet_id in meets)) {
-				return err(
-					new Errors.NotFound(
-						`Missing swimmer or meet info for result ${result.id}`
-					)
-				);
+				return err(new Errors.NotFound(`Missing swimmer or meet info for result ${result.id}`));
 			}
 			if (!(result.event_id in events)) {
-				return err(
-					new Errors.NotFound(
-						`Missing event info for result ${result.id}`
-					)
-				);
+				return err(new Errors.NotFound(`Missing event info for result ${result.id}`));
 			}
 			const swimmer = swimmers[result.swimmer_id];
 			const meet = meets[result.meet_id];
 			const event = events[result.event_id];
 			if (swimmer == null || meet == null || event == null)
-				return err(
-					new Errors.NotFound(
-						`Missing swimmer, meet, or event info for result ${result.id}`
-					)
-				);
+				return err(new Errors.NotFound(`Missing swimmer, meet, or event info for result ${result.id}`));
 
 			const parsedTime: ParsedTime = {
 				swimmer_id: result.swimmer_id,
@@ -77,7 +62,7 @@ export function useParsedTimes(
 				current_PR: null,
 				current_SR: null,
 				previous_PR: null,
-				previous_SR: null
+				previous_SR: null,
 			};
 			times.push(parsedTime);
 		}
@@ -87,28 +72,16 @@ export function useParsedTimes(
 				!relays[relayLeg.relay_id] ||
 				!(relays[relayLeg.relay_id].meet_id in meets)
 			) {
-				return err(
-					new Errors.NotFound(
-						`Missing swimmer, relay, or meet info for relay leg ${relayLeg.id}`
-					)
-				);
+				return err(new Errors.NotFound(`Missing swimmer, relay, or meet info for relay leg ${relayLeg.id}`));
 			}
 			const swimmer = swimmers[relayLeg.swimmer_id];
 			const relay = relays[relayLeg.relay_id];
 			const meet = meets[relay.meet_id];
 			const event = events[relay.event_id];
 			const legEvent = events[relayLeg.event_id];
-			if (
-				swimmer == null ||
-				relay == null ||
-				meet == null ||
-				event == null ||
-				legEvent == null
-			) {
+			if (swimmer == null || relay == null || meet == null || event == null || legEvent == null) {
 				return err(
-					new Errors.NotFound(
-						`Missing swimmer, relay, meet, or event info for relay leg ${relayLeg.id}`
-					)
+					new Errors.NotFound(`Missing swimmer, relay, meet, or event info for relay leg ${relayLeg.id}`),
 				);
 			}
 
@@ -132,7 +105,7 @@ export function useParsedTimes(
 				current_PR: null,
 				current_SR: null,
 				previous_PR: null,
-				previous_SR: null
+				previous_SR: null,
 			};
 			times.push(parsedTime);
 		}
@@ -149,27 +122,16 @@ export function useParsedTimes(
 				!(recordProg.event_id in events)
 			) {
 				return err(
-					new Errors.NotFound(
-						`Missing swimmer, meet, or event info for record prog ${recordProg.id}`
-					)
+					new Errors.NotFound(`Missing swimmer, meet, or event info for record prog ${recordProg.id}`),
 				);
 			}
 			let timepid = null;
 			for (let i = 0; i < times.length; i++) {
 				const time = times[i];
-				if (
-					time.meet_id == recordProg.meet_id &&
-					time.swimmer_id == recordProg.swimmer_id
-				) {
-					if (
-						recordProg.leg_id &&
-						recordProg.leg_id == time.relay_leg_id
-					) {
+				if (time.meet_id == recordProg.meet_id && time.swimmer_id == recordProg.swimmer_id) {
+					if (recordProg.leg_id && recordProg.leg_id == time.relay_leg_id) {
 						timepid = i;
-					} else if (
-						recordProg.result_id &&
-						recordProg.result_id == time.result_id
-					) {
+					} else if (recordProg.result_id && recordProg.result_id == time.result_id) {
 						timepid = i;
 					}
 				}
@@ -177,48 +139,44 @@ export function useParsedTimes(
 			if (timepid == null) {
 				return err(
 					new Errors.NotFound(
-						`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`
-					)
+						`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`,
+					),
 				);
 			}
 			let timep = times[timepid];
 
 			if (!recordProg.school_record) {
 				let last_best =
-					last_bests[
-						`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`
-					];
+					last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`];
 				if (last_best !== undefined) {
 					let last_best_cur = times[last_best].current_PR ?? {
-						change: null
+						change: null,
 					};
 					times[last_best].previous_PR = {
 						change: last_best_cur.change,
-						til: timep.meet_date
+						til: timep.meet_date,
 					};
 					times[last_best].current_PR = null;
 					timep.current_PR = {
-						change: timep.time - times[last_best].time
+						change: timep.time - times[last_best].time,
 					};
 				} else {
 					timep.current_PR = { change: null };
 				}
-				last_bests[
-					`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`
-				] = timepid;
+				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`] = timepid;
 			} else {
 				let last_SR_best = last_SR_bests[recordProg.event_id];
 				if (last_SR_best !== undefined) {
 					let last_SR_best_cur = times[last_SR_best].current_SR ?? {
-						change: null
+						change: null,
 					};
 					times[last_SR_best].previous_SR = {
 						change: last_SR_best_cur.change,
-						til: timep.meet_date
+						til: timep.meet_date,
 					};
 					times[last_SR_best].current_SR = null;
 					timep.current_SR = {
-						change: timep.time - times[last_SR_best].time
+						change: timep.time - times[last_SR_best].time,
 					};
 				} else {
 					timep.current_SR = { change: null };

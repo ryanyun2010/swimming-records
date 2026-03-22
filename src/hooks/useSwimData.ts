@@ -13,7 +13,7 @@ import {
 	resultsSchema,
 	Result,
 	eventsSchema,
-	SEvent
+	SEvent,
 } from "../lib/defs";
 import { fetchAndParse, reducerByID } from "../lib/utils";
 
@@ -27,60 +27,39 @@ export function useSwimData() {
 	const [recordProgs, setRecordProgs] = useState<RecordProg[]>([]);
 
 	const fetchData = useCallback(() => {
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/records",
-			recordProgsSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/records", recordProgsSchema).match(
 			(data) => setRecordProgs(data),
-			(err) => console.error("Failed to load record progressions:", err)
+			(err) => console.error("Failed to load record progressions:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/swimmers",
-			swimmersSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/swimmers", swimmersSchema).match(
 			(data) => setSwimmers(reducerByID(data)),
-			(err) => console.error("Failed to load swimmers:", err)
+			(err) => console.error("Failed to load swimmers:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/meets",
-			meetsSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/meets", meetsSchema).match(
 			(data) => setMeets(reducerByID(data)),
-			(err) => console.error("Failed to load meets:", err)
+			(err) => console.error("Failed to load meets:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/relays",
-			relaysSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/relays", relaysSchema).match(
 			(data) => setRelays(reducerByID(data)),
-			(err) => console.error("Failed to load relay:", err)
+			(err) => console.error("Failed to load relay:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/relay_legs",
-			relayLegsSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/relay_legs", relayLegsSchema).match(
 			(data) => setRelayLegs(reducerByID(data)),
-			(err) => console.error("Failed to load relay legs:", err)
+			(err) => console.error("Failed to load relay legs:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/events",
-			eventsSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/events", eventsSchema).match(
 			(data) => setEvents(reducerByID(data)),
-			(err) => console.error("Failed to load events:", err)
+			(err) => console.error("Failed to load events:", err),
 		);
 
-		fetchAndParse(
-			"https://swimming-api.ryanyun2010.workers.dev/results",
-			resultsSchema
-		).match(
+		fetchAndParse("https://swimming-api.ryanyun2010.workers.dev/results", resultsSchema).match(
 			(data) => setResults(reducerByID(data)),
-			(err) => console.error("Failed to load results:", err)
+			(err) => console.error("Failed to load results:", err),
 		);
 	}, []);
 
@@ -95,18 +74,9 @@ export function useSwimData() {
 			relayLegs,
 			events,
 			recordProgs,
-			refresher: fetchData
+			refresher: fetchData,
 		}),
-		[
-			results,
-			swimmers,
-			meets,
-			relays,
-			relayLegs,
-			events,
-			recordProgs,
-			fetchData
-		]
+		[results, swimmers, meets, relays, relayLegs, events, recordProgs, fetchData],
 	);
 }
 export type SwimData = ReturnType<typeof useSwimData>;

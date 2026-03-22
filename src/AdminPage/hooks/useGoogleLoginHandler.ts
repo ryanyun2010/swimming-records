@@ -15,35 +15,26 @@ export function useGoogleLoginHandler() {
 					? okAsync(res.credential)
 					: errAsync(
 							new Errors.MalformedResponse(
-								"Google login response did not contain credential: " +
-									JSON.stringify(res)
-							)
-						)
+								"Google login response did not contain credential: " + JSON.stringify(res),
+							),
+						),
 			)
 			.andThen((idToken) => {
 				setToken(idToken);
 				return ResultAsync.fromPromise(
-					fetch(
-						"https://swimming-api.ryanyun2010.workers.dev/verify",
-						{
-							method: "POST",
-							headers: { Authorization: `Bearer ${idToken}` }
-						}
-					),
+					fetch("https://swimming-api.ryanyun2010.workers.dev/verify", {
+						method: "POST",
+						headers: { Authorization: `Bearer ${idToken}` },
+					}),
 					(e) =>
 						new Errors.NoResponse(
-							"Login failed: Could not reach authentication server: " +
-								JSON.stringify(e)
-						)
+							"Login failed: Could not reach authentication server: " + JSON.stringify(e),
+						),
 				);
 			})
 			.andThen((verify) => {
 				if (!verify.ok) {
-					return errAsync(
-						new Errors.Unauthorized(
-							"Login failed: " + verify.statusText
-						)
-					);
+					return errAsync(new Errors.Unauthorized("Login failed: " + verify.statusText));
 				}
 				return okAsync(verify);
 			})
@@ -51,12 +42,8 @@ export function useGoogleLoginHandler() {
 				getResponseJSONAndParse(
 					verify,
 					z.object({ email: z.string() }),
-					(errMsg) =>
-						new Errors.MalformedResponse(
-							"Authentication server returned invalid JSON: " +
-								errMsg
-						)
-				)
+					(errMsg) => new Errors.MalformedResponse("Authentication server returned invalid JSON: " + errMsg),
+				),
 			)
 			.match(
 				(data) => {
@@ -66,12 +53,9 @@ export function useGoogleLoginHandler() {
 				(err) => {
 					alert("Error logging in, see console for details.");
 					console.error("Failed to log in: " + JSON.stringify(err));
-				}
+				},
 			);
 	};
-	return useMemo(
-		() => ({ onLogin, loggedIn, token, userEmail }),
-		[loggedIn, token, userEmail]
-	);
+	return useMemo(() => ({ onLogin, loggedIn, token, userEmail }), [loggedIn, token, userEmail]);
 }
 export type GoogleLoginHandler = ReturnType<typeof useGoogleLoginHandler>;

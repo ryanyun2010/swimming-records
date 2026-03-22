@@ -4,10 +4,7 @@ import { okAsync, ResultAsync } from "neverthrow";
 import * as Errors from "../../lib/errors";
 import { GoogleLoginHandler } from "./useGoogleLoginHandler";
 
-export function useDatabaseHandler(
-	data: SwimData,
-	googleLoginHandler: GoogleLoginHandler
-) {
+export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLoginHandler) {
 	const { token } = googleLoginHandler;
 	const { refresher } = data;
 
@@ -16,33 +13,30 @@ export function useDatabaseHandler(
 			first_name: string,
 			last_name: string,
 			gender: string,
-			graduating: number
+			graduating: number,
 		): ResultAsync<null, Errors.ErrorRes> => {
 			return ResultAsync.fromPromise(
 				fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`
+						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
 						first_name,
 						last_name,
 						gender,
-						graduating
-					})
+						graduating,
+					}),
 				}),
 				(error) =>
-					new Errors.NoResponse(
-						"Failed to add swimmer, no response from server: " +
-							JSON.stringify(error)
-					)
+					new Errors.NoResponse("Failed to add swimmer, no response from server: " + JSON.stringify(error)),
 			).map((_) => {
 				refresher();
 				return null;
 			});
 		},
-		[refresher, token]
+		[refresher, token],
 	);
 
 	const addMeet = useCallback(
@@ -52,24 +46,21 @@ export function useDatabaseHandler(
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`
+						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
 						name,
-						date
-					})
+						date,
+					}),
 				}),
 				(error) =>
-					new Errors.NoResponse(
-						"Failed to add meet, no response from server: " +
-							JSON.stringify(error)
-					)
+					new Errors.NoResponse("Failed to add meet, no response from server: " + JSON.stringify(error)),
 			).map((_) => {
 				refresher();
 				return null;
 			});
 		},
-		[refresher, token]
+		[refresher, token],
 	);
 
 	// const addResult = useCallback((swimmer_id: number, event_id: number, meet_id: number, time_ms: number, is_valid: boolean, invalid_reason: string | null): ResultAsync<null, Errors.ErrorRes> => {

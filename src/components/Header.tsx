@@ -10,31 +10,28 @@ export function Header({ searchParamHandler }: HeaderProps): JSX.Element {
 	if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
 		return (
 			<h2>
-				Results for Relay: {curRelayInfo.event} |{" "}
-				{curRelayInfo.swimmer_names.join(", ")} |{" "}
+				Results for Relay: {curRelayInfo.event} | {curRelayInfo.swimmer_names.join(", ")} |{" "}
 				{formatDate(curRelayInfo.date)}
 			</h2>
 		);
 	} else if (curMeetInfo != null && curSwimmerInfo == null) {
 		return (
 			<h2>
-				Results for Meet: {curMeetInfo.name} | {curMeetInfo.location} |{" "}
-				{formatDate(curMeetInfo.date)}
+				Results for Meet: {curMeetInfo.name} | {curMeetInfo.location} | {formatDate(curMeetInfo.date)}
 			</h2>
 		);
 	} else if (curSwimmerInfo != null && curMeetInfo == null) {
 		return (
 			<h2>
-				Results for Swimmer: {curSwimmerInfo.first_name}{" "}
-				{curSwimmerInfo.last_name} '{curSwimmerInfo.graduating % 100}
+				Results for Swimmer: {curSwimmerInfo.first_name} {curSwimmerInfo.last_name} '
+				{curSwimmerInfo.graduating % 100}
 			</h2>
 		);
 	} else if (curSwimmerInfo != null && curMeetInfo != null) {
 		return (
 			<h2>
-				Results for Swimmer: {curSwimmerInfo.first_name}{" "}
-				{curSwimmerInfo.last_name} '{curSwimmerInfo.graduating % 100} at
-				Meet: {curMeetInfo.name} | {curMeetInfo.location} |{" "}
+				Results for Swimmer: {curSwimmerInfo.first_name} {curSwimmerInfo.last_name} '
+				{curSwimmerInfo.graduating % 100} at Meet: {curMeetInfo.name} | {curMeetInfo.location} |{" "}
 				{formatDate(curMeetInfo.date)}
 			</h2>
 		);

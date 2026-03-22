@@ -10,11 +10,7 @@ export default function AdminPage() {
 
 	return (
 		<div style={{ padding: 32 }}>
-			<GoogleAuthSection
-				onLogin={onLogin}
-				loggedIn={loggedIn}
-				userEmail={userEmail}
-			/>
+			<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
 			{!loggedIn ? null : <p>loggeeed in !!</p>}
 		</div>
 	);

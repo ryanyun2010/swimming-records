@@ -7,18 +7,11 @@ type RecentMeetsProps = {
 	data: SwimData;
 	searchParamHandler: SearchParamHandler;
 };
-export function RecentMeets({
-	data,
-	searchParamHandler
-}: RecentMeetsProps): JSX.Element {
+export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX.Element {
 	const { meets } = data;
 	const { setSearchParams } = searchParamHandler;
 	const meetCards = Object.values(meets).map((m) => (
-		<li
-			key={m.id}
-			className="accent-card meet-card"
-			onClick={() => setSearchParams({ meet_id: m.id.toString() })}
-		>
+		<li key={m.id} className="accent-card meet-card" onClick={() => setSearchParams({ meet_id: m.id.toString() })}>
 			<div className="meet-row">
 				<div className="meet-title">{m.name}</div>
 				<div className="meet-meta">
@@ -33,13 +26,9 @@ export function RecentMeets({
 				<div className="accent-card hero-card">
 					<div className="hero-row">
 						<div>
-							<div className="hero-eyebrow">
-								Nueva Swim & Dive Team
-							</div>
+							<div className="hero-eyebrow">Nueva Swim & Dive Team</div>
 							<h1 className="hero-title">Swimming Records</h1>
-							<p className="hero-subtitle">
-								Select a meet to see results.
-							</p>
+							<p className="hero-subtitle">Select a meet to see results.</p>
 						</div>
 					</div>
 				</div>

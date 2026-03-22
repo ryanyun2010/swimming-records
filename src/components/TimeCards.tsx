@@ -12,30 +12,24 @@ type TimeCardsProps = {
 	curParsedTimes: ParsedTime[];
 	searchParamHandler: SearchParamHandler;
 };
-export function TimeCards({
-	data,
-	curParsedTimes,
-	searchParamHandler
-}: TimeCardsProps): JSX.Element[] {
+export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCardsProps): JSX.Element[] {
 	const { relayLegs } = data;
 	const { setSearchParams } = searchParamHandler;
 	function renderTimeCard(t: ParsedTime): Res<JSX.Element, ErrorRes> {
 		const isSchoolRecord = t.current_SR != null;
 		const isSchoolRecordFirst = t.current_SR?.change === null;
-		const isPersonalRecord =
-			t.current_PR != null && t.current_PR.change !== null;
+		const isPersonalRecord = t.current_PR != null && t.current_PR.change !== null;
 		const isFirstTimeSwim = t.current_PR?.change === null;
 		const srDelta = formatChange(t.current_SR?.change);
 		const prDelta = formatChange(t.current_PR?.change);
 		const previousPR = t.previous_PR ?? null;
 		const previousSR = t.previous_SR ?? null;
-		const relayLeg =
-			t.relay_leg_id != null ? relayLegs[t.relay_leg_id] : null;
+		const relayLeg = t.relay_leg_id != null ? relayLegs[t.relay_leg_id] : null;
 		if (t.relay_leg_id != null && relayLeg == null)
 			return err(
 				new Errors.NotFound(
-					`No relay leg found with ID ${t.relay_leg_id} for swimmer {t.swimmer_first_name} ${t.swimmer_last_name} in event ${t.event_name} at meet ${t.meet_name}`
-				)
+					`No relay leg found with ID ${t.relay_leg_id} for swimmer {t.swimmer_first_name} ${t.swimmer_last_name} in event ${t.event_name} at meet ${t.meet_name}`,
+				),
 			);
 		return ok(
 			<li className="accent-card result-card">
@@ -44,13 +38,12 @@ export function TimeCards({
 						<span
 							onClick={() =>
 								setSearchParams({
-									swimmer_id: t.swimmer_id.toString()
+									swimmer_id: t.swimmer_id.toString(),
 								})
 							}
 							className="name-link"
 						>
-							{t.swimmer_first_name} {t.swimmer_last_name} '
-							{t.swimmer_year % 100}
+							{t.swimmer_first_name} {t.swimmer_last_name} '{t.swimmer_year % 100}
 						</span>
 						<span className="divider-dot">•</span>
 						<span className="tag tag-event">{t.event_name}</span>
@@ -62,65 +55,43 @@ export function TimeCards({
 									onClick={() => {
 										if (relayLeg)
 											setSearchParams({
-												relay_id:
-													relayLeg.relay_id.toString()
+												relay_id: relayLeg.relay_id.toString(),
 											});
 									}}
 								>
-									{t.start == "flat"
-										? "Relay Split · Flat Start"
-										: "Relay Split · Relay Start"}
+									{t.start == "flat" ? "Relay Split · Flat Start" : "Relay Split · Relay Start"}
 								</span>
 							) : (
 								<span className="tag tag-meta">Individual</span>
 							)}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
-									<span className="tag tag-sr-first">
-										SCHOOL RECORD: FIRST TIME
-									</span>
+									<span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span>
 								) : (
-									<span className="tag tag-sr">
-										SCHOOL RECORD {srDelta}
-									</span>
+									<span className="tag tag-sr">SCHOOL RECORD {srDelta}</span>
 								)
 							) : null}
-							{isPersonalRecord ? (
-								<span className="tag tag-pr">PR {prDelta}</span>
-							) : null}
-							{isFirstTimeSwim ? (
-								<span className="tag tag-fts">FTS</span>
-							) : null}
+							{isPersonalRecord ? <span className="tag tag-pr">PR {prDelta}</span> : null}
+							{isFirstTimeSwim ? <span className="tag tag-fts">FTS</span> : null}
 							{previousPR != null ? (
 								previousPR.change === null ? (
 									<span key="prev-pr" className="tag tag-fts">
 										FTS
 									</span>
 								) : (
-									<span
-										key={`prev-pr`}
-										className="tag tag-pr-prev"
-									>
-										PREVIOUS PR{" "}
-										{formatChange(previousPR.change)}
+									<span key={`prev-pr`} className="tag tag-pr-prev">
+										PREVIOUS PR {formatChange(previousPR.change)}
 									</span>
 								)
 							) : null}
 							{previousSR != null ? (
 								previousSR.change === null ? (
-									<span
-										key={`prev-sr`}
-										className="tag tag-sr-first"
-									>
+									<span key={`prev-sr`} className="tag tag-sr-first">
 										PREVIOUS SCHOOL RECORD: FIRST TIME
 									</span>
 								) : (
-									<span
-										key={`prev-sr`}
-										className="tag tag-sr-prev"
-									>
-										PREVIOUS SCHOOL RECORD{" "}
-										{formatChange(previousSR.change)}
+									<span key={`prev-sr`} className="tag tag-sr-prev">
+										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
 									</span>
 								)
 							) : null}
@@ -129,10 +100,9 @@ export function TimeCards({
 					<div className="time">{formatTime(t.time)}</div>
 				</div>
 				<div className="meta-line">
-					{t.meet_name} · {formatDate(t.meet_date)} ·{" "}
-					{t.meet_location}
+					{t.meet_name} · {formatDate(t.meet_date)} · {t.meet_location}
 				</div>
-			</li>
+			</li>,
 		);
 	}
 
@@ -143,13 +113,10 @@ export function TimeCards({
 				cur.match(
 					(cards) => [...acc, cards],
 					(err) => {
-						console.warn(
-							"Failed to render a time card, skipping render: ",
-							err.toString()
-						);
+						console.warn("Failed to render a time card, skipping render: ", err.toString());
 						return acc;
-					}
+					},
 				),
-			[]
+			[],
 		);
 }
