@@ -7,7 +7,14 @@ import * as Errors from "../lib/errors";
 import { formatDate, formatTime } from "../lib/utils";
 import { JSX } from "react";
 
-export function renderRelayCards(data: SwimData, curRelays: Relay[], searchParamHandler: SearchParamHandler, relayHelpers: RelayHelpers): Res<JSX.Element[], Errors.ErrorRes> {
+type RelayCardsProps = {
+	data: SwimData;
+	curRelays: Relay[];
+	searchParamHandler: SearchParamHandler;
+	relayHelpers: RelayHelpers;
+}
+
+export function RelayCards({data, curRelays, searchParamHandler, relayHelpers}: RelayCardsProps): JSX.Element[] {
 	const { swimmers, meets, events } = data;
 	const { setSearchParams } = searchParamHandler;
 	const { getRelayLegsForRelay } = relayHelpers;
@@ -66,9 +73,10 @@ export function renderRelayCards(data: SwimData, curRelays: Relay[], searchParam
 		</li>)
 	}
 
-	return Res.combine(curRelays.map((r) => renderRelayCard(r).match(
-						c => ok(c),
-						e => err(new Errors.GeneralError(`Failed to render relay card for relay ID ${r.id}: ${e.toString()}`))
-					)
-	));
+	return curRelays.map((t) => renderRelayCard(t)).reduce((acc: JSX.Element[], cur: Res<JSX.Element, Errors.ErrorRes>) => cur.match(
+		(cards) => [...acc,cards],
+		(err) => {
+			console.warn("Failed to render a relay card for relay ID ${r.id}, skipping render: ", err.toString());
+			return acc;
+		}),[]);
 }

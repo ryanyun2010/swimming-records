@@ -7,11 +7,8 @@ import { useParsedTimes } from "./hooks/useParsedTimes";
 import { useRelayHelpers } from "./hooks/useRelayHelpers";
 import { useSearchParamHandler } from "./hooks/useSearchParamHandler";
 import { useTimeFilterer } from "./hooks/useTimeFilterer";
-import { renderRelayCards } from "./components/renderRelayCards";
-import { renderTimeCards } from "./components/renderTimeCards";
-import { renderRecentMeets } from "./components/renderRecentMeets";
-import { renderSearch } from "./components/renderSearch";
-import { renderHeader } from "./components/renderHeader";
+import { RecentMeets } from "./components/RecentMeets";
+import { Search } from "./components/Search";
 
 function Home() {
 
@@ -28,28 +25,16 @@ function Home() {
 	const searchParamHandler = useSearchParamHandler(data,relayHelpers);
 	const timeFilterer = useTimeFilterer(parsedTimes,data,relayHelpers,searchParamHandler);
 
-	const recentMeetsToRender = renderRecentMeets(data, searchParamHandler); 
 
 	const {curMeetInfo, curSwimmerInfo, curRelayInfo} = searchParamHandler;
 	if (curMeetInfo == null && curSwimmerInfo == null && curRelayInfo == null) {
-		return recentMeetsToRender;
+		return (<RecentMeets data={data} searchParamHandler={searchParamHandler} />);
 	}
-	const headerToRender = renderHeader(searchParamHandler); 
-	const relayCardsToRender = renderRelayCards(data, timeFilterer.currentRelays, searchParamHandler, relayHelpers).match(	
-		(cards) => cards,
-		(err) => {
-			console.warn("Failed to create relay cards, skipping render:", err.toString());
-			return [];
-		}
-	);
-	const timeCardsToRender = renderTimeCards(data, timeFilterer.currentTimes, searchParamHandler).match( 
-		(cards) => cards,
-		(err) => {
-			console.warn("Failed to create time cards, skipping render:", err.toString());
-			return [];
-		}
-	);
-	return renderSearch(searchParamHandler, headerToRender, relayCardsToRender, timeCardsToRender);
+	return (<Search data={data} 
+					searchParamHandler={searchParamHandler} 
+					relayHelpers={relayHelpers} 
+					curRelays={timeFilterer.currentRelays} 
+					curParsedTimes={timeFilterer.currentTimes} />);
 }
 
 // --- Main App with routing ---

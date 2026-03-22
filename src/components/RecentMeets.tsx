@@ -3,7 +3,11 @@ import { JSX } from "react";
 import { SwimData } from "../hooks/useSwimData";
 import { formatDate } from "../lib/utils";
 
-export function renderRecentMeets(data: SwimData, searchParamHandler: SearchParamHandler): JSX.Element {
+type RecentMeetsProps = {
+	data: SwimData;
+	searchParamHandler: SearchParamHandler;
+}
+export function RecentMeets({data, searchParamHandler}: RecentMeetsProps): JSX.Element {
 	const { meets } = data;
 	const { setSearchParams } = searchParamHandler;
 	const meetCards = Object.values(meets).map((m) => (

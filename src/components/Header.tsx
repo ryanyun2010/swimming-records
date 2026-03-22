@@ -1,7 +1,11 @@
+import { JSX } from "react";
 import { SearchParamHandler } from "../hooks/useSearchParamHandler"
 import { formatDate } from "../lib/utils";
 
-export function renderHeader(searchParamHandler: SearchParamHandler) {
+type HeaderProps = {
+	searchParamHandler: SearchParamHandler;
+}
+export function Header({searchParamHandler}: HeaderProps): JSX.Element {
 	const {curMeetInfo, curSwimmerInfo, curRelayInfo} = searchParamHandler;
 	if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
 		return <h2>Results for Relay: {curRelayInfo.event} | {curRelayInfo.swimmer_names.join(", ")} | {formatDate(curRelayInfo.date)}</h2>

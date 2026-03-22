@@ -7,7 +7,12 @@ import { ErrorRes } from "../lib/errors";
 import * as Errors from "../lib/errors";
 import { Result as Res, err, ok } from "neverthrow";
 
-export function renderTimeCards(data: SwimData, curParsedTimes: ParsedTime[], searchParamHandler: SearchParamHandler): Res<JSX.Element[], ErrorRes> {
+type TimeCardsProps = {
+	data: SwimData;
+	curParsedTimes: ParsedTime[];
+	searchParamHandler: SearchParamHandler;
+}
+export function TimeCards({data, curParsedTimes, searchParamHandler}: TimeCardsProps): JSX.Element[] {
 	const { relayLegs } = data;
 	const { setSearchParams } = searchParamHandler;
 	function renderTimeCard(t: ParsedTime): Res<JSX.Element, ErrorRes> {
@@ -69,6 +74,11 @@ export function renderTimeCards(data: SwimData, curParsedTimes: ParsedTime[], se
 		)
 	}
 
-	return Res.combine(curParsedTimes.map((t) => renderTimeCard(t)));
+	return curParsedTimes.map((t) => renderTimeCard(t)).reduce((acc: JSX.Element[], cur: Res<JSX.Element,ErrorRes>) => cur.match(
+		(cards) => [...acc,cards],
+		(err) => {
+			console.warn("Failed to render a time card, skipping render: ", err.toString());
+			return acc;
+		}),[]);
 
 }
