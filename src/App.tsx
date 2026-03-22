@@ -19,7 +19,7 @@ function Home() {
 	const parsedTimes = useParsedTimes(data).match(
 		(times) => times,
 		(err) => {
-			console.error("Failed to parse times:", err);
+			console.error("Failed to parse times:", err.toString());
 			return [];
 		}
 	);
@@ -35,8 +35,20 @@ function Home() {
 		return recentMeetsToRender;
 	}
 	const headerToRender = renderHeader(searchParamHandler); 
-	const relayCardsToRender = renderRelayCards(data, timeFilterer.currentRelays, searchParamHandler, relayHelpers);	
-	const timeCardsToRender = renderTimeCards(data, timeFilterer.currentTimes, searchParamHandler); 
+	const relayCardsToRender = renderRelayCards(data, timeFilterer.currentRelays, searchParamHandler, relayHelpers).match(	
+		(cards) => cards,
+		(err) => {
+			console.warn("Failed to create relay cards, skipping render:", err.toString());
+			return [];
+		}
+	);
+	const timeCardsToRender = renderTimeCards(data, timeFilterer.currentTimes, searchParamHandler).match( 
+		(cards) => cards,
+		(err) => {
+			console.warn("Failed to create time cards, skipping render:", err.toString());
+			return [];
+		}
+	);
 	return renderSearch(searchParamHandler, headerToRender, relayCardsToRender, timeCardsToRender);
 }
 

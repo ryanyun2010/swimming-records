@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { SwimData } from "./useSwimData";
 import { ok , err} from "neverthrow";
 import * as Errors from "../lib/errors";
+import { Result as Res } from "neverthrow";
 
 export interface ParsedTime {
 	swimmer_id: number,
@@ -25,7 +26,7 @@ export interface ParsedTime {
 	previous_SR: {change: number | null, til: string} | null
 }
 
-export function useParsedTimes(data: SwimData) {
+export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFound> {
 	const { results, swimmers, meets, relays, relayLegs, events, recordProgs } = data;
 	return useMemo(() => {
 		let times: ParsedTime[] = [];
@@ -39,6 +40,7 @@ export function useParsedTimes(data: SwimData) {
 			const swimmer = swimmers[result.swimmer_id];
 			const meet = meets[result.meet_id];
 			const event = events[result.event_id];
+			if (swimmer == null || meet == null || event == null) return err(new Errors.NotFound(`Missing swimmer, meet, or event info for result ${result.id}`));
 
 			const parsedTime: ParsedTime = {
 				swimmer_id: result.swimmer_id,
@@ -71,6 +73,8 @@ export function useParsedTimes(data: SwimData) {
 			const relay = relays[relayLeg.relay_id];
 			const meet = meets[relay.meet_id];
 			const event = events[relay.event_id];
+			if (swimmer == null || relay == null || meet == null || event == null) return err(new Errors.NotFound(`Missing swimmer, relay, meet, or event info for relay leg ${relayLeg.id}`));
+
 			let leg_name = "";
 			if (event.name == "200 Medley Relay" || event.name == "200 Freestyle Relay" || event.name == "400 Freestyle Relay") {
 				if (event.name == "200 Medley Relay") {

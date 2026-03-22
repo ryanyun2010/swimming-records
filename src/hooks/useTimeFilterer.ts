@@ -23,13 +23,13 @@ export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relay
 				.match(
 					(data) => {timesToShow = data},
 					(err) => {
-						console.error(`Failed to get parsed times for relay ID ${relay.id}:`, err);
+						console.warn(`Failed to get parsed times for relay ID ${relay.id} while filtering by that relay:`, err.toString());
 						timesToShow = [];
 					}
 				);
 				relaysToShow = [relay];
 			} else {
-				console.warn(`No relay found with ID ${curRelayInfo.id}`);
+				console.warn(`When filtering by relay, no relay found with ID ${curRelayInfo.id}`);
 				timesToShow = [];
 			}
 		}
@@ -43,7 +43,7 @@ export function useTimeFilterer(parsedTimes: ParsedTime[], data: SwimData, relay
 			timesToShow = timesToShow.filter((t) => t.swimmer_id == curSwimmerInfo.id);
 			relaysToShow = relaysToShow.filter((r) => getRelayLegsForRelay(r.id).match(
 				(legs) =>  legs.some(leg => leg.swimmer_id == curSwimmerInfo.id),
-				(err) => {console.warn(`Failed to get relay legs for relay ID ${r.id}:`, err); return false;}
+				(err) => {console.warn(`While filtering by swimmer, failed to get relay legs for relay ID to determine swimmer ${r.id}:`, err.toString()); return false;}
 			));
 		}
 		setCurrentTimes(timesToShow);
