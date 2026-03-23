@@ -13,29 +13,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+	globalIgnores(["dist"]),
 
-
-  {
-    files: ["src/**/*.ts", "src/**/*.tsx"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        project: [path.join(__dirname, "tsconfig.json")],
-        tsconfigRootDir: __dirname,
-      },
-      globals: globals.browser,
-    },
-    plugins: {
-      "@typescript-eslint": tsPlugin,
-      "neverthrow-must-use": neverthrowMustUse,
-    },
-    rules: {
-      "@typescript-eslint/no-unused-vars": "error",
-      "neverthrow-must-use/must-use-result": "error",
-    },
-  },
+	{
+		files: ["src/**/*.ts", "src/**/*.tsx"],
+		languageOptions: {
+			parser: tsParser,
+			parserOptions: {
+				ecmaVersion: "latest",
+				sourceType: "module",
+				project: [path.join(__dirname, "tsconfig.json")],
+				tsconfigRootDir: __dirname
+			},
+			globals: globals.browser
+		},
+		plugins: {
+			"@typescript-eslint": tsPlugin,
+			"neverthrow-must-use": neverthrowMustUse
+		},
+		rules: {
+			"@typescript-eslint/no-unused-vars": "error",
+			"neverthrow-must-use/must-use-result": "error"
+		}
+	}
 ]);
-

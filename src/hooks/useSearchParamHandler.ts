@@ -31,7 +31,7 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 						if (relayLegs.length !== 4) {
 							return err(
 								new Errors.NotFound(
-									`Expected 4 relay legs for relay ${relay.id}, found ${relayLegs.length}`,
+									`Expected 4 relay legs for relay with ID ${relay.id}, found ${relayLegs.length}`,
 								),
 							);
 						}
@@ -42,9 +42,18 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 					)
 					.andThen((swimmer_names: string[]) => {
 						const event = events[relay.event_id];
-						if (!event) return err(new Errors.NotFound(`No event found with ID ${relay.event_id} `));
+						if (!event)
+							return err(
+								new Errors.NotFound(
+									`No event found with ID ${relay.event_id} even though relay with ID ${relay.id} references it`,
+								),
+							);
 						if (!meets[relay.meet_id])
-							return err(new Errors.NotFound(`No meet found with ID ${relay.meet_id}`));
+							return err(
+								new Errors.NotFound(
+									`No meet found with ID ${relay.meet_id} even though relay with ID ${relay.id} references it`,
+								),
+							);
 						return ok({
 							id,
 							swimmer_names,
@@ -55,7 +64,10 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 					.match(
 						(d) => d,
 						(err) => {
-							console.error(`Failed to load relay info for relay ID ${id}:`, err.toString());
+							console.warn(
+								`While filtering by relay, failed to load relay info for relay ID ${id}:`,
+								err.toString(),
+							);
 							return null;
 						},
 					);
