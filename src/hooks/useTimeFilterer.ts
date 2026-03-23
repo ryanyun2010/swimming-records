@@ -42,15 +42,15 @@ export function useTimeFilterer(
 		}
 
 		if (curMeetInfo != null) {
-			timesToShow = timesToShow.filter((t) => t.meet_id == curMeetInfo.id);
-			relaysToShow = relaysToShow.filter((r) => r.meet_id == curMeetInfo.id);
+			timesToShow = timesToShow.filter((t) => t.meet_id === curMeetInfo.id);
+			relaysToShow = relaysToShow.filter((r) => r.meet_id === curMeetInfo.id);
 		}
 
 		if (curSwimmerInfo != null) {
-			timesToShow = timesToShow.filter((t) => t.swimmer_id == curSwimmerInfo.id);
+			timesToShow = timesToShow.filter((t) => t.swimmer_id === curSwimmerInfo.id);
 			relaysToShow = relaysToShow.filter((r) =>
 				getRelayLegsForRelay(r.id).match(
-					(legs) => legs.some((leg) => leg.swimmer_id == curSwimmerInfo.id),
+					(legs) => legs.some((leg) => leg.swimmer_id === curSwimmerInfo.id),
 					(err) => {
 						console.warn(
 							`While filtering by swimmer, failed to get relay legs for relay ID to determine swimmer ${r.id}:`,

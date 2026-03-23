@@ -94,7 +94,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				relay_leg_id: relayLeg.id,
 				type: "relay_leg",
 				time: relayLeg.split_time,
-				start: relayLeg.leg_order == 1 ? "flat" : "relay",
+				start: relayLeg.leg_order === 1 ? "flat" : "relay",
 				meet_name: meet.name,
 				meet_date: meet.date,
 				meet_location: meet.location,
@@ -113,7 +113,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 		let last_SR_bests: Record<number, number> = {};
 		for (let recordProg of recordProgs) {
 			// note record progs are sorted in chronological order by meet date asc server side, so we can just keep track of the last best time as we iterate
-			if (recordProg.type == "relay") {
+			if (recordProg.type === "relay") {
 				continue;
 			}
 			if (
@@ -128,15 +128,15 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			let timepid = null;
 			for (let i = 0; i < times.length; i++) {
 				const time = times[i];
-				if (time.meet_id == recordProg.meet_id && time.swimmer_id == recordProg.swimmer_id) {
-					if (recordProg.leg_id && recordProg.leg_id == time.relay_leg_id) {
+				if (time.meet_id === recordProg.meet_id && time.swimmer_id === recordProg.swimmer_id) {
+					if (recordProg.leg_id && recordProg.leg_id === time.relay_leg_id) {
 						timepid = i;
-					} else if (recordProg.result_id && recordProg.result_id == time.result_id) {
+					} else if (recordProg.result_id && recordProg.result_id === time.result_id) {
 						timepid = i;
 					}
 				}
 			}
-			if (timepid == null) {
+			if (timepid === null) {
 				return err(
 					new Errors.NotFound(
 						`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`,

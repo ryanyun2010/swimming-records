@@ -14,21 +14,21 @@ export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers
 		let curMeetInfo = null;
 		let curSwimmerInfo = null;
 		let curRelayInfo = null;
-		if (searchParams.get("meet_id") != null && searchParams.get("meet_id")!.length > 0) {
+		if (searchParams.get("meet_id") !== null && searchParams.get("meet_id")!.length > 0) {
 			curMeetInfo = meets[parseInt(searchParams.get("meet_id")!)] ?? null;
 		}
 
-		if (searchParams.get("swimmer_id") != null && searchParams.get("swimmer_id")!.length > 0) {
+		if (searchParams.get("swimmer_id") !== null && searchParams.get("swimmer_id")!.length > 0) {
 			curSwimmerInfo = swimmers[parseInt(searchParams.get("swimmer_id")!)] ?? null;
 		}
 
-		if (searchParams.get("relay_id") != null && searchParams.get("relay_id")!.length > 0) {
+		if (searchParams.get("relay_id") !== null && searchParams.get("relay_id")!.length > 0) {
 			let id = parseInt(searchParams.get("relay_id")!);
 			const relay = relays[id] ?? null;
 			if (relay) {
 				curRelayInfo = getRelayLegsForRelay(relay.id)
 					.andThen((relayLegs: RelayLeg[]) => {
-						if (relayLegs.length != 4) {
+						if (relayLegs.length !== 4) {
 							return err(
 								new Errors.NotFound(
 									`Expected 4 relay legs for relay ${relay.id}, found ${relayLegs.length}`,
