@@ -1,13 +1,25 @@
 import { SwimData } from "../../hooks/useSwimData";
 import { useCallback, useMemo } from "react";
-import { okAsync, ResultAsync } from "neverthrow";
+import { errAsync, okAsync, ResultAsync } from "neverthrow";
 import * as Errors from "../../lib/errors";
 import { GoogleLoginHandler } from "./useGoogleLoginHandler";
 
 export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLoginHandler) {
 	const { token } = googleLoginHandler;
 	const { refresher } = data;
-
+	const sendRequest = (endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
+		return ResultAsync.fromPromise(
+			fetch(`https://swimming-api.ryanyun2010.workers.dev/${endpoint}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(body),
+			}),
+			(error) => new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
+		);
+	}
 	const addSwimmer = useCallback(
 		(
 			first_name: string,
@@ -15,50 +27,25 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			gender: string,
 			graduating: number,
 		): ResultAsync<null, Errors.ErrorRes> => {
-			return ResultAsync.fromPromise(
-				fetch("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						first_name,
-						last_name,
-						gender,
-						graduating,
-					}),
-				}),
-				(error) =>
-					new Errors.NoResponse("Failed to add swimmer, no response from server: " + JSON.stringify(error)),
-			).map((_) => {
-				refresher();
-				return null;
-			});
+			return sendRequest("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
+				first_name,
+				last_name,
+				gender,
+				graduating
+			}).map((_) => {refresher(); return null;})
+			.mapErr((error) => new Errors.NoResponse("Failed to add swimmer, server query failed: " + JSON.stringify(error)));
 		},
 		[refresher, token],
 	);
 
 	const addMeet = useCallback(
 		(name: string, date: string): ResultAsync<null, Errors.ErrorRes> => {
-			return ResultAsync.fromPromise(
-				fetch("https://swimming-api.ryanyun2010.workers.dev/meets", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						name,
-						date,
-					}),
-				}),
-				(error) =>
-					new Errors.NoResponse("Failed to add meet, no response from server: " + JSON.stringify(error)),
-			).map((_) => {
+			return sendRequest("meets", { name, date })
+			.map((_) => {
 				refresher();
 				return null;
-			});
+			})
+			.mapErr((error) => new Errors.NoResponse("Failed to add meet, server query failed: " + JSON.stringify(error)));
 		},
 		[refresher, token],
 	);
@@ -72,25 +59,15 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			is_valid: boolean,
 			invalid_reason: string | null,
 		): ResultAsync<null, Errors.ErrorRes> => {
-			return ResultAsync.fromPromise(
-				fetch("https://swimming-api.ryanyun2010.workers.dev/results", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						swimmer_id,
-						event_id,
-						meet_id,
-						time_ms,
-						is_valid,
-						invalid_reason,
-					}),
-				}),
-				(error) =>
-					new Errors.NoResponse("Failed to add result, no response from server: " + JSON.stringify(error)),
-			).map((_) => null);
+			return sendRequest("results", {
+				swimmer_id,
+				event_id,
+				meet_id,
+				time_ms,
+				is_valid,
+				invalid_reason,
+			}).map((_) => null)
+			.mapErr((error) => new Errors.NoResponse("Failed to add result, server query failed: " + JSON.stringify(error)));
 		},
 		[refresher, token],
 	);
