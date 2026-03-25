@@ -63,29 +63,37 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 		[refresher, token],
 	);
 
-
-
-	const addResult = useCallback((swimmer_id: number, event_id: number, meet_id: number, time_ms: number, is_valid: boolean, invalid_reason: string | null): ResultAsync<null, Errors.ErrorRes> => {
-		return ResultAsync.fromPromise(
-			fetch("https://swimming-api.ryanyun2010.workers.dev/results", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({
-					swimmer_id,
-					event_id,
-					meet_id,
-					time_ms,
-					is_valid,
-					invalid_reason
+	const addResult = useCallback(
+		(
+			swimmer_id: number,
+			event_id: number,
+			meet_id: number,
+			time_ms: number,
+			is_valid: boolean,
+			invalid_reason: string | null,
+		): ResultAsync<null, Errors.ErrorRes> => {
+			return ResultAsync.fromPromise(
+				fetch("https://swimming-api.ryanyun2010.workers.dev/results", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({
+						swimmer_id,
+						event_id,
+						meet_id,
+						time_ms,
+						is_valid,
+						invalid_reason,
+					}),
 				}),
-			}),
-			(error) =>
-				new Errors.NoResponse("Failed to add result, no response from server: " + JSON.stringify(error)),
-		).map(_ => null)
-	}, [refresher, token]);
+				(error) =>
+					new Errors.NoResponse("Failed to add result, no response from server: " + JSON.stringify(error)),
+			).map((_) => null);
+		},
+		[refresher, token],
+	);
 
-	return {addSwimmer, addMeet, addResult};
+	return { addSwimmer, addMeet, addResult };
 }
