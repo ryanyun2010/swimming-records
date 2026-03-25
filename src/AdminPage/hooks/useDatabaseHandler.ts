@@ -7,7 +7,7 @@ import { GoogleLoginHandler } from "./useGoogleLoginHandler";
 export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLoginHandler) {
 	const { token } = googleLoginHandler;
 	const { refresher } = data;
-	const sendRequest = (endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
+	const sendRequest = useCallback((endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
 		return ResultAsync.fromPromise(
 			fetch(`https://swimming-api.ryanyun2010.workers.dev/${endpoint}`, {
 				method: "POST",
@@ -20,7 +20,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			(error) =>
 				new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
 		);
-	};
+	}, [token]);
 	const addSwimmer = useCallback(
 		(
 			first_name: string,
@@ -43,7 +43,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 						new Errors.NoResponse("Failed to add swimmer, server query failed: " + JSON.stringify(error)),
 				);
 		},
-		[refresher, token],
+		[refresher, sendRequest],
 	);
 
 	const addMeet = useCallback(
@@ -58,7 +58,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 						new Errors.NoResponse("Failed to add meet, server query failed: " + JSON.stringify(error)),
 				);
 		},
-		[refresher, token],
+		[refresher, sendRequest],
 	);
 
 	const addResult = useCallback(
@@ -84,7 +84,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 						new Errors.NoResponse("Failed to add result, server query failed: " + JSON.stringify(error)),
 				);
 		},
-		[refresher, token],
+		[refresher, sendRequest],
 	);
 
 	return { addSwimmer, addMeet, addResult };
