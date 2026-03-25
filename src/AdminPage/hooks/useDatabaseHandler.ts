@@ -17,9 +17,10 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				},
 				body: JSON.stringify(body),
 			}),
-			(error) => new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
+			(error) =>
+				new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
 		);
-	}
+	};
 	const addSwimmer = useCallback(
 		(
 			first_name: string,
@@ -31,9 +32,16 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				first_name,
 				last_name,
 				gender,
-				graduating
-			}).map((_) => {refresher(); return null;})
-			.mapErr((error) => new Errors.NoResponse("Failed to add swimmer, server query failed: " + JSON.stringify(error)));
+				graduating,
+			})
+				.map((_) => {
+					refresher();
+					return null;
+				})
+				.mapErr(
+					(error) =>
+						new Errors.NoResponse("Failed to add swimmer, server query failed: " + JSON.stringify(error)),
+				);
 		},
 		[refresher, token],
 	);
@@ -41,11 +49,14 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 	const addMeet = useCallback(
 		(name: string, date: string): ResultAsync<null, Errors.ErrorRes> => {
 			return sendRequest("meets", { name, date })
-			.map((_) => {
-				refresher();
-				return null;
-			})
-			.mapErr((error) => new Errors.NoResponse("Failed to add meet, server query failed: " + JSON.stringify(error)));
+				.map((_) => {
+					refresher();
+					return null;
+				})
+				.mapErr(
+					(error) =>
+						new Errors.NoResponse("Failed to add meet, server query failed: " + JSON.stringify(error)),
+				);
 		},
 		[refresher, token],
 	);
@@ -66,8 +77,12 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				time_ms,
 				is_valid,
 				invalid_reason,
-			}).map((_) => null)
-			.mapErr((error) => new Errors.NoResponse("Failed to add result, server query failed: " + JSON.stringify(error)));
+			})
+				.map((_) => null)
+				.mapErr(
+					(error) =>
+						new Errors.NoResponse("Failed to add result, server query failed: " + JSON.stringify(error)),
+				);
 		},
 		[refresher, token],
 	);
