@@ -1,6 +1,6 @@
 import { SwimData } from "../../hooks/useSwimData";
-import { useCallback, useMemo } from "react";
-import { errAsync, okAsync, ResultAsync } from "neverthrow";
+import { useCallback } from "react";
+import { ResultAsync } from "neverthrow";
 import * as Errors from "../../lib/errors";
 import { GoogleLoginHandler } from "./useGoogleLoginHandler";
 
@@ -87,5 +87,52 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 		[refresher, sendRequest],
 	);
 
-	return { addSwimmer, addMeet, addResult };
+	const addRelay = useCallback(
+		(name: string, event_id: number, meet_id: number): ResultAsync<number, Errors.ErrorRes> => {
+			return sendRequest("relays", { name, event_id, meet_id })
+				.andThen((response) =>
+					ResultAsync.fromPromise(
+						response.json(),
+						(error) =>
+							new Errors.NoResponse("Failed to parse response when adding relay: " + JSON.stringify(error)),
+					),
+				)
+				.map((data) => data.relay_id as number)
+				.mapErr(
+					(error) =>
+						new Errors.NoResponse("Failed to add relay, server query failed: " + JSON.stringify(error)),
+				);
+		},
+		[refresher, sendRequest],
+	);
+
+	const addRelayLeg = useCallback(
+		(
+			relay_id: number,
+			swimmer_id: number,
+			event_id: number,
+			meet_id: number,
+			time_ms: number,
+			is_valid: boolean,
+			invalid_reason: string | null,
+		): ResultAsync<null, Errors.ErrorRes> => {
+			return sendRequest("relay-legs", {
+				relay_id,
+				swimmer_id,
+				event_id,
+				meet_id,
+				time_ms,
+				is_valid,
+				invalid_reason,
+			})
+				.map((_) => null)
+				.mapErr(
+					(error) =>
+						new Errors.NoResponse("Failed to add relay leg, server query failed: " + JSON.stringify(error)),
+				);
+		},
+		[refresher, sendRequest],
+	);
+
+	return { addSwimmer, addMeet, addResult, addRelay, addRelayLeg };
 }
