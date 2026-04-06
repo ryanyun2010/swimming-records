@@ -1,5 +1,9 @@
 import { GoogleAuthSection } from "./components/GoogleAuthSection";
 import { RelayAdditionForm } from "./components/RelayAdditionForm";
+import { SwimmerAdditionForm } from "./components/SwimmerAdditionForm";
+import { MeetAdditionForm } from "./components/MeetAdditionForm";
+import { ResultAdditionForm } from "./components/ResultAdditionForm";
+import { BulkResultsUpload } from "./components/BulkResultsUpload";
 import { useGoogleLoginHandler } from "./hooks/useGoogleLoginHandler";
 import { useSwimData } from "../hooks/useSwimData";
 import { useDatabaseHandler } from "./hooks/useDatabaseHandler";
@@ -11,9 +15,15 @@ export default function AdminPage() {
 	return (
 		<div style={{ padding: 32 }}>
 			<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
-			{!loggedIn ? null : <>
-					<RelayAdditionForm data={data} databaseHandler={databaseHandler}/>
-				</>}
+			{!loggedIn ? null : (
+				<>
+					<SwimmerAdditionForm databaseHandler={databaseHandler} />
+					<MeetAdditionForm databaseHandler={databaseHandler} />
+					<ResultAdditionForm data={data} databaseHandler={databaseHandler} />
+					<BulkResultsUpload data={data} databaseHandler={databaseHandler} />
+					<RelayAdditionForm data={data} databaseHandler={databaseHandler} />
+				</>
+			)}
 		</div>
 	);
 }

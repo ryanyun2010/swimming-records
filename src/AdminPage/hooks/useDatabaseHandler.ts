@@ -9,8 +9,11 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 	const { refresher } = data;
 	const sendRequest = useCallback(
 		(endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
+			const url = endpoint.startsWith("http")
+				? endpoint
+				: `https://swimming-api.ryanyun2010.workers.dev/${endpoint}`;
 			return ResultAsync.fromPromise(
-				fetch(`https://swimming-api.ryanyun2010.workers.dev/${endpoint}`, {
+				fetch(url, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -31,7 +34,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			gender: string,
 			graduating: number,
 		): ResultAsync<null, Errors.ErrorRes> => {
-			return sendRequest("https://swimming-api.ryanyun2010.workers.dev/swimmers", {
+			return sendRequest("swimmers", {
 				first_name,
 				last_name,
 				gender,
@@ -50,8 +53,8 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 	);
 
 	const addMeet = useCallback(
-		(name: string, date: string): ResultAsync<null, Errors.ErrorRes> => {
-			return sendRequest("meets", { name, date })
+		(name: string, location: string, date: string): ResultAsync<null, Errors.ErrorRes> => {
+			return sendRequest("meets", { name, location, date })
 				.map((_) => {
 					refresher();
 					return null;
@@ -81,7 +84,10 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				is_valid,
 				invalid_reason,
 			})
-				.map((_) => null)
+				.map((_) => {
+					refresher();
+					return null;
+				})
 				.mapErr(
 					(error) =>
 						new Errors.NoResponse("Failed to add result, server query failed: " + JSON.stringify(error)),
@@ -91,8 +97,14 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 	);
 
 	const addRelay = useCallback(
-		(name: string, event_id: number, meet_id: number): ResultAsync<number, Errors.ErrorRes> => {
-			return sendRequest("relays", { name, event_id, meet_id })
+		(
+			event_id: number,
+			meet_id: number,
+			time_ms: number,
+			is_valid: boolean,
+			invalid_reason: string | null,
+		): ResultAsync<number, Errors.ErrorRes> => {
+			return sendRequest("relays", { event_id, meet_id, time_ms, is_valid, invalid_reason })
 				.andThen((response) =>
 					ResultAsync.fromPromise(
 						response.json(),
@@ -103,6 +115,10 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 					),
 				)
 				.map((data) => data.last_row_id as number)
+				.map((relay_id) => {
+					refresher();
+					return relay_id;
+				})
 				.mapErr(
 					(error) =>
 						new Errors.NoResponse("Failed to add relay, server query failed: " + JSON.stringify(error)),
@@ -116,21 +132,24 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			relay_id: number,
 			swimmer_id: number,
 			event_id: number,
-			meet_id: number,
 			time_ms: number,
 			is_valid: boolean,
 			invalid_reason: string | null,
+			leg_order: number,
 		): ResultAsync<null, Errors.ErrorRes> => {
-			return sendRequest("relay-legs", {
+			return sendRequest("relay_legs", {
 				relay_id,
 				swimmer_id,
 				event_id,
-				meet_id,
-				time_ms,
+				split_time: time_ms,
 				is_valid,
 				invalid_reason,
+				leg_order,
 			})
-				.map((_) => null)
+				.map((_) => {
+					refresher();
+					return null;
+				})
 				.mapErr(
 					(error) =>
 						new Errors.NoResponse("Failed to add relay leg, server query failed: " + JSON.stringify(error)),
