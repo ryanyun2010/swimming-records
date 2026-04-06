@@ -210,6 +210,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								row.time,
 								row.is_valid,
 								row.invalid_reason,
+								false,
 							),
 						),
 					).map(() => null);
@@ -284,7 +285,14 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							}
 
 							return databaseHandler
-								.addRelay(relayEventId, relay.meet_id, relay.time, relay.is_valid, relay.invalid_reason)
+								.addRelay(
+									relayEventId,
+									relay.meet_id,
+									relay.time,
+									relay.is_valid,
+									relay.invalid_reason,
+									false,
+								)
 								.andThen((relayId) => {
 									const legRequests = relay.swimmer_ids.map((swimmerId, idx) => {
 										const legEventId = legEventIds[idx] as number;
@@ -310,6 +318,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 											split.is_valid,
 											split.invalid_reason,
 											idx + 1,
+											false,
 										);
 									});
 									return ResultAsync.combine(legRequests).map(() => null);
@@ -320,6 +329,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 				})
 				.match(
 					() => {
+						data.refresher();
 						alert("Bulk results upload complete.");
 						form.reset();
 					},

@@ -33,6 +33,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			last_name: string,
 			gender: string,
 			graduating: number,
+			refresh: boolean = true,
 		): ResultAsync<null, Errors.ErrorRes> => {
 			return sendRequest("swimmers", {
 				first_name,
@@ -41,7 +42,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				graduating,
 			})
 				.map((_) => {
-					refresher();
+					if (refresh) refresher();
 					return null;
 				})
 				.mapErr(
@@ -53,10 +54,10 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 	);
 
 	const addMeet = useCallback(
-		(name: string, location: string, date: string): ResultAsync<null, Errors.ErrorRes> => {
+		(name: string, location: string, date: string, refresh: boolean = true): ResultAsync<null, Errors.ErrorRes> => {
 			return sendRequest("meets", { name, location, date })
 				.map((_) => {
-					refresher();
+					if (refresh) refresher();
 					return null;
 				})
 				.mapErr(
@@ -75,6 +76,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			time_ms: number,
 			is_valid: boolean,
 			invalid_reason: string | null,
+			refresh: boolean = true,
 		): ResultAsync<null, Errors.ErrorRes> => {
 			return sendRequest("results", {
 				swimmer_id,
@@ -85,7 +87,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				invalid_reason,
 			})
 				.map((_) => {
-					refresher();
+					if (refresh) refresher();
 					return null;
 				})
 				.mapErr(
@@ -103,6 +105,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			time_ms: number,
 			is_valid: boolean,
 			invalid_reason: string | null,
+			refresh: boolean = true,
 		): ResultAsync<number, Errors.ErrorRes> => {
 			return sendRequest("relays", { event_id, meet_id, time_ms, is_valid, invalid_reason })
 				.andThen((response) =>
@@ -116,7 +119,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				)
 				.map((data) => data.last_row_id as number)
 				.map((relay_id) => {
-					refresher();
+					if (refresh) refresher();
 					return relay_id;
 				})
 				.mapErr(
@@ -136,6 +139,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 			is_valid: boolean,
 			invalid_reason: string | null,
 			leg_order: number,
+			refresh: boolean = true,
 		): ResultAsync<null, Errors.ErrorRes> => {
 			return sendRequest("relay_legs", {
 				relay_id,
@@ -147,7 +151,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				leg_order,
 			})
 				.map((_) => {
-					refresher();
+					if (refresh) refresher();
 					return null;
 				})
 				.mapErr(
