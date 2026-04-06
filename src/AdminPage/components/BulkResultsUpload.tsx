@@ -81,6 +81,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 
 					for (let i = 1; i < rows.length; i++) {
 						const row = rows[i].map((cell) => cell.trim());
+						console.log("currentRow: ", row);
 						const line = i + 1;
 
 						if (row.length < 7) {
