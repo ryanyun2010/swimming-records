@@ -58,8 +58,10 @@ export function findSwimmerIdByCsvName(
 	if (pieces.length < 2) return null;
 	const firstNameRaw = pieces[0];
 	const lastNameRaw = pieces.slice(1).join(" ");
+	console.log("Parsed name:", { firstNameRaw, lastNameRaw, gradSuffix });
 	const firstNameNorm = normalizeName(firstNameRaw);
 	const lastNameNorm = normalizeName(lastNameRaw);
+	console.log("Normalized name:", { firstNameNorm, lastNameNorm });
 	const candidates = swimmers.filter((s) => {
 		const grad = s.graduating % 100;
 		return (
