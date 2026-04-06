@@ -9,7 +9,6 @@ import {
 	findMeetIdByName,
 	findEventIdByLabel,
 	findEventIdBySpec,
-	parseLegacyEventLabel,
 } from "../utils";
 import { SwimData } from "../../hooks/useSwimData";
 
@@ -172,12 +171,6 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							);
 						}
 						let eventId = findEventIdByLabel(events, eventLabel);
-						if (eventId == null) {
-							const parsed = parseLegacyEventLabel(eventLabel);
-							if (parsed.distance != null && parsed.stroke != null) {
-								eventId = findEventIdBySpec(events, parsed.distance, parsed.stroke);
-							}
-						}
 						if (eventId == null) {
 							return errAsync(
 								new Errors.MalformedResponse(`Row ${line} event not found: ${eventLabel}`),
