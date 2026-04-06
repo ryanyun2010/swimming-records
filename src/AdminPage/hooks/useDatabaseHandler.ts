@@ -117,7 +117,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 							),
 					),
 				)
-				.map((data) => data.last_row_id as number)
+				.map((data) => data.relay_id as number)
 				.map((relay_id) => {
 					if (refresh) refresher();
 					return relay_id;
