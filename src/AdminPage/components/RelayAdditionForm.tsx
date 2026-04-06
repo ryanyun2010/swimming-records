@@ -34,6 +34,13 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 	const relayEvents = useMemo(() => events.filter((e) => e.is_relay === 1), [events]);
 	const [selectedRelayEventId, setSelectedRelayEventId] = useState<number | null>(null);
 	const selectedRelayEvent = relayEvents.find((e) => e.id === selectedRelayEventId) ?? null;
+	const [relayIsValid, setRelayIsValid] = useState(true);
+	const [legValidity, setLegValidity] = useState<Record<number, boolean>>({
+		1: true,
+		2: true,
+		3: true,
+		4: true,
+	});
 
 	const legEventOptions = useMemo(() => {
 		const nonRelayEvents = events.filter((e) => e.is_relay !== 1);
@@ -178,10 +185,15 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 
 					<input name="time" type="text" placeholder="Relay time (seconds or m:ss.xx)" required />
 					<label className="admin-checkbox">
-						<input name="is_valid" type="checkbox" defaultChecked />
+						<input
+							name="is_valid"
+							type="checkbox"
+							checked={relayIsValid}
+							onChange={(e) => setRelayIsValid(e.target.checked)}
+						/>
 						Valid
 					</label>
-					<input name="invalid_reason" placeholder="Invalid reason (optional)" />
+					{!relayIsValid ? <input name="invalid_reason" placeholder="Invalid reason" required /> : null}
 				</div>
 
 				<div className="admin-subsection">
@@ -225,10 +237,19 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 									required
 								/>
 								<label className="admin-checkbox">
-									<input name={`leg_${leg}_is_valid`} type="checkbox" defaultChecked />
+									<input
+										name={`leg_${leg}_is_valid`}
+										type="checkbox"
+										checked={legValidity[leg]}
+										onChange={(e) =>
+											setLegValidity((prev) => ({ ...prev, [leg]: e.target.checked }))
+										}
+									/>
 									Valid
 								</label>
-								<input name={`leg_${leg}_invalid_reason`} placeholder="Invalid reason (optional)" />
+								{!legValidity[leg] ? (
+									<input name={`leg_${leg}_invalid_reason`} placeholder="Invalid reason" required />
+								) : null}
 							</div>
 						))}
 					</div>

@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useMemo } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { SwimData } from "../../hooks/useSwimData";
 import { useDatabaseHandler } from "../hooks/useDatabaseHandler";
 import { parseTimeToSeconds } from "../utils";
@@ -21,6 +21,7 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
 	);
+	const [isValid, setIsValid] = useState(true);
 
 	const onSubmit = useCallback(
 		(e: FormEvent<HTMLFormElement>) => {
@@ -88,10 +89,15 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 
 					<input name="time" type="text" placeholder="Time (seconds or m:ss.xx)" required />
 					<label className="admin-checkbox">
-						<input name="is_valid" type="checkbox" defaultChecked />
+						<input
+							name="is_valid"
+							type="checkbox"
+							checked={isValid}
+							onChange={(e) => setIsValid(e.target.checked)}
+						/>
 						Valid
 					</label>
-					<input name="invalid_reason" placeholder="Invalid reason (optional)" />
+					{!isValid ? <input name="invalid_reason" placeholder="Invalid reason" required /> : null}
 				</div>
 				<button type="submit" className="admin-button">
 					Add Result
