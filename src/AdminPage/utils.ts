@@ -48,7 +48,7 @@ export function findSwimmerIdByCsvName(
 	swimmers: { id: number; first_name: string; last_name: string; graduating: number }[],
 	nameWithGrad: string,
 ): number | null {
-	const match = nameWithGrad.match(/(.+?)\s+'(\d{2})$/);
+	const match = nameWithGrad.replace('"', '').match(/(.+?)\s+'(\d{2})$/);
 	if (!match) return null;
 	const namePart = match[1].trim();
 	const gradSuffix = Number(match[2]);
