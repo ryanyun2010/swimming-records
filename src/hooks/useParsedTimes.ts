@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { SwimData } from "./useSwimData";
-import { ok, err } from "neverthrow";
+import { ok } from "neverthrow";
 import * as Errors from "../lib/errors";
 import { Result as Res } from "neverthrow";
 
@@ -31,17 +31,21 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 	return useMemo(() => {
 		let times: ParsedTime[] = [];
 		for (let result of Object.values(results)) {
-			if (!(result.id in swimmers) || !(result.meet_id in meets)) {
-				return err(new Errors.NotFound(`Missing swimmer or meet info for result ${result.id}`));
+			if (!(result.swimmer_id in swimmers) || !(result.meet_id in meets)) {
+				console.warn(`Skipping result ${result.id}: missing swimmer or meet info.`);
+				continue;
 			}
 			if (!(result.event_id in events)) {
-				return err(new Errors.NotFound(`Missing event info for result ${result.id}`));
+				console.warn(`Skipping result ${result.id}: missing event info.`);
+				continue;
 			}
 			const swimmer = swimmers[result.swimmer_id];
 			const meet = meets[result.meet_id];
 			const event = events[result.event_id];
-			if (swimmer == null || meet == null || event == null)
-				return err(new Errors.NotFound(`Missing swimmer, meet, or event info for result ${result.id}`));
+			if (swimmer == null || meet == null || event == null) {
+				console.warn(`Skipping result ${result.id}: missing swimmer, meet, or event info.`);
+				continue;
+			}
 
 			const parsedTime: ParsedTime = {
 				swimmer_id: result.swimmer_id,
@@ -72,7 +76,8 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				!relays[relayLeg.relay_id] ||
 				!(relays[relayLeg.relay_id].meet_id in meets)
 			) {
-				return err(new Errors.NotFound(`Missing swimmer, relay, or meet info for relay leg ${relayLeg.id}`));
+				console.warn(`Skipping relay leg ${relayLeg.id}: missing swimmer, relay, or meet info.`);
+				continue;
 			}
 			const swimmer = swimmers[relayLeg.swimmer_id];
 			const relay = relays[relayLeg.relay_id];
@@ -80,9 +85,8 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			const event = events[relay.event_id];
 			const legEvent = events[relayLeg.event_id];
 			if (swimmer == null || relay == null || meet == null || event == null || legEvent == null) {
-				return err(
-					new Errors.NotFound(`Missing swimmer, relay, meet, or event info for relay leg ${relayLeg.id}`),
-				);
+				console.warn(`Skipping relay leg ${relayLeg.id}: missing swimmer, relay, meet, or event info.`);
+				continue;
 			}
 
 			let leg_name = legEvent.name;
@@ -110,7 +114,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			times.push(parsedTime);
 		}
 		let last_bests: Record<string, number> = {};
-		let last_SR_bests: Record<number, number> = {};
+		let last_SR_bests: Record<string, number> = {};
 		for (let recordProg of recordProgs) {
 			// note record progs are sorted in chronological order by meet date asc server side, so we can just keep track of the last best time as we iterate
 			if (recordProg.type === "relay") {
@@ -121,9 +125,8 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				!(recordProg.meet_id in meets) ||
 				!(recordProg.event_id in events)
 			) {
-				return err(
-					new Errors.NotFound(`Missing swimmer, meet, or event info for record prog ${recordProg.id}`),
-				);
+				console.warn(`Skipping record prog ${recordProg.id}: missing swimmer, meet, or event info.`);
+				continue;
 			}
 			let timepid = null;
 			for (let i = 0; i < times.length; i++) {
@@ -137,20 +140,20 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				}
 			}
 			if (timepid === null) {
-				return err(
-					new Errors.NotFound(
-						`Could not find time for record prog ${recordProg.id} with swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}`,
-					),
+				console.warn(
+					`Skipping record prog ${recordProg.id}: could not find time for swimmer_id ${recordProg.swimmer_id}, meet_id ${recordProg.meet_id}, event_id ${recordProg.event_id}.`,
 				);
+				continue;
 			}
 			let timep = times[timepid];
 
+			const leg_order = recordProg.leg_id ? relayLegs[recordProg.leg_id]?.leg_order ?? null : null;
+			// Leg 1 (flat start) shares the same event category as individual swims.
+			// Legs 2-4 are a distinct event category from leg 1/individual.
+			const legClass = leg_order != null && leg_order !== 1 ? "relay" : "indiv";
+
 			if (!recordProg.school_record) {
-				const legKey =
-					recordProg.leg_id && relayLegs[recordProg.leg_id]?.leg_order === 1
-						? "indiv"
-						: recordProg.leg_id ?? "indiv";
-				let last_best = last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legKey}`];
+				let last_best = last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legClass}`];
 				if (last_best !== undefined) {
 					let last_best_cur = times[last_best].current_PR ?? {
 						change: null,
@@ -166,9 +169,9 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				} else {
 					timep.current_PR = { change: null };
 				}
-				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legKey}`] = timepid;
+				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legClass}`] = timepid;
 			} else {
-				let last_SR_best = last_SR_bests[recordProg.event_id];
+				let last_SR_best = last_SR_bests[`${recordProg.event_id}-${legClass}`];
 				if (last_SR_best !== undefined) {
 					let last_SR_best_cur = times[last_SR_best].current_SR ?? {
 						change: null,
@@ -184,7 +187,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				} else {
 					timep.current_SR = { change: null };
 				}
-				last_SR_bests[recordProg.event_id] = timepid;
+				last_SR_bests[`${recordProg.event_id}-${legClass}`] = timepid;
 			}
 		}
 		return ok(times);
