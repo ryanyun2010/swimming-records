@@ -92,7 +92,7 @@ export function findEventIdByLabel(
 		target = target.replace("fly", "butterfly");
 	}
 	if (target == "50breast" || target == "100breast") {
-		target = target.replace("breat", "breaststroke");
+		target = target.replace("breast", "breaststroke");
 	}
 	if (target == "50back" || target == "100back") {
 		target = target.replace("back", "backstroke");
