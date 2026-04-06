@@ -84,33 +84,12 @@ export function findEventIdByLabel(
 	events: { id: number; name: string }[],
 	label: string,
 ): number | null {
-	const target = normalizeName(label.replace(/\(.*\)/g, "").trim()).replaceAll("0free", "0freestyle").replaceAll("0fly", "0butterfly").replaceAll("0breast", "0breaststroke").replaceAll("0back", "0backstroke");
+	const target = normalizeName(label.replace(/\(.*\)/g, "").trim()).replaceAll("0free", "0freestyle").replaceAll("0fly", "0butterfly").replaceAll("0breast", "0breaststroke").replaceAll("0back", "0backstroke").replaceAll("0im","0individualmedley");
 	const matches = events.filter((e) => {
 		const full = normalizeName(e.name);
 		return full == target;
 	});
 	return matches.length === 1 ? matches[0].id : null;
-}
-
-export function parseLegacyEventLabel(label: string): {
-	distance: number | null;
-	stroke: string | null;
-	relayTag: "200_mr" | "200_fr" | "400_fr" | null;
-} {
-	const relayTagMatch = label.match(/\(([^)]+)\)/);
-	const relayTagRaw = relayTagMatch ? relayTagMatch[1].toLowerCase() : "";
-	let relayTag: "200_mr" | "200_fr" | "400_fr" | null = null;
-	if (relayTagRaw.includes("200") && relayTagRaw.includes("mr")) relayTag = "200_mr";
-	if (relayTagRaw.includes("200") && relayTagRaw.includes("fr")) relayTag = "200_fr";
-	if (relayTagRaw.includes("400") && relayTagRaw.includes("fr")) relayTag = "400_fr";
-
-	const cleaned = label.replace(/\(.*\)/g, "").trim();
-	const parts = cleaned.split(/\s+/);
-	if (parts.length < 2) return { distance: null, stroke: null, relayTag };
-	const distance = Number(parts[0]);
-	if (!Number.isFinite(distance)) return { distance: null, stroke: null, relayTag };
-	const stroke = normalizeStroke(parts.slice(1).join(" "));
-	return { distance, stroke, relayTag };
 }
 
 export function findEventIdBySpec(
