@@ -112,18 +112,13 @@ export function parseLegacyEventLabel(label: string): {
 }
 
 export function findEventIdBySpec(
-	events: { id: number; distance: number; stroke: string; gender: string }[],
+	events: { id: number; distance: number; stroke: string }[],
 	distance: number,
 	stroke: string,
-	gender: string,
 ): number | null {
 	const targetStroke = normalizeStroke(stroke);
-	const targetGender = gender.toLowerCase();
 	const matches = events.filter(
-		(e) =>
-			e.distance === distance &&
-			normalizeStroke(e.stroke) === targetStroke &&
-			e.gender.toLowerCase() === targetGender,
+		(e) => e.distance === distance && normalizeStroke(e.stroke) === targetStroke,
 	);
 	return matches.length === 1 ? matches[0].id : null;
 }

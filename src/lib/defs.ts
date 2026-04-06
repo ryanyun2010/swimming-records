@@ -5,7 +5,7 @@ export const eventSchema = z.object({
 	name: z.string(),
 	distance: z.coerce.number().int(),
 	stroke: z.string().toLowerCase(),
-	gender: z.enum(["male", "female"]),
+	gender: z.enum(["male", "female"]).optional(),
 	is_relay: z.coerce.number().int().optional(),
 });
 export const eventsSchema = z.array(eventSchema);

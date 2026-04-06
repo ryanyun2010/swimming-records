@@ -165,9 +165,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						if (eventId == null) {
 							const parsed = parseLegacyEventLabel(eventLabel);
 							if (parsed.distance != null && parsed.stroke != null) {
-								const swimmer = data.swimmers[swimmerId];
-								const gender = swimmer?.gender ?? "male";
-								eventId = findEventIdBySpec(events, parsed.distance, parsed.stroke, gender);
+								eventId = findEventIdBySpec(events, parsed.distance, parsed.stroke);
 							}
 						}
 						if (eventId == null) {
@@ -224,21 +222,12 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 									),
 								);
 							}
-							const genders = new Set(swimmersForRelay.map((s) => s.gender));
-							if (genders.size !== 1) {
-								return errAsync(
-									new Errors.MalformedResponse(
-										`Relay swimmers must have same gender for relay ${relay.relay_type}`,
-									),
-								);
-							}
-							const gender = swimmersForRelay[0].gender;
 							let relayEventId: number | null = null;
 							let legSpecs: { distance: number; stroke: string }[] = [];
 							if (relay.relay_type === "200_mr") {
 								relayEventId =
 									findEventIdByLabel(events, "200 medley relay") ??
-									findEventIdBySpec(events, 200, "medley", gender);
+									findEventIdBySpec(events, 200, "medley");
 								legSpecs = [
 									{ distance: 50, stroke: "back" },
 									{ distance: 50, stroke: "breast" },
@@ -248,7 +237,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							} else if (relay.relay_type === "200_fr") {
 								relayEventId =
 									findEventIdByLabel(events, "200 freestyle relay") ??
-									findEventIdBySpec(events, 200, "freestyle", gender);
+									findEventIdBySpec(events, 200, "freestyle");
 								legSpecs = [
 									{ distance: 50, stroke: "free" },
 									{ distance: 50, stroke: "free" },
@@ -258,7 +247,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							} else if (relay.relay_type === "400_fr") {
 								relayEventId =
 									findEventIdByLabel(events, "400 freestyle relay") ??
-									findEventIdBySpec(events, 400, "freestyle", gender);
+									findEventIdBySpec(events, 400, "freestyle");
 								legSpecs = [
 									{ distance: 100, stroke: "free" },
 									{ distance: 100, stroke: "free" },
@@ -280,7 +269,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							}
 
 							const legEventIds = legSpecs.map((spec) =>
-								findEventIdBySpec(events, spec.distance, spec.stroke, gender),
+								findEventIdBySpec(events, spec.distance, spec.stroke),
 							);
 							if (legEventIds.some((id) => id == null)) {
 								return errAsync(
