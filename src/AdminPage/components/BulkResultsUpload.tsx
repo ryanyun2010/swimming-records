@@ -89,17 +89,28 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								new Errors.MalformedResponse(`Row ${line} has insufficient columns: ${row.join(",")}`),
 							);
 						}
-						if (row.length === 8 || row.length > 9) {
+						if (row.length === 9 || row.length > 10) {
 							return errAsync(
 								new Errors.MalformedResponse(`Row ${line} has invalid number of columns: ${row.join(",")}`),
 							);
 						}
 
-						if (row.length === 7 || row.length === 9) {
+						const typeToken = row[3]?.toLowerCase();
+						const isResultRow = typeToken === "relay" || typeToken === "individual";
+
+						if (!isResultRow) {
+							// Relay summary row layout:
+							// swimmers(0-3), meet(4), relay_type(5), type(6), time(7), [validity(8), invalid_reason(9)]
 							const swimmerNames = row.slice(0, 4);
 							const meetName = row[4];
 							const relayType = normalizeRelayType(row[5]);
-							const timeRaw = row[6];
+							const relayTypeToken = row[6]?.toLowerCase();
+							if (relayTypeToken !== "relay") {
+								return errAsync(
+									new Errors.MalformedResponse(`Row ${line} relay summary missing type 'Relay'.`),
+								);
+							}
+							const timeRaw = row[7];
 							const relaySeconds = parseTimeToSeconds(timeRaw);
 							if (relaySeconds == null) {
 								return errAsync(
@@ -120,10 +131,10 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 									new Errors.MalformedResponse(`Row ${line} meet not found: ${meetName}`),
 								);
 							}
-							const relayValidRaw = row.length === 9 ? row[7] : "";
+							const relayValidRaw = row.length === 10 ? row[8] : "";
 							const relayValid =
-								row.length === 9 ? relayValidRaw.trim().toLowerCase() !== "invalid" : true;
-							const relayInvalidReason = row.length === 9 ? row[8].trim() || null : null;
+								row.length === 10 ? relayValidRaw.trim().toLowerCase() !== "invalid" : true;
+							const relayInvalidReason = row.length === 10 ? row[9].trim() || null : null;
 							relayRows.push({
 								swimmer_ids: swimmerIds as number[],
 								meet_id: meetId,
@@ -138,7 +149,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						const swimmerName = row[0];
 						const meetName = row[1];
 						const eventLabel = row[2];
-						const type = row[3].toLowerCase();
+						const type = typeToken;
 						const timeRaw = row[4];
 						const validRaw = row[5] ?? "";
 						const invalidReason = (row[6] ?? "").trim() || null;
@@ -334,7 +345,8 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 			<h3 className="admin-card-title">Add Results (CSV)</h3>
 			<p className="admin-help">
 				Legacy CSV format (header + rows). Non-relay rows use columns 5-7 for time, validity, and
-				invalid reason. Relay rows use columns 7-9 for time, validity, and invalid reason.
+				invalid reason. Relay rows include a type column ("Relay") and use columns 8-10 for time,
+				validity, and invalid reason.
 			</p>
 			<form onSubmit={onSubmit} className="admin-form">
 				<div className="admin-form-grid">
