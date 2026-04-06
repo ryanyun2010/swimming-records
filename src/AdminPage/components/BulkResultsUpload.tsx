@@ -329,15 +329,19 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 	);
 
 	return (
-		<section>
-			<h2>Add Results (CSV)</h2>
-			<p>
+		<section className="accent-card admin-card">
+			<h3 className="admin-card-title">Add Results (CSV)</h3>
+			<p className="admin-help">
 				Legacy CSV format (header + rows). Non-relay rows use columns 5-7 for time, validity, and
 				invalid reason. Relay rows use columns 7-9 for time, validity, and invalid reason.
 			</p>
-			<form onSubmit={onSubmit}>
-				<input name="file" accept=".csv" type="file" />
-				<button type="submit">Upload CSV</button>
+			<form onSubmit={onSubmit} className="admin-form">
+				<div className="admin-form-grid">
+					<input name="file" accept=".csv" type="file" />
+				</div>
+				<button type="submit" className="admin-button">
+					Upload CSV
+				</button>
 			</form>
 		</section>
 	);

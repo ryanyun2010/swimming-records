@@ -37,18 +37,22 @@ export function SwimmerAdditionForm({ databaseHandler }: SwimmerAdditionFormProp
 	);
 
 	return (
-		<section>
-			<h2>Add Swimmer</h2>
-			<form onSubmit={onSubmit}>
-				<input name="first_name" placeholder="First name" required />
-				<input name="last_name" placeholder="Last name" required />
-				<select name="gender" required>
-					<option value="">Gender</option>
-					<option value="male">Male</option>
-					<option value="female">Female</option>
-				</select>
-				<input name="graduating" placeholder="Graduating year" type="number" step="1" required />
-				<button type="submit">Add Swimmer</button>
+		<section className="accent-card admin-card">
+			<h3 className="admin-card-title">Add Swimmer</h3>
+			<form onSubmit={onSubmit} className="admin-form">
+				<div className="admin-form-grid">
+					<input name="first_name" placeholder="First name" required />
+					<input name="last_name" placeholder="Last name" required />
+					<select name="gender" required>
+						<option value="">Gender</option>
+						<option value="male">Male</option>
+						<option value="female">Female</option>
+					</select>
+					<input name="graduating" placeholder="Graduating year" type="number" step="1" required />
+				</div>
+				<button type="submit" className="admin-button">
+					Add Swimmer
+				</button>
 			</form>
 		</section>
 	);

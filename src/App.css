@@ -255,3 +255,101 @@
 	color: var(--muted);
 	font-size: 0.95rem;
 }
+
+.admin-auth {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+.admin-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.admin-card {
+	padding: 1.5rem;
+}
+
+.admin-card-wide {
+	grid-column: 1 / -1;
+}
+
+.admin-card-title {
+	margin: 0 0 1rem 0;
+	font-size: 1.1rem;
+}
+
+.admin-help {
+	margin: 0 0 1rem 0;
+	color: var(--muted);
+	font-size: 0.95rem;
+}
+
+.admin-form {
+	display: grid;
+	gap: 1rem;
+}
+
+.admin-form-grid {
+	display: grid;
+	gap: 0.8rem;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.admin-form input,
+.admin-form select {
+	border: 1px solid var(--border-soft);
+	border-radius: 10px;
+	padding: 0.65rem 0.75rem;
+	font-size: 0.95rem;
+	font-family: inherit;
+	color: var(--ink);
+	background: #fff;
+}
+
+.admin-checkbox {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+	font-size: 0.95rem;
+	color: var(--muted);
+}
+
+.admin-button {
+	justify-self: start;
+	background: var(--accent);
+	color: #fff;
+	border: none;
+	border-radius: 999px;
+	padding: 0.7rem 1.4rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.admin-subsection h4 {
+	margin: 0 0 0.75rem 0;
+	font-size: 1rem;
+}
+
+.admin-legs {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.admin-leg {
+	border: 1px solid var(--border-soft);
+	border-radius: 14px;
+	padding: 0.9rem;
+	background: rgba(10, 51, 181, 0.03);
+	display: grid;
+	gap: 0.6rem;
+}
+
+.admin-leg h5 {
+	margin: 0;
+	font-size: 0.95rem;
+	color: var(--accent);
+}

@@ -35,13 +35,17 @@ export function MeetAdditionForm({ databaseHandler }: MeetAdditionFormProps) {
 	);
 
 	return (
-		<section>
-			<h2>Add Meet</h2>
-			<form onSubmit={onSubmit}>
-				<input name="name" placeholder="Meet name" required />
-				<input name="location" placeholder="Location" required />
-				<input name="date" type="date" required />
-				<button type="submit">Add Meet</button>
+		<section className="accent-card admin-card">
+			<h3 className="admin-card-title">Add Meet</h3>
+			<form onSubmit={onSubmit} className="admin-form">
+				<div className="admin-form-grid">
+					<input name="name" placeholder="Meet name" required />
+					<input name="location" placeholder="Location" required />
+					<input name="date" type="date" required />
+				</div>
+				<button type="submit" className="admin-button">
+					Add Meet
+				</button>
 			</form>
 		</section>
 	);

@@ -13,17 +13,68 @@ export default function AdminPage() {
 	const data = useSwimData();
 	const databaseHandler = useDatabaseHandler(data, googleLoginHandler);
 	return (
-		<div style={{ padding: 32 }}>
-			<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
-			{!loggedIn ? null : (
-				<>
-					<SwimmerAdditionForm databaseHandler={databaseHandler} />
-					<MeetAdditionForm databaseHandler={databaseHandler} />
-					<ResultAdditionForm data={data} databaseHandler={databaseHandler} />
-					<BulkResultsUpload data={data} databaseHandler={databaseHandler} />
-					<RelayAdditionForm data={data} databaseHandler={databaseHandler} />
-				</>
-			)}
+		<div className="app-shell">
+			<div className="app-inner">
+				<div className="accent-card hero-card">
+					<div className="hero-row">
+						<div>
+							<div className="hero-eyebrow">Admin Console</div>
+							<h1 className="hero-title">Swimming Records Admin</h1>
+							<p className="hero-subtitle">
+								Manage swimmers, meets, results, and relays. CSV uploads support legacy formats.
+							</p>
+						</div>
+						<div className="admin-auth">
+							<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
+						</div>
+					</div>
+				</div>
+
+				{!loggedIn ? null : (
+					<>
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Roster</h2>
+							</div>
+							<div className="admin-grid">
+								<SwimmerAdditionForm databaseHandler={databaseHandler} />
+							</div>
+						</div>
+
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Meets</h2>
+							</div>
+							<div className="admin-grid">
+								<MeetAdditionForm databaseHandler={databaseHandler} />
+							</div>
+						</div>
+
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Results</h2>
+							</div>
+							<div className="admin-grid">
+								<ResultAdditionForm data={data} databaseHandler={databaseHandler} />
+								<BulkResultsUpload data={data} databaseHandler={databaseHandler} />
+							</div>
+						</div>
+
+						<div className="section-block">
+							<div className="section-header">
+								<div className="section-bar" />
+								<h2 className="section-title">Relays</h2>
+							</div>
+							<div className="admin-grid">
+								<RelayAdditionForm data={data} databaseHandler={databaseHandler} />
+							</div>
+						</div>
+					</>
+				)}
+			</div>
 		</div>
 	);
 }

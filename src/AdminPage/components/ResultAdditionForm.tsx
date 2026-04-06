@@ -55,43 +55,47 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 	);
 
 	return (
-		<section>
-			<h2>Add Result</h2>
-			<form onSubmit={onSubmit}>
-				<select name="swimmer_id" required>
-					<option value="">Select swimmer</option>
-					{swimmers.map((s) => (
-						<option key={s.id} value={s.id}>
-							{s.first_name} {s.last_name} '{s.graduating % 100}
-						</option>
-					))}
-				</select>
+		<section className="accent-card admin-card">
+			<h3 className="admin-card-title">Add Result</h3>
+			<form onSubmit={onSubmit} className="admin-form">
+				<div className="admin-form-grid">
+					<select name="swimmer_id" required>
+						<option value="">Select swimmer</option>
+						{swimmers.map((s) => (
+							<option key={s.id} value={s.id}>
+								{s.first_name} {s.last_name} '{s.graduating % 100}
+							</option>
+						))}
+					</select>
 
-				<select name="meet_id" required>
-					<option value="">Select meet</option>
-					{meets.map((m) => (
-						<option key={m.id} value={m.id}>
-							{m.name} ({m.date})
-						</option>
-					))}
-				</select>
+					<select name="meet_id" required>
+						<option value="">Select meet</option>
+						{meets.map((m) => (
+							<option key={m.id} value={m.id}>
+								{m.name} ({m.date})
+							</option>
+						))}
+					</select>
 
-				<select name="event_id" required>
-					<option value="">Select event</option>
-					{events.map((e) => (
-						<option key={e.id} value={e.id}>
-							{e.name}
-						</option>
-					))}
-				</select>
+					<select name="event_id" required>
+						<option value="">Select event</option>
+						{events.map((e) => (
+							<option key={e.id} value={e.id}>
+								{e.name}
+							</option>
+						))}
+					</select>
 
-				<input name="time" type="text" placeholder="Time (seconds or m:ss.xx)" required />
-				<label>
-					<input name="is_valid" type="checkbox" defaultChecked />
-					Valid
-				</label>
-				<input name="invalid_reason" placeholder="Invalid reason (optional)" />
-				<button type="submit">Add Result</button>
+					<input name="time" type="text" placeholder="Time (seconds or m:ss.xx)" required />
+					<label className="admin-checkbox">
+						<input name="is_valid" type="checkbox" defaultChecked />
+						Valid
+					</label>
+					<input name="invalid_reason" placeholder="Invalid reason (optional)" />
+				</div>
+				<button type="submit" className="admin-button">
+					Add Result
+				</button>
 			</form>
 		</section>
 	);
