@@ -1,4 +1,5 @@
 import { GoogleAuthSection } from "./components/GoogleAuthSection";
+import { RelayAdditionForm } from "./components/RelayAdditionForm";
 import { useGoogleLoginHandler } from "./hooks/useGoogleLoginHandler";
 import { useSwimData } from "../hooks/useSwimData";
 import { useDatabaseHandler } from "./hooks/useDatabaseHandler";
@@ -7,11 +8,12 @@ export default function AdminPage() {
 	const { onLogin, loggedIn, userEmail } = googleLoginHandler;
 	const data = useSwimData();
 	const databaseHandler = useDatabaseHandler(data, googleLoginHandler);
-
 	return (
 		<div style={{ padding: 32 }}>
 			<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
-			{!loggedIn ? null : <p>loggeeed in !!</p>}
+			{!loggedIn ? null : <>
+					<RelayAdditionForm data={data} databaseHandler={databaseHandler}/>
+				</>}
 		</div>
 	);
 }

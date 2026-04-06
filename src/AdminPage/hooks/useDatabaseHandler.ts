@@ -7,20 +7,23 @@ import { GoogleLoginHandler } from "./useGoogleLoginHandler";
 export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLoginHandler) {
 	const { token } = googleLoginHandler;
 	const { refresher } = data;
-	const sendRequest = useCallback((endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
-		return ResultAsync.fromPromise(
-			fetch(`https://swimming-api.ryanyun2010.workers.dev/${endpoint}`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(body),
-			}),
-			(error) =>
-				new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
-		);
-	}, [token]);
+	const sendRequest = useCallback(
+		(endpoint: string, body: object): ResultAsync<Response, Errors.ErrorRes> => {
+			return ResultAsync.fromPromise(
+				fetch(`https://swimming-api.ryanyun2010.workers.dev/${endpoint}`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify(body),
+				}),
+				(error) =>
+					new Errors.NoResponse("Failed to send request, no response from server: " + JSON.stringify(error)),
+			);
+		},
+		[token],
+	);
 	const addSwimmer = useCallback(
 		(
 			first_name: string,
@@ -94,10 +97,12 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 					ResultAsync.fromPromise(
 						response.json(),
 						(error) =>
-							new Errors.NoResponse("Failed to parse response when adding relay: " + JSON.stringify(error)),
+							new Errors.NoResponse(
+								"Failed to parse response when adding relay: " + JSON.stringify(error),
+							),
 					),
 				)
-				.map((data) => data.relay_id as number)
+				.map((data) => data.last_row_id as number)
 				.mapErr(
 					(error) =>
 						new Errors.NoResponse("Failed to add relay, server query failed: " + JSON.stringify(error)),
