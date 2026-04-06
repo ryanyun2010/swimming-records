@@ -31,21 +31,16 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
 	);
-	const relayEvents = useMemo(
-		() => events.filter((e) => e.is_relay === 1 || (e as { is_relay?: boolean }).is_relay === true),
-		[events],
-	);
+	const relayEvents = useMemo(() => events, [events]);
 	const [selectedRelayEventId, setSelectedRelayEventId] = useState<number | null>(null);
 	const selectedRelayEvent = relayEvents.find((e) => e.id === selectedRelayEventId) ?? null;
 
 	const legEventOptions = useMemo(() => {
-		const nonRelayEvents = events.filter(
-			(e) => !(e.is_relay === 1 || (e as { is_relay?: boolean }).is_relay === true),
-		);
-		if (!selectedRelayEvent) return nonRelayEvents;
+		const allEvents = events;
+		if (!selectedRelayEvent) return allEvents;
 		const stroke = normalizeStroke(selectedRelayEvent.stroke);
 		if (stroke.includes("medley")) {
-			return nonRelayEvents.filter(
+			return allEvents.filter(
 				(e) =>
 					e.distance === 50 &&
 					["back", "breast", "fly", "freestyle"].includes(normalizeStroke(e.stroke)),
@@ -53,11 +48,11 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		}
 		if (stroke.includes("freestyle")) {
 			const legDistance = selectedRelayEvent.distance === 400 ? 100 : 50;
-			return nonRelayEvents.filter(
+			return allEvents.filter(
 				(e) => e.distance === legDistance && normalizeStroke(e.stroke) === "freestyle",
 			);
 		}
-		return nonRelayEvents;
+		return allEvents;
 	}, [events, selectedRelayEvent]);
 
 	const onSubmit = useCallback(

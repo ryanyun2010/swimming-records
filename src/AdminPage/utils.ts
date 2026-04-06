@@ -27,6 +27,8 @@ export function normalizeStroke(stroke: string): string {
 	if (s === "fly" || s === "butterfly") return "fly";
 	if (s === "back" || s === "backstroke") return "back";
 	if (s === "breast" || s === "breaststroke") return "breast";
+	if (s === "im" || s === "individualmedley" || s === "medley") return "medley";
+	if (s === "medleyrelay") return "medley";
 	return s;
 }
 

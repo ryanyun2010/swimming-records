@@ -146,8 +146,11 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			let timep = times[timepid];
 
 			if (!recordProg.school_record) {
-				let last_best =
-					last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`];
+				const legKey =
+					recordProg.leg_id && relayLegs[recordProg.leg_id]?.leg_order === 1
+						? "indiv"
+						: recordProg.leg_id ?? "indiv";
+				let last_best = last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legKey}`];
 				if (last_best !== undefined) {
 					let last_best_cur = times[last_best].current_PR ?? {
 						change: null,
@@ -163,7 +166,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				} else {
 					timep.current_PR = { change: null };
 				}
-				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${recordProg.leg_id ?? "indiv"}`] = timepid;
+				last_bests[`${recordProg.swimmer_id}-${recordProg.event_id}-${legKey}`] = timepid;
 			} else {
 				let last_SR_best = last_SR_bests[recordProg.event_id];
 				if (last_SR_best !== undefined) {
