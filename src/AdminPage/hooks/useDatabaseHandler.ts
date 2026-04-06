@@ -124,7 +124,7 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 				})
 				.mapErr(
 					(error) =>
-						new Errors.NoResponse("Failed to add relay, server query failed: " + JSON.stringify(error)),
+						new Errors.NoResponse("Failed to add relay, server query failed: " + error.toString()),
 				);
 		},
 		[refresher, sendRequest],
