@@ -21,30 +21,6 @@ export function readCSV(file: File): ResultAsync<string[][], ErrorRes> {
 		new Promise((resolve, reject) => {
 			const reader = new FileReader();
 
-			const parseLine = (line: string): string[] => {
-				const result: string[] = [];
-				let current = "";
-				let inQuotes = false;
-				for (let i = 0; i < line.length; i++) {
-					const ch = line[i];
-					if (ch === '"') {
-						if (inQuotes && line[i + 1] === '"') {
-							current += '"';
-							i++;
-						} else {
-							inQuotes = !inQuotes;
-						}
-					} else if (ch === "," && !inQuotes) {
-						result.push(current);
-						current = "";
-					} else {
-						current += ch;
-					}
-				}
-				result.push(current);
-				return result;
-			};
-
 			reader.onload = () => {
 				const result = reader.result;
 				if (result == null || typeof result !== "string") {
@@ -54,7 +30,7 @@ export function readCSV(file: File): ResultAsync<string[][], ErrorRes> {
 				const rows = result
 					.trim()
 					.split(/\r?\n/)
-					.map((r) => parseLine(r));
+					.map((r) => r.split(","));
 				resolve(rows);
 			};
 
