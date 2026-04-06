@@ -94,8 +94,15 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							);
 						}
 
-						const typeToken = row[3]?.toLowerCase();
-						const isResultRow = typeToken.includes("split") || typeToken.includes("individual");
+						const typeToken = row[3]?.toLowerCase() ?? "";
+						const normalizedType = typeToken.includes("relay")
+							? "relay"
+							: typeToken.includes("indiv")
+								? "individual"
+								: typeToken.includes("split")
+									? "relay"
+									: "";
+						const isResultRow = normalizedType === "relay" || normalizedType === "individual";
 
 						if (!isResultRow) {
 							const swimmerNames = row.slice(0, 4);
@@ -147,7 +154,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						const swimmerName = row[0];
 						const meetName = row[1];
 						const eventLabel = row[2];
-						const type = typeToken;
+						const type = normalizedType;
 						const timeRaw = row[4];
 						const validRaw = row[5] ?? "";
 						const invalidReason = (row[6] ?? "").trim() || null;
