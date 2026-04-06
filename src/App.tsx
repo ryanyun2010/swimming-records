@@ -1,7 +1,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-// import AdminPage from "./pages/AdminPage";
+import AdminPage from "./AdminPage/AdminPage";
 import { useSwimData } from "./hooks/useSwimData";
 import { useParsedTimes } from "./hooks/useParsedTimes";
 import { useRelayHelpers } from "./hooks/useRelayHelpers";
@@ -46,7 +46,7 @@ function App() {
 			<Router>
 				<Routes>
 					<Route path="/" element={<Home />} />
-					{/* <Route path="/admin" element={<AdminPage />} /> */}
+					<Route path="/admin" element={<AdminPage />} />
 				</Routes>
 			</Router>
 		</GoogleOAuthProvider>
