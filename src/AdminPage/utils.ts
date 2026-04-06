@@ -52,11 +52,19 @@ export function findSwimmerIdByCsvName(
 	const gradSuffix = Number(match[2]);
 	if (!Number.isFinite(gradSuffix)) return null;
 
-	const nameNorm = normalizeName(namePart);
+	const pieces = namePart.split(/\s+/);
+	if (pieces.length < 2) return null;
+	const firstNameRaw = pieces[0];
+	const lastNameRaw = pieces.slice(1).join(" ");
+	const firstNameNorm = normalizeName(firstNameRaw);
+	const lastNameNorm = normalizeName(lastNameRaw);
 	const candidates = swimmers.filter((s) => {
-		const full = normalizeName(`${s.first_name} ${s.last_name}`);
 		const grad = s.graduating % 100;
-		return grad === gradSuffix && (full.includes(nameNorm) || nameNorm.includes(full));
+		return (
+			grad === gradSuffix &&
+			normalizeName(s.first_name) === firstNameNorm &&
+			normalizeName(s.last_name) === lastNameNorm
+		);
 	});
 	return candidates.length === 1 ? candidates[0].id : null;
 }
