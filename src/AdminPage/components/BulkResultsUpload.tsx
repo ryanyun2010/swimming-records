@@ -47,9 +47,9 @@ type RelayLegSplit = {
 
 function normalizeRelayType(value: string): string {
 	const v = value.toLowerCase().replace(/\s+/g, "");
-	if (v === "200mr" || v === "200medleyrelay" || v === "200medley") return "200_mr";
-	if (v === "200fr" || v === "200freerelay" || v === "200freestyle") return "200_fr";
-	if (v === "400fr" || v === "400freerelay" || v === "400freestyle") return "400_fr";
+	if (v === "200mr" || v === "200medleyrelay" || v === "200medleyrelay") return "200_mr";
+	if (v === "200fr" || v === "200freerelay" || v === "200freestylerelay") return "200_fr";
+	if (v === "400fr" || v === "400freerelay" || v === "400freestylerelay") return "400_fr";
 	return value;
 }
 
