@@ -21,7 +21,7 @@ export default function AdminPage() {
 							<div className="hero-eyebrow">Admin Console</div>
 							<h1 className="hero-title">Swimming Records Admin</h1>
 							<p className="hero-subtitle">
-								Manage swimmers, meets, results, and relays. CSV uploads support legacy formats.
+								Manage swimmers, meets, results, and relays. 
 							</p>
 						</div>
 						<div className="admin-auth">
