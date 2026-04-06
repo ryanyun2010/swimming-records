@@ -84,7 +84,7 @@ export function findEventIdByLabel(
 	events: { id: number; name: string }[],
 	label: string,
 ): number | null {
-	const target = normalizeName(label.replace(/\(.*\)/g, "").trim());
+	const target = normalizeName(label.replace(/\(.*\)/g, "").trim()).replaceAll("free", "freestyle").replaceAll("fly", "butterfly").replaceAll("breast", "breaststroke").replaceAll("back", "backstroke");
 	const matches = events.filter((e) => {
 		const full = normalizeName(e.name);
 		return full.includes(target) || target.includes(full);
