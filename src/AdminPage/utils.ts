@@ -89,7 +89,8 @@ export function findEventIdByLabel(
 	console.log("target", target);
 	const matches = events.filter((e) => {
 		const full = normalizeName(e.name);
-		console.log("full", full);
+		console.log("full, target", full, target);
+		console.log("full inc target, target inc full", full.includes(target), target.includes(full));
 		return full.includes(target) || target.includes(full);
 	});
 	return matches.length === 1 ? matches[0].id : null;
