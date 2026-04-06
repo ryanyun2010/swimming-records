@@ -1,8 +1,8 @@
-import { FormEvent, useCallback, useMemo } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { ResultAsync } from "neverthrow";
 import { SwimData } from "../../hooks/useSwimData";
 import { useDatabaseHandler } from "../hooks/useDatabaseHandler";
-import { parseTimeToSeconds } from "../utils";
+import { normalizeStroke, parseTimeToSeconds } from "../utils";
 
 type RelayAdditionFormProps = {
 	data: SwimData;
@@ -31,10 +31,34 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
 	);
-	const relayEvents = useMemo(() => {
-		const onlyRelay = events.filter((e) => e.is_relay === true);
-		return onlyRelay.length > 0 ? onlyRelay : events;
-	}, [events]);
+	const relayEvents = useMemo(
+		() => events.filter((e) => e.is_relay === 1 || (e as { is_relay?: boolean }).is_relay === true),
+		[events],
+	);
+	const [selectedRelayEventId, setSelectedRelayEventId] = useState<number | null>(null);
+	const selectedRelayEvent = relayEvents.find((e) => e.id === selectedRelayEventId) ?? null;
+
+	const legEventOptions = useMemo(() => {
+		const nonRelayEvents = events.filter(
+			(e) => !(e.is_relay === 1 || (e as { is_relay?: boolean }).is_relay === true),
+		);
+		if (!selectedRelayEvent) return nonRelayEvents;
+		const stroke = normalizeStroke(selectedRelayEvent.stroke);
+		if (stroke.includes("medley")) {
+			return nonRelayEvents.filter(
+				(e) =>
+					e.distance === 50 &&
+					["back", "breast", "fly", "freestyle"].includes(normalizeStroke(e.stroke)),
+			);
+		}
+		if (stroke.includes("freestyle")) {
+			const legDistance = selectedRelayEvent.distance === 400 ? 100 : 50;
+			return nonRelayEvents.filter(
+				(e) => e.distance === legDistance && normalizeStroke(e.stroke) === "freestyle",
+			);
+		}
+		return nonRelayEvents;
+	}, [events, selectedRelayEvent]);
 
 	const onSubmit = useCallback(
 		(e: FormEvent<HTMLFormElement>) => {
@@ -120,7 +144,12 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 					))}
 				</select>
 
-				<select name="event_id" required>
+				<select
+					name="event_id"
+					required
+					value={selectedRelayEventId ?? ""}
+					onChange={(e) => setSelectedRelayEventId(Number(e.target.value))}
+				>
 					<option value="">Select relay event</option>
 					{relayEvents.map((e) => (
 						<option key={e.id} value={e.id}>
@@ -150,7 +179,7 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 						</select>
 						<select name={`leg_${leg}_event_id`} required>
 							<option value="">Select leg event</option>
-							{events.map((e) => (
+							{legEventOptions.map((e) => (
 								<option key={e.id} value={e.id}>
 									{e.name}
 								</option>

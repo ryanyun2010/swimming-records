@@ -21,7 +21,7 @@ function normalizeName(value: string): string {
 	return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function normalizeStroke(stroke: string): string {
+export function normalizeStroke(stroke: string): string {
 	const s = stroke.toLowerCase();
 	if (s === "free" || s === "freestyle") return "freestyle";
 	if (s === "fly" || s === "butterfly") return "fly";
