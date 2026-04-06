@@ -206,6 +206,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 							is_valid: r.is_valid,
 							invalid_reason: r.invalid_reason,
 						}));
+					console.log("Parsed relay splits: ", relaySplits);
 					const individualRows = resultRows.filter((r) => r.type !== "relay");
 
 					const addIndividuals = ResultAsync.combine(
