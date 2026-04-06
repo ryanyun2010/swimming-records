@@ -115,6 +115,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								);
 							}
 							const swimmerIds = swimmerNames.map((name) => findSwimmerIdByCsvName(swimmers, name));
+							console.log("swimmerIds: " + swimmerIds.join(",") + " for names: " + swimmerNames.join(","));
 							if (swimmerIds.some((id) => id == null)) {
 								return errAsync(
 									new Errors.MalformedResponse(
