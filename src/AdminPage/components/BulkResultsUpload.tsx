@@ -96,11 +96,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						}
 
 						const typeToken = row[3]?.toLowerCase();
-						const isResultRow = typeToken === "relay" || typeToken === "individual";
+						const isResultRow = typeToken.includes("split") || typeToken.includes("individual");
 
 						if (!isResultRow) {
-							// Relay summary row layout:
-							// swimmers(0-3), meet(4), relay_type(5), type(6), time(7), [validity(8), invalid_reason(9)]
 							const swimmerNames = row.slice(0, 4);
 							const meetName = row[4];
 							const relayType = normalizeRelayType(row[5]);
