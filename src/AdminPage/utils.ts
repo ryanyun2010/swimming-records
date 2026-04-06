@@ -84,7 +84,22 @@ export function findEventIdByLabel(
 	events: { id: number; name: string }[],
 	label: string,
 ): number | null {
-	const target = normalizeName(label.replace(/\(.*\)/g, "").trim()).replaceAll("0free", "0freestyle").replaceAll("0fly", "0butterfly").replaceAll("0breast", "0breaststroke").replaceAll("0back", "0backstroke").replaceAll("0im","0individualmedley");
+	let target = normalizeName(label.replace(/\(.*\)/g, "").trim());
+	if (target == "50free" || target == "100free" || target == "200free" || target == "500free") {
+		target = target.replace("free", "freestyle");
+	}
+	if (target == "50fly" || target == "100fly") {
+		target = target.replace("fly", "butterfly");
+	}
+	if (target == "50breast" || target == "100breast") {
+		target = target.replace("breat", "breaststroke");
+	}
+	if (target == "50back" || target == "100back") {
+		target = target.replace("back", "backstroke");
+	}
+	if (target == "100im" || target == "200im") {
+		target = target.replace("im", "individualmedley");
+	}
 	const matches = events.filter((e) => {
 		const full = normalizeName(e.name);
 		return full == target;
