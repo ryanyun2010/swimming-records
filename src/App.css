@@ -262,6 +262,16 @@
 	justify-content: flex-end;
 }
 
+.admin-auth-centered {
+	justify-content: center;
+	width: 100%;
+}
+
+.admin-login {
+	transform: scale(1.15);
+	transform-origin: center;
+}
+
 .admin-grid {
 	display: grid;
 	gap: 1rem;

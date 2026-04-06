@@ -9,7 +9,9 @@ export function GoogleAuthSection({
 	userEmail: string | null;
 }) {
 	return !loggedIn ? (
-		<GoogleLogin onSuccess={onLogin} />
+		<div className="admin-login">
+			<GoogleLogin onSuccess={onLogin} />
+		</div>
 	) : (
 		<p>
 			Logged in as <b>{userEmail}</b>

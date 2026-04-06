@@ -24,7 +24,7 @@ export default function AdminPage() {
 								Manage swimmers, meets, results, and relays. 
 							</p>
 						</div>
-						<div className="admin-auth">
+						<div className={loggedIn ? "admin-auth" : "admin-auth admin-auth-centered"}>
 							<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
 						</div>
 					</div>
