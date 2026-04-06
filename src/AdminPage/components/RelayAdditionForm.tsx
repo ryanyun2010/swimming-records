@@ -31,6 +31,10 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
 	);
+	const relayEvents = useMemo(() => {
+		const onlyRelay = events.filter((e) => e.is_relay === true);
+		return onlyRelay.length > 0 ? onlyRelay : events;
+	}, [events]);
 
 	const onSubmit = useCallback(
 		(e: FormEvent<HTMLFormElement>) => {
@@ -118,7 +122,7 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 
 				<select name="event_id" required>
 					<option value="">Select relay event</option>
-					{events.map((e) => (
+					{relayEvents.map((e) => (
 						<option key={e.id} value={e.id}>
 							{e.name}
 						</option>
