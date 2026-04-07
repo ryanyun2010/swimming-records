@@ -72,31 +72,52 @@ export function Search({
 	}, [curParsedTimes, curRelays, relayRecordInfo]);
 
 	const sortedIndividualTimes = useMemo(() => {
+		const { events } = data;
+		const distanceByName = new Map<string, number>();
+		Object.values(events).forEach((event) => {
+			distanceByName.set(event.name, event.distance);
+		});
 		return [...curParsedTimes]
 			.filter((t) => t.type === "individual")
 			.sort((a, b) => {
+				const distanceA = distanceByName.get(a.event_name) ?? 0;
+				const distanceB = distanceByName.get(b.event_name) ?? 0;
+				if (distanceA !== distanceB) return distanceA - distanceB;
 				const eventCompare = a.event_name.localeCompare(b.event_name);
 				if (eventCompare !== 0) return eventCompare;
 				return b.time - a.time;
 			});
-	}, [curParsedTimes]);
+	}, [curParsedTimes, data]);
 
 	const sortedRelayLegTimes = useMemo(() => {
+		const { events } = data;
+		const distanceByName = new Map<string, number>();
+		Object.values(events).forEach((event) => {
+			distanceByName.set(event.name, event.distance);
+		});
 		return [...curParsedTimes]
 			.filter((t) => t.type === "relay_leg")
 			.sort((a, b) => {
+				const distanceA = distanceByName.get(a.event_name) ?? 0;
+				const distanceB = distanceByName.get(b.event_name) ?? 0;
+				if (distanceA !== distanceB) return distanceA - distanceB;
 				const eventCompare = a.event_name.localeCompare(b.event_name);
 				if (eventCompare !== 0) return eventCompare;
 				return b.time - a.time;
 			});
-	}, [curParsedTimes]);
+	}, [curParsedTimes, data]);
 
 	const sortedRelays = useMemo(() => {
 		const { events } = data;
 		return [...curRelays].sort((a, b) => {
-			const eventA = events[a.event_id]?.name ?? "";
-			const eventB = events[b.event_id]?.name ?? "";
-			const eventCompare = eventA.localeCompare(eventB);
+			const eventA = events[a.event_id];
+			const eventB = events[b.event_id];
+			const distanceA = eventA?.distance ?? 0;
+			const distanceB = eventB?.distance ?? 0;
+			if (distanceA !== distanceB) return distanceA - distanceB;
+			const eventNameA = eventA?.name ?? "";
+			const eventNameB = eventB?.name ?? "";
+			const eventCompare = eventNameA.localeCompare(eventNameB);
 			if (eventCompare !== 0) return eventCompare;
 			return b.time_ms - a.time_ms;
 		});

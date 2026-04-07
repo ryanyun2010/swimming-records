@@ -310,13 +310,14 @@
 	padding: 0.2rem 0.4rem;
 	margin: 0.4rem auto 0.1rem;
 	text-align: center;
+	width: 100%;
 }
 
 .event-gap-label::before,
 .event-gap-label::after {
 	content: "";
 	flex: 1;
-	border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+	border-bottom: 1px solid currentColor;
 	transform: translateY(-1px);
 }
 
