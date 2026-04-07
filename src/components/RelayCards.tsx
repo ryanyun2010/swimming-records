@@ -101,7 +101,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 							>
 								Relay
 							</span>
-							{isDQ ? <span className="tag tag-dq">DQ{dqReason ? `: ${dqReason}` : ""}</span> : null}
+							{isDQ ? <span className="tag tag-dq">Invalid{dqReason ? `: ${dqReason}` : ""}</span> : null}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
 									<span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span>
