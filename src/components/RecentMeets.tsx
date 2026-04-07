@@ -10,7 +10,9 @@ type RecentMeetsProps = {
 export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX.Element {
 	const { meets } = data;
 	const { setSearchParams } = searchParamHandler;
-	const meetCards = Object.values(meets).map((m) => (
+	const meetCards = Object.values(meets)
+		.sort((a, b) => b.date.localeCompare(a.date))
+		.map((m) => (
 		<li key={m.id} className="accent-card meet-card" onClick={() => setSearchParams({ meet_id: m.id.toString() })}>
 			<div className="meet-row">
 				<div className="meet-title">{m.name}</div>
