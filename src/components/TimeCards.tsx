@@ -32,7 +32,10 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 				),
 			);
 		return ok(
-			<li className="accent-card result-card">
+			<li
+				className="accent-card result-card"
+				key={`${t.type}-${t.result_id ?? t.relay_leg_id ?? t.swimmer_id}-${t.event_name}-${t.meet_id}`}
+			>
 				<div className="result-row">
 					<div className="name-line">
 						<span

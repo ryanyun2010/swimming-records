@@ -5,7 +5,8 @@ import { Relay } from "../lib/defs";
 import { Result as Res, ok, err } from "neverthrow";
 import * as Errors from "../lib/errors";
 import { formatChange, formatDate, formatTime } from "../lib/utils";
-import { JSX, useMemo } from "react";
+import { JSX } from "react";
+import { useRelayRecordInfo } from "../hooks/useRelayRecordInfo";
 
 type RelayCardsProps = {
 	data: SwimData;
@@ -15,70 +16,10 @@ type RelayCardsProps = {
 };
 
 export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }: RelayCardsProps): JSX.Element[] {
-	const { swimmers, meets, events, relays, recordProgs } = data;
+	const { swimmers, meets, events } = data;
 	const { setSearchParams } = searchParamHandler;
 	const { getRelayLegsForRelay } = relayHelpers;
-
-	const relayRecordInfo = useMemo(() => {
-		type RecordInfo = {
-			current_PR: { change: number | null } | null;
-			current_SR: { change: number | null } | null;
-			previous_PR: { change: number | null; til: string } | null;
-			previous_SR: { change: number | null; til: string } | null;
-		};
-		const info: Record<number, RecordInfo> = {};
-		const lastPR: Record<string, number> = {};
-		const lastSR: Record<number, number> = {};
-
-		const ensure = (relayId: number): RecordInfo => {
-			if (!info[relayId]) {
-				info[relayId] = { current_PR: null, current_SR: null, previous_PR: null, previous_SR: null };
-			}
-			return info[relayId];
-		};
-
-		for (let recordProg of recordProgs) {
-			if (recordProg.type !== "relay") continue;
-			if (recordProg.relay_id == null || !relays[recordProg.relay_id]) {
-				console.warn(`Skipping relay record prog ${recordProg.id}: missing relay info.`);
-				continue;
-			}
-			const relayId = recordProg.relay_id;
-			const relay = relays[relayId];
-			const meetDate = meets[relay.meet_id]?.date ?? "";
-			const curInfo = ensure(relayId);
-
-			if (!recordProg.school_record) {
-				const key = `${recordProg.swimmer_id}-${recordProg.event_id}`;
-				const lastId = lastPR[key];
-				if (lastId !== undefined && relays[lastId]) {
-					const lastInfo = ensure(lastId);
-					const lastCur = lastInfo.current_PR ?? { change: null };
-					lastInfo.previous_PR = { change: lastCur.change, til: meetDate };
-					lastInfo.current_PR = null;
-					curInfo.current_PR = { change: relay.time_ms - relays[lastId].time_ms };
-				} else {
-					curInfo.current_PR = { change: null };
-				}
-				lastPR[key] = relayId;
-			} else {
-				const key = recordProg.event_id;
-				const lastId = lastSR[key];
-				if (lastId !== undefined && relays[lastId]) {
-					const lastInfo = ensure(lastId);
-					const lastCur = lastInfo.current_SR ?? { change: null };
-					lastInfo.previous_SR = { change: lastCur.change, til: meetDate };
-					lastInfo.current_SR = null;
-					curInfo.current_SR = { change: relay.time_ms - relays[lastId].time_ms };
-				} else {
-					curInfo.current_SR = { change: null };
-				}
-				lastSR[key] = relayId;
-			}
-		}
-
-		return info;
-	}, [recordProgs, relays, meets]);
+	const relayRecordInfo = useRelayRecordInfo(data);
 
 	function renderRelayCard(r: Relay): Res<JSX.Element, Error> {
 		const legsFailable = getRelayLegsForRelay(r.id);
