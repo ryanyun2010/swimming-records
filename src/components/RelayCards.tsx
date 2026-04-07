@@ -68,7 +68,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		const previousSR = recordInfo?.previous_SR ?? null;
 
 		return ok(
-			<li key={r.id} className={`accent-card result-card${addEventGap ? " event-gap" : ""}`}>
+			<li key={r.id} className={`accent-card result-card`}>
 				<div className="result-row">
 					<div className="name-line">
 						{swimmerSpans.flatMap((node, i) =>
@@ -146,14 +146,14 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		const eventName = events[t.event_id]?.name ?? "";
 		const prevEventName = prev ? events[prev.event_id]?.name ?? "" : "";
 		const addEventGap = prev != null && eventName !== prevEventName;
-		if (addEventGap) {
+		if (index == 0 || addEventGap) {
 			rendered.push(
 				<li key={`event-gap-${eventName}-${t.meet_id}-${index}`} className="event-gap-label">
 					{eventName}
 				</li>,
 			);
 		}
-		const card = renderRelayCard(t, addEventGap);
+		const card = renderRelayCard(t, false);
 		card.match(
 			(node) => rendered.push(node),
 			(err) => console.warn(`Failed to render a relay card, skipping render: `, err.toString()),

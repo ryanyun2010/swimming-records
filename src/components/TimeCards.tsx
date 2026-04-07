@@ -33,7 +33,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 			);
 		return ok(
 			<li
-				className={`accent-card result-card${addEventGap ? " event-gap" : ""}`}
+				className={`accent-card result-card`}
 				key={`${t.type}-${t.result_id ?? t.relay_leg_id ?? t.swimmer_id}-${t.event_name}-${t.meet_id}`}
 			>
 				<div className="result-row">
@@ -114,14 +114,14 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 		const t = curParsedTimes[index];
 		const prev = index > 0 ? curParsedTimes[index - 1] : null;
 		const addEventGap = prev != null && prev.event_name !== t.event_name;
-		if (addEventGap) {
+		if (index == 0 || addEventGap) {
 			rendered.push(
 				<li key={`event-gap-${t.event_name}-${t.meet_id}-${index}`} className="event-gap-label">
 					{t.event_name}
 				</li>,
 			);
 		}
-		const card = renderTimeCard(t, addEventGap);
+		const card = renderTimeCard(t, false);
 		card.match(
 			(node) => rendered.push(node),
 			(err) => console.warn("Failed to render a time card, skipping render: ", err.toString()),

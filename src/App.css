@@ -209,7 +209,7 @@
 
 .section-header-sticky {
 	position: sticky;
-	top: 0;
+	top: 0.85rem;
 	padding: 0.35rem 0.25rem;
 	background: rgba(247, 248, 254, 0.92);
 	backdrop-filter: blur(6px);
@@ -296,18 +296,28 @@
 	padding: 1rem 1.2rem;
 }
 
-.event-gap {
-	margin-top: 1.4rem;
-}
 
 .event-gap-label {
-	display: inline-block;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6rem;
 	color: var(--muted);
 	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	margin-top: 0.35rem;
+	padding: 0.2rem 0.4rem;
+	margin: 0.4rem auto 0.1rem;
+	text-align: center;
+}
+
+.event-gap-label::before,
+.event-gap-label::after {
+	content: "";
+	flex: 1;
+	border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+	transform: translateY(-1px);
 }
 
 .result-row {
