@@ -139,23 +139,25 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		);
 	}
 
-	return curRelays
-		.map((t, index) => {
-			const prev = index > 0 ? curRelays[index - 1] : null;
-			const eventName = events[t.event_id]?.name ?? "";
-			const prevEventName = prev ? events[prev.event_id]?.name ?? "" : "";
-			const addEventGap = prev != null && eventName !== prevEventName;
-			return renderRelayCard(t, addEventGap);
-		})
-		.reduce(
-			(acc: JSX.Element[], cur: Res<JSX.Element, Errors.ErrorRes>) =>
-				cur.match(
-					(cards) => [...acc, cards],
-					(err) => {
-						console.warn(`Failed to render a relay card, skipping render: `, err.toString());
-						return acc;
-					},
-				),
-			[],
+	const rendered: JSX.Element[] = [];
+	for (let index = 0; index < curRelays.length; index++) {
+		const t = curRelays[index];
+		const prev = index > 0 ? curRelays[index - 1] : null;
+		const eventName = events[t.event_id]?.name ?? "";
+		const prevEventName = prev ? events[prev.event_id]?.name ?? "" : "";
+		const addEventGap = prev != null && eventName !== prevEventName;
+		if (addEventGap) {
+			rendered.push(
+				<li key={`event-gap-${eventName}-${t.meet_id}-${index}`} className="event-gap-label">
+					{eventName}
+				</li>,
+			);
+		}
+		const card = renderRelayCard(t, addEventGap);
+		card.match(
+			(node) => rendered.push(node),
+			(err) => console.warn(`Failed to render a relay card, skipping render: `, err.toString()),
 		);
+	}
+	return rendered;
 }

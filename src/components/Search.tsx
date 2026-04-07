@@ -135,7 +135,6 @@ export function Search({
 							<div className="meet-overview-stat stat-fts">
 								<div className="stat-label">FIRST TIME SWIMS</div>
 								<div className="stat-value">{meetSummary.fts}</div>
-								<div className="stat-sub">First-time swims</div>
 							</div>
 							<div className="meet-overview-stat stat-pr">
 								<div className="stat-label">PERSONAL RECORDS SET</div>
@@ -143,7 +142,6 @@ export function Search({
 									{meetSummary.prs}
 									{meetSummary.prsCurrent > 0 ? <span className="stat-inline">{meetSummary.prsCurrent} still current</span> : null}
 								</div>
-								<div className="stat-sub">PERSONAL RECORDS SET</div>
 							</div>
 							<div className="meet-overview-stat stat-sr">
 								<div className="stat-label">SCHOOL RECORDS SET</div>
@@ -151,7 +149,6 @@ export function Search({
 									{meetSummary.srs}
 									{meetSummary.srsCurrent > 0 ? <span className="stat-inline">{meetSummary.srsCurrent} still current</span> : null}
 								</div>
-								<div className="stat-sub">School records at the time</div>
 							</div>
 						</div>
 					</div>

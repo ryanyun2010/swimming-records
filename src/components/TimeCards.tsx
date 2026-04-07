@@ -109,21 +109,23 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 		);
 	}
 
-	return curParsedTimes
-		.map((t, index) => {
-			const prev = index > 0 ? curParsedTimes[index - 1] : null;
-			const addEventGap = prev != null && prev.event_name !== t.event_name;
-			return renderTimeCard(t, addEventGap);
-		})
-		.reduce(
-			(acc: JSX.Element[], cur: Res<JSX.Element, ErrorRes>) =>
-				cur.match(
-					(cards) => [...acc, cards],
-					(err) => {
-						console.warn("Failed to render a time card, skipping render: ", err.toString());
-						return acc;
-					},
-				),
-			[],
+	const rendered: JSX.Element[] = [];
+	for (let index = 0; index < curParsedTimes.length; index++) {
+		const t = curParsedTimes[index];
+		const prev = index > 0 ? curParsedTimes[index - 1] : null;
+		const addEventGap = prev != null && prev.event_name !== t.event_name;
+		if (addEventGap) {
+			rendered.push(
+				<li key={`event-gap-${t.event_name}-${t.meet_id}-${index}`} className="event-gap-label">
+					{t.event_name}
+				</li>,
+			);
+		}
+		const card = renderTimeCard(t, addEventGap);
+		card.match(
+			(node) => rendered.push(node),
+			(err) => console.warn("Failed to render a time card, skipping render: ", err.toString()),
 		);
+	}
+	return rendered;
 }
