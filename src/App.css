@@ -210,12 +210,13 @@
 
 .section-header-sticky {
 	position: sticky;
-	top: 0.75rem;
+	top: 0;
 	padding: 0.35rem 0.25rem;
 	background: rgba(247, 248, 254, 0.92);
 	backdrop-filter: blur(6px);
 	border-radius: 14px;
 	z-index: 5;
+	width: 100%;
 }
 
 .section-bar {
@@ -294,6 +295,10 @@
 
 .result-card {
 	padding: 1rem 1.2rem;
+}
+
+.event-gap {
+	margin-top: 0.9rem;
 }
 
 .result-row {

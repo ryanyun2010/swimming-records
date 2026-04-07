@@ -32,16 +32,19 @@ export function Search({
 
 	const meetSummary = useMemo(() => {
 		let prs = 0;
+		let prsCurrent = 0;
 		let fts = 0;
 		let srs = 0;
 		let srsCurrent = 0;
 
 		const countTime = (t: ParsedTime) => {
 			const hasPR = t.current_PR != null || t.previous_PR != null;
+			const hasCurrentPR = t.current_PR != null;
 			const hasFTS = t.current_PR?.change === null || t.previous_PR?.change === null;
 			const hasSR = t.current_SR != null || t.previous_SR != null;
 			const hasCurrentSR = t.current_SR != null;
 			if (hasPR) prs += 1;
+			if (hasCurrentPR) prsCurrent += 1;
 			if (hasFTS) fts += 1;
 			if (hasSR) srs += 1;
 			if (hasCurrentSR) srsCurrent += 1;
@@ -51,10 +54,12 @@ export function Search({
 			const info = relayRecordInfo[relayId];
 			if (!info) return;
 			const hasPR = info.current_PR != null || info.previous_PR != null;
+			const hasCurrentPR = info.current_PR != null;
 			const hasFTS = info.current_PR?.change === null || info.previous_PR?.change === null;
 			const hasSR = info.current_SR != null || info.previous_SR != null;
 			const hasCurrentSR = info.current_SR != null;
 			if (hasPR) prs += 1;
+			if (hasCurrentPR) prsCurrent += 1;
 			if (hasFTS) fts += 1;
 			if (hasSR) srs += 1;
 			if (hasCurrentSR) srsCurrent += 1;
@@ -63,7 +68,7 @@ export function Search({
 		curParsedTimes.forEach((t) => countTime(t));
 		curRelays.forEach((relay) => countRelay(relay.id));
 
-		return { prs, fts, srs, srsCurrent };
+		return { prs, prsCurrent, fts, srs, srsCurrent };
 	}, [curParsedTimes, curRelays, relayRecordInfo]);
 
 	const sortedIndividualTimes = useMemo(() => {
@@ -127,21 +132,24 @@ export function Search({
 							</div>
 						</div>
 						<div className="meet-overview-grid">
-							<div className="meet-overview-stat stat-pr">
-								<div className="stat-label">PRs</div>
-								<div className="stat-value">{meetSummary.prs}</div>
-								<div className="stat-sub">Personal records set</div>
-							</div>
 							<div className="meet-overview-stat stat-fts">
-								<div className="stat-label">FTS</div>
+								<div className="stat-label">FIRST TIME SWIMS</div>
 								<div className="stat-value">{meetSummary.fts}</div>
 								<div className="stat-sub">First-time swims</div>
 							</div>
+							<div className="meet-overview-stat stat-pr">
+								<div className="stat-label">PERSONAL RECORDS SET</div>
+								<div className="stat-value">
+									{meetSummary.prs}
+									{meetSummary.prsCurrent > 0 ? <span className="stat-inline">{meetSummary.prsCurrent} still current</span> : null}
+								</div>
+								<div className="stat-sub">PERSONAL RECORDS SET</div>
+							</div>
 							<div className="meet-overview-stat stat-sr">
-								<div className="stat-label">SRs</div>
+								<div className="stat-label">SCHOOL RECORDS SET</div>
 								<div className="stat-value">
 									{meetSummary.srs}
-									<span className="stat-inline">{meetSummary.srsCurrent} still current</span>
+									{meetSummary.srsCurrent > 0 ? <span className="stat-inline">{meetSummary.srsCurrent} still current</span> : null}
 								</div>
 								<div className="stat-sub">School records at the time</div>
 							</div>
@@ -149,57 +157,63 @@ export function Search({
 					</div>
 				) : null}
 
-				<div className="section-block">
-					<div className="section-header section-header-sticky">
-						<div className="section-bar" />
-						<div className="section-title-row">
-							<h2 className="section-title">Individual</h2>
-							<span className="section-count">{sortedIndividualTimes.length}</span>
+				{sortedIndividualTimes.length > 0 ? (
+					<div className="section-block">
+						<div className="section-header section-header-sticky">
+							<div className="section-bar" />
+							<div className="section-title-row">
+								<h2 className="section-title">Individual</h2>
+								<span className="section-count">{sortedIndividualTimes.length}</span>
+							</div>
 						</div>
+						<ul className="card-list">
+							<TimeCards
+								data={data}
+								curParsedTimes={sortedIndividualTimes}
+								searchParamHandler={searchParamHandler}
+							/>
+						</ul>
 					</div>
-					<ul className="card-list">
-						<TimeCards
-							data={data}
-							curParsedTimes={sortedIndividualTimes}
-							searchParamHandler={searchParamHandler}
-						/>
-					</ul>
-				</div>
+				) : null}
 
-				<div className="section-block">
-					<div className="section-header section-header-sticky">
-						<div className="section-bar" />
-						<div className="section-title-row">
-							<h2 className="section-title">Relay Legs</h2>
-							<span className="section-count">{sortedRelayLegTimes.length}</span>
+				{sortedRelayLegTimes.length > 0 ? (
+					<div className="section-block">
+						<div className="section-header section-header-sticky">
+							<div className="section-bar" />
+							<div className="section-title-row">
+								<h2 className="section-title">Relay Legs</h2>
+								<span className="section-count">{sortedRelayLegTimes.length}</span>
+							</div>
 						</div>
+						<ul className="card-list">
+							<TimeCards
+								data={data}
+								curParsedTimes={sortedRelayLegTimes}
+								searchParamHandler={searchParamHandler}
+							/>
+						</ul>
 					</div>
-					<ul className="card-list">
-						<TimeCards
-							data={data}
-							curParsedTimes={sortedRelayLegTimes}
-							searchParamHandler={searchParamHandler}
-						/>
-					</ul>
-				</div>
+				) : null}
 
-				<div className="section-block">
-					<div className="section-header section-header-sticky">
-						<div className="section-bar" />
-						<div className="section-title-row">
-							<h2 className="section-title">Relays</h2>
-							<span className="section-count">{sortedRelays.length}</span>
+				{sortedRelays.length > 0 ? (
+					<div className="section-block">
+						<div className="section-header section-header-sticky">
+							<div className="section-bar" />
+							<div className="section-title-row">
+								<h2 className="section-title">Relays</h2>
+								<span className="section-count">{sortedRelays.length}</span>
+							</div>
 						</div>
+						<ul className="card-list">
+							<RelayCards
+								data={data}
+								curRelays={sortedRelays}
+								searchParamHandler={searchParamHandler}
+								relayHelpers={relayHelpers}
+							/>
+						</ul>
 					</div>
-					<ul className="card-list">
-						<RelayCards
-							data={data}
-							curRelays={sortedRelays}
-							searchParamHandler={searchParamHandler}
-							relayHelpers={relayHelpers}
-						/>
-					</ul>
-				</div>
+				) : null}
 			</div>
 		</div>
 	);

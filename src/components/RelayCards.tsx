@@ -21,7 +21,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 	const { getRelayLegsForRelay } = relayHelpers;
 	const relayRecordInfo = useRelayRecordInfo(data);
 
-	function renderRelayCard(r: Relay): Res<JSX.Element, Error> {
+	function renderRelayCard(r: Relay, addEventGap: boolean): Res<JSX.Element, Error> {
 		const legsFailable = getRelayLegsForRelay(r.id);
 		if (legsFailable.isErr())
 			return err(
@@ -68,7 +68,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		const previousSR = recordInfo?.previous_SR ?? null;
 
 		return ok(
-			<li key={r.id} className="accent-card result-card">
+			<li key={r.id} className={`accent-card result-card${addEventGap ? " event-gap" : ""}`}>
 				<div className="result-row">
 					<div className="name-line">
 						{swimmerSpans.flatMap((node, i) =>
@@ -140,7 +140,13 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 	}
 
 	return curRelays
-		.map((t) => renderRelayCard(t))
+		.map((t, index) => {
+			const prev = index > 0 ? curRelays[index - 1] : null;
+			const eventName = events[t.event_id]?.name ?? "";
+			const prevEventName = prev ? events[prev.event_id]?.name ?? "" : "";
+			const addEventGap = prev != null && eventName !== prevEventName;
+			return renderRelayCard(t, addEventGap);
+		})
 		.reduce(
 			(acc: JSX.Element[], cur: Res<JSX.Element, Errors.ErrorRes>) =>
 				cur.match(

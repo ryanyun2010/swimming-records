@@ -15,7 +15,7 @@ type TimeCardsProps = {
 export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCardsProps): JSX.Element[] {
 	const { relayLegs } = data;
 	const { setSearchParams } = searchParamHandler;
-	function renderTimeCard(t: ParsedTime): Res<JSX.Element, ErrorRes> {
+	function renderTimeCard(t: ParsedTime, addEventGap: boolean): Res<JSX.Element, ErrorRes> {
 		const isSchoolRecord = t.current_SR != null;
 		const isSchoolRecordFirst = t.current_SR?.change === null;
 		const isPersonalRecord = t.current_PR != null && t.current_PR.change !== null;
@@ -33,7 +33,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 			);
 		return ok(
 			<li
-				className="accent-card result-card"
+				className={`accent-card result-card${addEventGap ? " event-gap" : ""}`}
 				key={`${t.type}-${t.result_id ?? t.relay_leg_id ?? t.swimmer_id}-${t.event_name}-${t.meet_id}`}
 			>
 				<div className="result-row">
@@ -110,7 +110,11 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 	}
 
 	return curParsedTimes
-		.map((t) => renderTimeCard(t))
+		.map((t, index) => {
+			const prev = index > 0 ? curParsedTimes[index - 1] : null;
+			const addEventGap = prev != null && prev.event_name !== t.event_name;
+			return renderTimeCard(t, addEventGap);
+		})
 		.reduce(
 			(acc: JSX.Element[], cur: Res<JSX.Element, ErrorRes>) =>
 				cur.match(
