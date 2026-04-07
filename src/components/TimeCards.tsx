@@ -20,11 +20,17 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 		const isSchoolRecordFirst = t.current_SR?.change === null;
 		const isPersonalRecord = t.current_PR != null && t.current_PR.change !== null;
 		const isFirstTimeSwim = t.current_PR?.change === null;
-		const srDelta = formatChange(t.current_SR?.change);
-		const prDelta = formatChange(t.current_PR?.change);
+		const srChange = t.current_SR?.change;
+		const prChange = t.current_PR?.change;
+		const srDelta = formatChange(srChange != null ? Math.min(srChange, 0) : srChange);
+		const prDelta = formatChange(prChange != null ? Math.min(prChange, 0) : prChange);
 		const previousPR = t.previous_PR ?? null;
 		const previousSR = t.previous_SR ?? null;
 		const relayLeg = t.relay_leg_id != null ? relayLegs[t.relay_leg_id] : null;
+		const dqReasonRaw = t.invalid_reason;
+		const hasDQReason = dqReasonRaw != null && dqReasonRaw.trim() !== "";
+		const isDQ = t.is_valid === false || hasDQReason;
+		const dqReason = hasDQReason ? dqReasonRaw : "DQ";
 		if (t.relay_leg_id != null && relayLeg == null)
 			return err(
 				new Errors.NotFound(
@@ -67,6 +73,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 							) : (
 								<span className="tag tag-meta">Individual</span>
 							)}
+							{isDQ ? <span className="tag tag-dq">DQ{dqReason ? `: ${dqReason}` : ""}</span> : null}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
 									<span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span>

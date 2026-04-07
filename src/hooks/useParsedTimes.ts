@@ -20,6 +20,8 @@ export interface ParsedTime {
 	swimmer_last_name: string;
 	swimmer_gender: string;
 	swimmer_year: number;
+	is_valid: boolean;
+	invalid_reason: string | null;
 	current_PR: { change: number | null } | null;
 	current_SR: { change: number | null } | null;
 	previous_PR: { change: number | null; til: string } | null;
@@ -63,6 +65,8 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				swimmer_last_name: swimmer.last_name,
 				swimmer_gender: swimmer.gender,
 				swimmer_year: swimmer.graduating,
+				is_valid: result.is_valid,
+				invalid_reason: result.invalid_reason,
 				current_PR: null,
 				current_SR: null,
 				previous_PR: null,
@@ -106,6 +110,8 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 				swimmer_last_name: swimmer.last_name,
 				swimmer_gender: swimmer.gender,
 				swimmer_year: swimmer.graduating,
+				is_valid: relayLeg.is_valid,
+				invalid_reason: relayLeg.invalid_reason,
 				current_PR: null,
 				current_SR: null,
 				previous_PR: null,

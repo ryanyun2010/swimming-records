@@ -407,6 +407,12 @@
 	color: #a16207;
 }
 
+.tag-dq {
+	border-color: rgba(239, 68, 68, 0.85);
+	background: rgba(239, 68, 68, 0.18);
+	color: #b91c1c;
+}
+
 .tag-pr-prev {
 	border-color: rgba(22, 163, 74, 0.6);
 	background: rgba(22, 163, 74, 0.16);

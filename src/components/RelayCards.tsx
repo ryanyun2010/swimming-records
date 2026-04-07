@@ -62,10 +62,16 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		const isSchoolRecordFirst = recordInfo?.current_SR?.change === null;
 		const isPersonalRecord = recordInfo?.current_PR != null && recordInfo.current_PR.change !== null;
 		const isFirstTimeSwim = recordInfo?.current_PR?.change === null;
-		const srDelta = formatChange(recordInfo?.current_SR?.change);
-		const prDelta = formatChange(recordInfo?.current_PR?.change);
+		const srChange = recordInfo?.current_SR?.change;
+		const prChange = recordInfo?.current_PR?.change;
+		const srDelta = formatChange(srChange != null ? Math.min(srChange, 0) : srChange);
+		const prDelta = formatChange(prChange != null ? Math.min(prChange, 0) : prChange);
 		const previousPR = recordInfo?.previous_PR ?? null;
 		const previousSR = recordInfo?.previous_SR ?? null;
+		const dqReasonRaw = r.invalid_reason;
+		const hasDQReason = dqReasonRaw != null && dqReasonRaw.trim() !== "";
+		const isDQ = r.is_valid === false || hasDQReason;
+		const dqReason = hasDQReason ? dqReasonRaw : "DQ";
 
 		return ok(
 			<li key={r.id} className={`accent-card result-card`}>
@@ -95,6 +101,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 							>
 								Relay
 							</span>
+							{isDQ ? <span className="tag tag-dq">DQ{dqReason ? `: ${dqReason}` : ""}</span> : null}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
 									<span className="tag tag-sr-first">SCHOOL RECORD: FIRST TIME</span>
