@@ -44,6 +44,7 @@ export function readCSV(file: File): ResultAsync<string[][], ErrorRes> {
 export function formatTime(seconds_t: number | null): string {
 	if (seconds_t == null || isNaN(seconds_t)) return "";
 	let seconds = Number(seconds_t);
+	if (seconds >= 9999) return "Unknown";
 	const mins = Math.floor(seconds / 60);
 	const secs = (seconds % 60).toFixed(2).padStart(5, "0");
 	return mins > 0 ? `${mins}:${secs}` : secs + "s";
