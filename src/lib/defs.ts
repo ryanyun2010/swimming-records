@@ -5,8 +5,8 @@ export const eventSchema = z.object({
 	name: z.string(),
 	distance: z.coerce.number().int(),
 	stroke: z.string().toLowerCase(),
-	gender: z.enum(["male", "female"]).optional(),
-	is_relay: z.coerce.number().int().optional(),
+	is_relay: z.coerce.boolean(),
+	is_male: z.coerce.boolean(),
 });
 export const eventsSchema = z.array(eventSchema);
 export type SEvent = z.infer<typeof eventSchema>;
@@ -83,3 +83,4 @@ export type Swimmer = z.infer<typeof swimmerSchema>;
 export interface IDedObject {
 	id: number;
 }
+

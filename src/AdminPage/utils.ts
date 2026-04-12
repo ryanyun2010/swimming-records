@@ -1,3 +1,4 @@
+import { SEvent } from "../lib/defs";
 export function parseTimeToSeconds(raw: string): number | null {
 	const trimmed = raw.trim();
 	if (!trimmed) return null;
@@ -84,8 +85,9 @@ export function findMeetIdByName(meets: { id: number; name: string }[], name: st
 }
 
 export function findEventIdByLabel(
-	events: { id: number; name: string }[],
+	events: SEvent[],
 	label: string,
+	male: boolean,
 ): number | null {
 	let target = normalizeName(label.replace(/\(.*\)/g, "").trim());
 	if (target == "50free" || target == "100free" || target == "200free" || target == "500free") {
@@ -103,6 +105,11 @@ export function findEventIdByLabel(
 	if (target == "100im" || target == "200im") {
 		target = target.replace("im", "individualmedley");
 	}
+	if (male) {
+		target = "boys" + target;
+	} else {
+		target = "girls" + target;
+	}
 	const matches = events.filter((e) => {
 		const full = normalizeName(e.name);
 		return full == target;
@@ -111,13 +118,14 @@ export function findEventIdByLabel(
 }
 
 export function findEventIdBySpec(
-	events: { id: number; distance: number; stroke: string }[],
+	events: SEvent[],
 	distance: number,
 	stroke: string,
+	male: boolean,
 ): number | null {
 	const targetStroke = normalizeStroke(stroke);
 	const matches = events.filter(
-		(e) => e.distance === distance && normalizeStroke(e.stroke) === targetStroke,
+		(e) => e.distance === distance && normalizeStroke(e.stroke) === targetStroke && e.is_male == male,
 	);
 	return matches.length === 1 ? matches[0].id : null;
 }
