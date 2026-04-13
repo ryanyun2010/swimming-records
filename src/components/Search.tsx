@@ -105,7 +105,8 @@ export function Search({
 				let malea = a.event_name.includes("Boys");
 				let maleb = b.event_name.includes("Boys");
 				if (malea !== maleb) return malea ? 1 : -1;
-				return b.time - a.time;
+				return a.time - b.time;
+
 			});
 	}, [curParsedTimes, data, filters]);
 
@@ -132,7 +133,7 @@ export function Search({
 				let malea = a.event_name.includes("Boys");
 				let maleb = b.event_name.includes("Boys");
 				if (malea !== maleb) return malea ? 1 : -1;
-				return b.time - a.time;
+				return a.time - b.time;
 			});
 	}, [curParsedTimes, data, filters]);
 
@@ -151,7 +152,7 @@ export function Search({
 			const eventCompare = aeventc.localeCompare(beventc);
 			if (eventCompare !== 0) return eventCompare;
 			if (eventA.is_male !== eventB.is_male) return eventA.is_male ? 1 : -1;
-			return b.time_ms - a.time_ms;
+			return a.time_ms - b.time_ms;
 		});
 	}, [curRelays, data]);
 	return (

@@ -51,7 +51,7 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 							}
 							className="back-button"
 						>
-							See Current School Records
+							See School Record Progressions
 						</button>
 					</div>
 				</div>
