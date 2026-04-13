@@ -87,7 +87,10 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 					</select>
 
 					<select name="event_id" required>
-						<option value="">Select event</option>
+						{swimmer_is_male == null ? (
+							<option value="">Select swimmer first</option>
+						) : (<option value="">Select event</option>)}
+
 						{events.map((e) => swimmer_is_male != null && e.is_male == swimmer_is_male ?(
 							<option key={e.id} value={e.id}>
 								{e.name}
