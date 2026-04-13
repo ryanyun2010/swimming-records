@@ -87,7 +87,10 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			if (lastIndex < start) {
 				parts.push(<span key={`${index}-before`}>{name.slice(lastIndex, start)}</span>);
 			}
-			parts.push(<span key={`${index}-match`} className="highlight">{name.slice(start, end + 1)}</span>);
+			parts.push(<span key={`${index}-match`} style={{
+				color: "var(--accent-color)"
+			}
+			} >{name.slice(start, end + 1)}</span>);
 			lastIndex = end + 1;
 		});
 		return <span>{parts}</span>;
