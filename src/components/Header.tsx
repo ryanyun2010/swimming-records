@@ -194,6 +194,19 @@ export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps):
 		<>
 			<h2>Results Limited to: </h2>
 			{elements.length > 0 && <ol>{elements}</ol>}
+			{filters.note_legs ?
+				<button onClick={() =>
+					setSearchParams((prev) => {
+						prev.delete("note_legs");
+						return prev;
+					})
+				}>Currently filtered by flat start and relay start, switch to filtering by individual and relay leg?</button>
+				: <button onClick={() =>
+					setSearchParams((prev) => {
+						prev.set("note_legs", "true");
+						return prev;
+					})
+				}>Currently filtered by individual and relay leg, switch to filtering by flat start and relay start?</button>}
 		</>
 	);
 }
