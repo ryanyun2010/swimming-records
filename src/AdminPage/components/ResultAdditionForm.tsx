@@ -50,7 +50,10 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 			databaseHandler.addResult(swimmerId, eventId, meetId, timeSeconds, isValid, invalidReason).match(
 				() => {
 					alert("Result added");
+					form.children.namedItem("swimmer_id")?.setAttribute("value", "");
+					form.children.namedItem("time")?.setAttribute("value", "");
 				},
+
 				(err) => {
 					alert("Failed to add result, see console for details.");
 					console.error("Failed to add result:", err);
