@@ -138,12 +138,19 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			</li>];
 		}
 		return results.map((result, index) => {
-			const indices = (result.matches && result.matches[0] && result.matches[0].indices) ? result.matches[0].indices : [];
+			if (result.matches != null && result.matches.length > 0 && result.matches[0].indices != null) {
+				const indices = (result.matches && result.matches[0] && result.matches[0].indices) ? result.matches[0].indices : [];
+				return (
+				<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
+				{
+					renderNameWithHighlight(result.item.name, Array.from(indices) )}
+				</li>
+				)
+			} 
 			return (
-			<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
-			{
-				renderNameWithHighlight(result.item.name, Array.from(indices) )}
-			</li>
+				<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
+					{result.item.name}
+				</li>
 		)});
 	}, [searchQuery, data, setSearchParams]);
 
