@@ -31,7 +31,7 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
 	);
-	const relayEvents = useMemo(() => events.filter((e) => !e.is_relay), [events]);
+	const relayEvents = useMemo(() => events.filter((e) => e.is_relay), [events]);
 	const [selectedRelayEventId, setSelectedRelayEventId] = useState<number | null>(null);
 	const selectedRelayEvent = relayEvents.find((e) => e.id === selectedRelayEventId) ?? null;
 	const [relayIsValid, setRelayIsValid] = useState(true);
