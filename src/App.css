@@ -546,8 +546,9 @@
 .remove_filter {
 	background: transparent;
 	border: none;
-	color: red;
-	padding-left: 4rem;
+	color: var(--accent);
 	cursor: pointer;
-	font-size: 1.4rem;
+	font-size: 1rem;
+	position:absolute;
+	left: 30rem;
 }
