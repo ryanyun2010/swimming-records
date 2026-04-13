@@ -158,7 +158,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 				for (let word of words) {
 					let startIndicies = [];
 					let last_index = 0;
-					while (result.item.name.toLowerCase().indexOf(word.toLowerCase(), last_index) !== 1) {
+					while (result.item.name.toLowerCase().indexOf(word.toLowerCase(), last_index) !== -1) {
 						let index = result.item.name.toLowerCase().indexOf(word.toLowerCase(), last_index);
 						startIndicies.push(index);
 						last_index = index + word.length;
