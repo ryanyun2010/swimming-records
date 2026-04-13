@@ -19,10 +19,6 @@ type LegData = {
 };
 
 export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormProps) {
-	const swimmers = useMemo(
-		() => Object.values(data.swimmers).sort((a, b) => a.last_name.localeCompare(b.last_name)),
-		[data.swimmers],
-	);
 	const meets = useMemo(
 		() => Object.values(data.meets).sort((a, b) => a.date.localeCompare(b.date)),
 		[data.meets],
@@ -83,6 +79,14 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		}
 		return [null, null, null, null];
 	}, [legEventOptions, selectedRelayEvent]);
+
+	const swimmers = useMemo(
+		() => Object.values(data.swimmers).sort((a, b) => a.last_name.localeCompare(b.last_name)).filter((s => {
+			if (!selectedRelayEvent) return true;
+			return selectedRelayEvent.is_male === (s.gender === 'male');
+		})),
+		[data.swimmers, selectedRelayEvent],
+	);
 
 	const onSubmit = useCallback(
 		(e: FormEvent<HTMLFormElement>) => {
