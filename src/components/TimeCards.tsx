@@ -140,6 +140,39 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 									FTS
 								</span>
 							) : null}
+							{previousSR != null ? (
+								previousSR.change === null ? (
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-first"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
+										PREVIOUS SCHOOL RECORD: FIRST TIME
+									</span>
+								) : (
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-prev"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
+										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
+									</span>
+								)
+							) : null}
 							{previousPR != null ? (
 								previousPR.change === null ? (
 									<span
@@ -172,39 +205,6 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 										style={{ cursor: "pointer" }}
 									>
 										PREVIOUS PR {formatChange(previousPR.change)}
-									</span>
-								)
-							) : null}
-							{previousSR != null ? (
-								previousSR.change === null ? (
-									<span
-										key={`prev-sr`}
-										className="tag tag-sr-first"
-										onClick={() => {
-											setSearchParams((prev) => {
-												prev.set("srs_only", "true");
-												prev.set("note_legs", "true");
-												return prev;
-											});
-										}}
-										style={{ cursor: "pointer" }}
-									>
-										PREVIOUS SCHOOL RECORD: FIRST TIME
-									</span>
-								) : (
-									<span
-										key={`prev-sr`}
-										className="tag tag-sr-prev"
-										onClick={() => {
-											setSearchParams((prev) => {
-												prev.set("srs_only", "true");
-												prev.set("note_legs", "true");
-												return prev;
-											});
-										}}
-										style={{ cursor: "pointer" }}
-									>
-										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
 									</span>
 								)
 							) : null}
