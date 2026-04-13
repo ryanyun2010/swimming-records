@@ -107,12 +107,13 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			if (lastSpanHighlighted) {
 					lastSpanText += name[i];
 			} else {
-			if (lastSpanText.length > 0) {
-				parts.push(<span key={i} >{lastSpanText}</span>);
-			}
-			lastSpanText = name[i];
-			lastSpanHighlighted = true;
+				if (lastSpanText.length > 0) {
+					parts.push(<span key={i} >{lastSpanText}</span>);
+				}
+				lastSpanText = name[i];
+				lastSpanHighlighted = true;
 				
+			}
 		}
 		if (lastSpanText.length > 0) {
 			if (lastSpanHighlighted) {
@@ -125,7 +126,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			}
 		}
 		return <span>{parts}</span>;
-	}
+	};
 	const resultCards: JSX.Element[] = useMemo(() => {
 		if (searchQuery.length == 0) {
 			return [];
@@ -146,7 +147,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		)});
 	}, [searchQuery, data, setSearchParams]);
 
-	return(
+	return (
 			<div className="app-shell">
 				<div className="app-inner">
 					<div className="accent-card hero-card">
@@ -175,6 +176,5 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 					</div>
 					</div>
 			</div>
-
 	)
 }
