@@ -86,9 +86,23 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		let lastSpanText = "";
 		let lastSpanHighlighted = false;
 		for (let i = 0; i < name.length; i++) {
+			if (indiciesIndex >= indices.length) {
+				if (!lastSpanHighlighted) {
+					lastSpanText += name[i];
+					continue;
+				} else {
+					parts.push(<span key={i} style={{
+						color: "rgb(10,51,181)",
+						fontWeight: "bold",
+					}}>{lastSpanText}</span>);
+					lastSpanText = name[i];
+					lastSpanHighlighted = false;
+					continue;
+				}
+			}
 			let left = indices[indiciesIndex][0];
 			let right = indices[indiciesIndex][1];
-			if (indiciesIndex >= indices.length || right - left < 3 || i < left || i > right) {
+			if (right - left < 3 || i < left || i > right) {
 				if (i > right || right - left < 3) {
 					indiciesIndex++;
 				}
