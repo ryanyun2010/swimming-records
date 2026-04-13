@@ -100,17 +100,19 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			return [];
 		}
 		const results = fuse.search(searchQuery).sort((a, b) => a.score! - b.score!);
-		console.log(results[0].matches);
 		if (results.length == 0) {
 			return [<li key="no-results" className="accent-card result-card no-results">
 				No results found for "{searchQuery}"
 			</li>];
 		}
-		return results.map((result, index) => (
+		return results.map((result, index) => {
+			const indices = (result.matches && result.matches[0] && result.matches[0].indices) ? result.matches[0].indices : [];
+			return (
 			<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
-			{renderNameWithHighlight(result.item.name, Array.from(result.matches?.[index].indices ?? []))}
+			{
+				renderNameWithHighlight(result.item.name, Array.from(indices) )}
 			</li>
-		));
+		)});
 	}, [searchQuery, data, setSearchParams]);
 
 	return(
