@@ -22,6 +22,12 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 		[data.events],
 	);
 	const [isValid, setIsValid] = useState(true);
+	const [selectedSwimmerID, setSelectedSwimmerID] = useState<number | null>(null);
+	const swimmer_is_male = useMemo(() => {
+		if (selectedSwimmerID == null) return null;
+		const swimmer = swimmers[selectedSwimmerID];
+		return swimmer.gender == 'male';
+	}, [selectedSwimmerID, swimmers]);
 
 	const onSubmit = useCallback(
 		(e: FormEvent<HTMLFormElement>) => {
@@ -60,7 +66,9 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 			<h3 className="admin-card-title">Add Result</h3>
 			<form onSubmit={onSubmit} className="admin-form">
 				<div className="admin-form-grid">
-					<select name="swimmer_id" required>
+					<select name="swimmer_id" required 
+						onChange={(e) => setSelectedSwimmerID(Number(e.target.value))}
+					>
 						<option value="">Select swimmer</option>
 						{swimmers.map((s) => (
 							<option key={s.id} value={s.id}>
@@ -80,11 +88,11 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 
 					<select name="event_id" required>
 						<option value="">Select event</option>
-						{events.map((e) => (
+						{events.map((e) => swimmer_is_male != null && e.is_male == swimmer_is_male ?(
 							<option key={e.id} value={e.id}>
 								{e.name}
 							</option>
-						))}
+						): null)}
 					</select>
 
 					<input name="time" type="text" placeholder="Time (seconds or m:ss.xx)" required />
