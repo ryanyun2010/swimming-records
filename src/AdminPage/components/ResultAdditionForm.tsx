@@ -25,7 +25,7 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 	const [selectedSwimmerID, setSelectedSwimmerID] = useState<number | null>(null);
 	const swimmer_is_male = useMemo(() => {
 		if (selectedSwimmerID == null) return null;
-		const swimmer = swimmers[selectedSwimmerID];
+		const swimmer = data.swimmers[selectedSwimmerID];
 		return swimmer.gender == 'male';
 	}, [selectedSwimmerID, swimmers]);
 
