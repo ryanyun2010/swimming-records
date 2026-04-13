@@ -12,6 +12,7 @@ export interface Filters {
 	swimmer_id: number | null;
 	relay_id: number | null;
 	fts_only: boolean;
+	note_legs?: boolean;
 }
 
 export function is_filtered(filters: Filters) {
@@ -41,6 +42,7 @@ export function useSearchParamHandler() {
 			swimmer_id: searchParams.get("swimmer_id") ? Number(searchParams.get("swimmer_id")) : null,
 			relay_id: searchParams.get("relay_id") ? Number(searchParams.get("relay_id")) : null,
 			fts_only: searchParams.get("fts_only") === "true",
+			note_legs: searchParams.get("note_legs") === "true",
 		};
 	}, [searchParams]);
 

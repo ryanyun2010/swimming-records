@@ -84,7 +84,7 @@ export function Search({
 			distanceByName.set(event.name, event.distance);
 		});
 		return [...curParsedTimes]
-			.filter((t) => t.type === "individual")
+			.filter((t) => t.type === "individual" || (t.type === "relay_leg" && filters.note_legs && t.relay_leg_id != null && data.relayLegs[t.relay_leg_id].leg_order === 1))
 			.sort((a, b) => {
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
@@ -98,7 +98,7 @@ export function Search({
 				if (malea !== maleb) return malea ? 1 : -1;
 				return b.time - a.time;
 			});
-	}, [curParsedTimes, data]);
+	}, [curParsedTimes, data, filters]);
 
 	const sortedRelayLegTimes = useMemo(() => {
 		const { events } = data;
@@ -107,7 +107,7 @@ export function Search({
 			distanceByName.set(event.name, event.distance);
 		});
 		return [...curParsedTimes]
-			.filter((t) => t.type === "relay_leg")
+			.filter((t) => t.type === "relay_leg" && !(filters.note_legs && t.relay_leg_id != null && data.relayLegs[t.relay_leg_id].leg_order === 1))
 			.sort((a, b) => {
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
@@ -121,7 +121,7 @@ export function Search({
 				if (malea !== maleb) return malea ? 1 : -1;
 				return b.time - a.time;
 			});
-	}, [curParsedTimes, data]);
+	}, [curParsedTimes, data, filters]);
 
 	const sortedRelays = useMemo(() => {
 		const { events } = data;
@@ -212,13 +212,13 @@ export function Search({
 						</div>
 					</div>
 				) : null}
-
+					
 				{sortedIndividualTimes.length > 0 ? (
 					<div className="section-block">
 						<div className="section-header section-header-sticky">
 							<div className="section-bar" />
 							<div className="section-title-row">
-								<h2 className="section-title">Individual</h2>
+								<h2 className="section-title">{filters.note_legs ? "Flat Start" :"Individual"}</h2>
 								<span className="section-count">{sortedIndividualTimes.length}</span>
 							</div>
 						</div>
@@ -237,7 +237,7 @@ export function Search({
 						<div className="section-header section-header-sticky">
 							<div className="section-bar" />
 							<div className="section-title-row">
-								<h2 className="section-title">Relay Legs</h2>
+								<h2 className="section-title">{filters.note_legs ? "Relay Start" : "Relay Legs"}</h2>
 								<span className="section-count">{sortedRelayLegTimes.length}</span>
 							</div>
 						</div>
