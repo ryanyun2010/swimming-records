@@ -83,23 +83,45 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		}
 		const parts: JSX.Element[] = [];
 		let indiciesIndex = 0;
+		let lastSpanText = "";
+		let lastSpanHighlighted = false;
 		for (let i = 0; i < name.length; i++) {
-			if (indiciesIndex >= indices.length) {
-				parts.push(<span key={i}>{name[i]}</span>);
-				continue;
-			}
 			let left = indices[indiciesIndex][0];
 			let right = indices[indiciesIndex][1];
-			if (i <= right && i >=left) {
-				parts.push(<span key={i} style={{
+			if (indiciesIndex >= indices.length || right - left < 3 || i < left || i > right) {
+				if (i > right || right - left < 3) {
+					indiciesIndex++;
+				}
+				if (!lastSpanHighlighted) {
+					lastSpanText += name[i];
+				} else {
+					parts.push(<span key={i} style={{
+						color: "rgb(10,51,181)",
+						fontWeight: "bold",
+					}}>{lastSpanText}</span>);
+					lastSpanText = name[i];
+					lastSpanHighlighted = false;
+				}
+				continue;
+			}
+			if (lastSpanHighlighted) {
+					lastSpanText += name[i];
+			} else {
+			if (lastSpanText.length > 0) {
+				parts.push(<span key={i} >{lastSpanText}</span>);
+			}
+			lastSpanText = name[i];
+			lastSpanHighlighted = true;
+				
+		}
+		if (lastSpanText.length > 0) {
+			if (lastSpanHighlighted) {
+				parts.push(<span key={name.length} style={{
 					color: "rgb(10,51,181)",
 					fontWeight: "bold",
-				}}>{name[i]}</span>);
+				}}>{lastSpanText}</span>);
 			} else {
-				parts.push(<span key={i}>{name[i]}</span>);
-			}
-			if (i > right) {
-				indiciesIndex++;
+				parts.push(<span key={name.length}>{lastSpanText}</span>);
 			}
 		}
 		return <span>{parts}</span>;
