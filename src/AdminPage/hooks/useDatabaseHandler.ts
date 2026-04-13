@@ -160,6 +160,17 @@ export function useDatabaseHandler(data: SwimData, googleLoginHandler: GoogleLog
 		},
 		[refresher, sendRequest],
 	);
+	const invalidateCache = useCallback(() => {
+		return sendRequest("invalidate_cache", {})
+			.map((_) => {
+				refresher();
+				return null;
+			})
+			.mapErr(
+				(error) =>
+					new Errors.NoResponse("Failed to invalidate cache, server query failed: " + JSON.stringify(error)),
+			);
+	}, [refresher, sendRequest]);
 
-	return { addSwimmer, addMeet, addResult, addRelay, addRelayLeg };
+	return { addSwimmer, addMeet, addResult, addRelay, addRelayLeg, invalidateCache };
 }

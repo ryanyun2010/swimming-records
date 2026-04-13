@@ -25,6 +25,8 @@ export default function AdminPage() {
 						<div className={loggedIn ? "admin-auth" : "admin-auth admin-auth-centered"}>
 							<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />
 						</div>
+						<button className="accent-button" onClick={() => databaseHandler.invalidateCache()}>Clear Cache</button>
+
 					</div>
 				</div>
 
