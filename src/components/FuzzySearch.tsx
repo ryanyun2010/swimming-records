@@ -89,7 +89,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			</li>];
 		}
 		return results.map((result, index) => (
-			<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)}>
+			<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
 				{result.item.name}
 			</li>
 		));
