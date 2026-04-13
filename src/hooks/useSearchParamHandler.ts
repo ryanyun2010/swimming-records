@@ -45,7 +45,7 @@ export function useSearchParamHandler() {
 			swimmer_id: searchParams.get("swimmer_id") ? Number(searchParams.get("swimmer_id")) : null,
 			relay_id: searchParams.get("relay_id") ? Number(searchParams.get("relay_id")) : null,
 			fts_only: searchParams.get("fts_only") === "true",
-			note_legs: searchParams.get("note_legs") === "true",
+			note_legs: searchParams.get("note_legs") === "true" && (searchParams.get("prs_only") === "true" || searchParams.get("srs_only") === "true" || searchParams.get("cur_prs_only") === "true" || searchParams.get("cur_srs_only") === "true" || searchParams.get("fts_only") === "true"),
 			search: searchParams.get("search") === "true",
 		};
 	}, [searchParams]);
