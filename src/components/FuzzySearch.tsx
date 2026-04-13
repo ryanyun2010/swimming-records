@@ -30,19 +30,19 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			});
 			searchables.push({
 				name: `Personal record progressions for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
-				searchParams: { swimmer_id: swimmer.id.toString(), prs_only: "true" },
+				searchParams: { swimmer_id: swimmer.id.toString(), prs_only: "true", note_legs: "true" },
 			});
 			searchables.push({
 				name: `Current personal records for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
-				searchParams: { swimmer_id: swimmer.id.toString(), cur_prs_only: "true" },
+				searchParams: { swimmer_id: swimmer.id.toString(), cur_prs_only: "true", note_legs: "true" },
 			});
 			searchables.push({
 				name: `School records held at some point by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
-				searchParams: { swimmer_id: swimmer.id.toString(), srs_only: "true" },
+				searchParams: { swimmer_id: swimmer.id.toString(), srs_only: "true", note_legs: "true" },
 			});
 			searchables.push({
 				name: `School records currently held by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
-				searchParams: { swimmer_id: swimmer.id.toString(), srs_only: "true" },
+				searchParams: { swimmer_id: swimmer.id.toString(), cur_srs_only: "true", note_legs: "true"},
 			});
 		}
 		for (const meet of Object.values(data.meets)) {
