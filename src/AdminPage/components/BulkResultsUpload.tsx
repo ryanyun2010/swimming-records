@@ -355,11 +355,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 		<section className="accent-card admin-card">
 			<h3 className="admin-card-title">Add Results (CSV)</h3>
 			<p className="admin-help">
-				Legacy CSV format (header + rows). Non-relay rows use columns 5-7 for time, validity, and invalid
-				reason. Relay rows include a type column ("Relay") and use columns 8-10 for time, validity, and invalid
-				reason.
-			</p>
-			<form onSubmit={onSubmit} className="admin-form">
+				Legacy CSV format, column 1 swimmer, 2 meet name, 3 event, 4 type (indiv/relay/relay split), 5 time, 6 valid (optional, 'INVALID' to mark invalid), 7 invalid reason (optional) swimmer names should be comma seperated, no trailing commas.
+				</p>
+				<form onSubmit={onSubmit} className="admin-form">
 				<div className="admin-form-grid">
 					<input name="file" accept=".csv" type="file" />
 				</div>
