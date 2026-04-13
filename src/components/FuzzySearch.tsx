@@ -76,8 +76,22 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		return searchables;
 	}, [data]);
 
-	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.7, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
-
+	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.3, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
+	const renderNameWithHighlight = (name: string, indices: number[][]): JSX.Element => {
+		if (indices.length === 0) {
+			return <span>{name}</span>;
+		}
+		const parts: JSX.Element[] = [];
+		let lastIndex = 0;
+		indices.forEach(([start, end], index) => {
+			if (lastIndex < start) {
+				parts.push(<span key={`${index}-before`}>{name.slice(lastIndex, start)}</span>);
+			}
+			parts.push(<span key={`${index}-match`} className="highlight">{name.slice(start, end + 1)}</span>);
+			lastIndex = end + 1;
+		});
+		return <span>{parts}</span>;
+	}
 	const resultCards: JSX.Element[] = useMemo(() => {
 		if (searchQuery.length == 0) {
 			return [];
@@ -91,7 +105,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		}
 		return results.map((result, index) => (
 			<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
-				{result.item.name}
+			{renderNameWithHighlight(result.item.name, Array.from(result.matches?.[index].indices ?? []))}
 			</li>
 		));
 	}, [searchQuery, data, setSearchParams]);
