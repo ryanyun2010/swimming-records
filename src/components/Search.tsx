@@ -1,5 +1,5 @@
 import { JSX, useMemo } from "react";
-import { SearchParamHandler } from "../hooks/useSearchParamHandler";
+import { SearchParamHandler, is_filtered } from "../hooks/useSearchParamHandler";
 import { SwimData } from "../hooks/useSwimData";
 import { Relay } from "../lib/defs";
 import { ParsedTime } from "../hooks/useParsedTimes";
@@ -8,15 +8,15 @@ import { TimeCards } from "./TimeCards";
 import { RelayHelpers } from "../hooks/useRelayHelpers";
 import { RelayCards } from "./RelayCards";
 import { formatDate } from "../lib/utils";
-import { useRelayRecordInfo } from "../hooks/useRelayRecordInfo";
+import { RelayRecordInfo } from "../hooks/useRelayRecordInfo";
 import { findEventIdByLabel } from "../AdminPage/utils";
-
 type SearchProps = {
 	data: SwimData;
 	searchParamHandler: SearchParamHandler;
 	relayHelpers: RelayHelpers;
 	curRelays: Relay[];
 	curParsedTimes: ParsedTime[];
+	relayRecordInfo: Record<number,RelayRecordInfo>;
 };
 
 export function Search({
@@ -25,11 +25,16 @@ export function Search({
 	relayHelpers,
 	curRelays,
 	curParsedTimes,
+	relayRecordInfo,
 }: SearchProps): JSX.Element {
-	const { setSearchParams, curMeetInfo, curSwimmerInfo, curRelayInfo } = searchParamHandler;
-	const showMeetSummary = curMeetInfo != null && curSwimmerInfo == null && curRelayInfo == null;
+	const { setSearchParams, filters } = searchParamHandler;
+	const showMeetSummary = filters.meet_id != null && filters.event_id == null && filters.relay_id == null && filters.swimmer_id == null && !filters.cur_prs_only && !filters.prs_only && !filters.cur_srs_only && !filters.srs_only;
 
-	const relayRecordInfo = useRelayRecordInfo(data);
+	const curMeetInfo = useMemo(() => {
+		if (filters.meet_id == null) return null;
+		const meet = data.meets[filters.meet_id];
+		return meet ? { name: meet.name, date: meet.date } : null;
+	}, [filters.meet_id, data.meets]);
 
 	const meetSummary = useMemo(() => {
 		let prs = 0;
@@ -145,7 +150,7 @@ export function Search({
 							<div className="hero-eyebrow">Records View</div>
 							<h1 className="hero-title">Nueva Swimming Records</h1>
 							<div className="hero-subtitle">
-								<Header searchParamHandler={searchParamHandler} />
+								<Header searchParamHandler={searchParamHandler} data={data} relayHelpers={relayHelpers} />
 							</div>
 						</div>
 						<button type="button" onClick={() => setSearchParams({})} className="back-button">
@@ -167,18 +172,37 @@ export function Search({
 							</div>
 						</div>
 						<div className="meet-overview-grid">
-							<div className="meet-overview-stat stat-fts">
+							<div className="meet-overview-stat stat-fts" onClick = {() => setSearchParams(
+								{
+									fts_only: "true",
+									meet_id: filters.meet_id?.toString()??"",
+								}
+							)}>
 								<div className="stat-label">FIRST TIME SWIMS</div>
 								<div className="stat-value">{meetSummary.fts}</div>
 							</div>
-							<div className="meet-overview-stat stat-pr">
+							<div className="meet-overview-stat stat-pr"
+								onClick={() => setSearchParams(
+									{
+										prs_only: "true",
+										meet_id: filters.meet_id?.toString() ?? "",
+									}
+								)}
+							>
 								<div className="stat-label">PERSONAL RECORDS SET</div>
 								<div className="stat-value">
 									{meetSummary.prs}
 									{meetSummary.prsCurrent > 0 ? <span className="stat-inline">{meetSummary.prsCurrent} still current</span> : null}
 								</div>
 							</div>
-							<div className="meet-overview-stat stat-sr">
+							<div className="meet-overview-stat stat-sr" onClick = {
+								() => setSearchParams(
+									{
+										srs_only: "true",
+										meet_id: filters.meet_id?.toString() ?? "",
+									}
+								)}
+								>
 								<div className="stat-label">SCHOOL RECORDS SET</div>
 								<div className="stat-value">
 									{meetSummary.srs}

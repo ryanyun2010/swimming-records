@@ -1,41 +1,55 @@
 import { JSX } from "react";
 import { SearchParamHandler } from "../hooks/useSearchParamHandler";
 import { formatDate } from "../lib/utils";
+import { SwimData } from "../hooks/useSwimData";
+import { RelayHelpers } from "../hooks/useRelayHelpers";
 
 type HeaderProps = {
 	searchParamHandler: SearchParamHandler;
+	data: SwimData;
+	relayHelpers: RelayHelpers
 };
-export function Header({ searchParamHandler }: HeaderProps): JSX.Element {
-	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = searchParamHandler;
-	if (curRelayInfo != null && curMeetInfo == null && curSwimmerInfo == null) {
-		return (
-			<h2>
-				Results for Relay: {curRelayInfo.event} | {curRelayInfo.swimmer_names.join(", ")} |{" "}
-				{formatDate(curRelayInfo.date)}
-			</h2>
-		);
-	} else if (curMeetInfo != null && curSwimmerInfo == null) {
-		return (
-			<h2>
-				Results for Meet: {curMeetInfo.name} | {curMeetInfo.location} | {formatDate(curMeetInfo.date)}
-			</h2>
-		);
-	} else if (curSwimmerInfo != null && curMeetInfo == null) {
-		return (
-			<h2>
-				Results for Swimmer: {curSwimmerInfo.first_name} {curSwimmerInfo.last_name} '
-				{curSwimmerInfo.graduating % 100}
-			</h2>
-		);
-	} else if (curSwimmerInfo != null && curMeetInfo != null) {
-		return (
-			<h2>
-				Results for Swimmer: {curSwimmerInfo.first_name} {curSwimmerInfo.last_name} '
-				{curSwimmerInfo.graduating % 100} at Meet: {curMeetInfo.name} | {curMeetInfo.location} |{" "}
-				{formatDate(curMeetInfo.date)}
-			</h2>
-		);
-	} else {
-		return <h2>Invalid search params</h2>;
+export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps): JSX.Element {
+	const { filters } = searchParamHandler;
+	let elements: JSX.Element[] = [];
+	if (filters.relay_id != null) {
+		const event_name = data.events[data.relays[filters.relay_id].event_id]?.name || "Unknown Event";
+		const swimmer_names = relayHelpers.getRelayLegsForRelay(filters.relay_id).unwrapOr([]).map(leg => {
+			const swimmer_id = leg.swimmer_id;
+			const swimmer = data.swimmers[swimmer_id];
+			return swimmer ? `${swimmer.first_name} ${swimmer.last_name}` : "Unknown Swimmer";
+		});
+		const relay_date = data.meets[data.relays[filters.relay_id].meet_id]?.date || "Unknown Date";
+		elements.push((<li>Relay {event_name} | {swimmer_names.join(", ")} | {formatDate(relay_date)} Only</li>)); 
 	}
+	if (filters.meet_id != null) {
+		const meet = data.meets[filters.meet_id];
+		if (meet) {
+			elements.push(<li> Meet {meet.name} | {formatDate(meet.date)} Only</li>);
+		}
+	}
+	if (filters.event_id != null) {
+		const event = data.events[filters.event_id];
+		if (event) {
+			elements.push(<li>Event {event.name} Only</li>);
+		}
+	}
+	if (filters.swimmer_id != null) {
+		const swimmer = data.swimmers[filters.swimmer_id];
+		if (swimmer) {
+			elements.push(<li>Including Swimmer {swimmer.first_name} {swimmer.last_name} Only</li>);
+		}
+	}
+	if (filters.cur_prs_only) elements.push(<li>Current Personal Recordss Only</li>);
+	if (filters.prs_only) elements.push(<li>Personal Records Only</li>);
+	if (filters.cur_srs_only) elements.push(<li>Current School Records Only</li>);
+	if (filters.srs_only) elements.push(<li>School Records Only</li>);
+	if (filters.fts_only) elements.push(<li>First time swims Only</li>);
+
+	return (
+		<>
+			<h2>Results Limited to: </h2>
+			{elements.length > 0 && <ol>{elements}</ol>}
+		</>
+	);
 }

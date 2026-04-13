@@ -1,82 +1,50 @@
 import { useMemo } from "react";
-import { ok, err } from "neverthrow";
-import * as Errors from "../lib/errors";
-import { SwimData } from "./useSwimData";
-import { Swimmer, RelayLeg } from "../lib/defs";
-import { RelayHelpers } from "./useRelayHelpers";
 import { useSearchParams } from "react-router-dom";
 
-export function useSearchParamHandler(data: SwimData, relayHelpers: RelayHelpers) {
-	const { swimmers, meets, relays, events } = data;
+// meet id, swimmer id, relay id, cur_prs_only, prs_only, cur_srs_only, srs_only, event_id
+export interface Filters {
+	cur_prs_only: boolean;
+	prs_only: boolean;
+	cur_srs_only: boolean;
+	srs_only: boolean;
+	event_id: number | null;
+	meet_id: number | null;
+	swimmer_id: number | null;
+	relay_id: number | null;
+	fts_only: boolean;
+}
+
+export function is_filtered(filters: Filters) {
+	return (
+		filters.cur_prs_only ||
+		filters.prs_only ||
+		filters.cur_srs_only ||
+		filters.srs_only ||
+		filters.event_id !== null ||
+		filters.meet_id !== null ||
+		filters.swimmer_id !== null ||
+		filters.relay_id !== null
+	);
+}
+
+export function useSearchParamHandler() {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const { getRelayLegsForRelay } = relayHelpers;
-	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = useMemo(() => {
-		let curMeetInfo = null;
-		let curSwimmerInfo = null;
-		let curRelayInfo = null;
-		if (searchParams.get("meet_id") !== null && searchParams.get("meet_id")!.length > 0) {
-			curMeetInfo = meets[parseInt(searchParams.get("meet_id")!)] ?? null;
-		}
 
-		if (searchParams.get("swimmer_id") !== null && searchParams.get("swimmer_id")!.length > 0) {
-			curSwimmerInfo = swimmers[parseInt(searchParams.get("swimmer_id")!)] ?? null;
-		}
+	const filters = useMemo(() => {
+		return {
+			cur_prs_only: searchParams.get("cur_prs_only") === "true",
+			prs_only: searchParams.get("prs_only") === "true",
+			cur_srs_only: searchParams.get("cur_srs_only") === "true",
+			srs_only: searchParams.get("srs_only") === "true",
+			event_id: searchParams.get("event_id") ? Number(searchParams.get("event_id")) : null,
+			meet_id: searchParams.get("meet_id") ? Number(searchParams.get("meet_id")) : null,
+			swimmer_id: searchParams.get("swimmer_id") ? Number(searchParams.get("swimmer_id")) : null,
+			relay_id: searchParams.get("relay_id") ? Number(searchParams.get("relay_id")) : null,
+			fts_only: searchParams.get("fts_only") === "true",
+		};
+	}, [searchParams]);
 
-		if (searchParams.get("relay_id") !== null && searchParams.get("relay_id")!.length > 0) {
-			let id = parseInt(searchParams.get("relay_id")!);
-			const relay = relays[id] ?? null;
-			if (relay) {
-				curRelayInfo = getRelayLegsForRelay(relay.id)
-					.andThen((relayLegs: RelayLeg[]) => {
-						if (relayLegs.length !== 4) {
-							return err(
-								new Errors.NotFound(
-									`Expected 4 relay legs for relay with ID ${relay.id}, found ${relayLegs.length}`,
-								),
-							);
-						}
-						return ok(relayLegs.map((leg) => swimmers[leg.swimmer_id]));
-					})
-					.map((swimmers: Swimmer[]) =>
-						swimmers.map((swimmer) => `${swimmer.first_name} ${swimmer.last_name}`),
-					)
-					.andThen((swimmer_names: string[]) => {
-						const event = events[relay.event_id];
-						if (!event)
-							return err(
-								new Errors.NotFound(
-									`No event found with ID ${relay.event_id} even though relay with ID ${relay.id} references it`,
-								),
-							);
-						if (!meets[relay.meet_id])
-							return err(
-								new Errors.NotFound(
-									`No meet found with ID ${relay.meet_id} even though relay with ID ${relay.id} references it`,
-								),
-							);
-						return ok({
-							id,
-							swimmer_names,
-							date: meets[relay.meet_id].date,
-							event: event.name,
-						});
-					})
-					.match(
-						(d) => d,
-						(err) => {
-							console.warn(
-								`While filtering by relay, failed to load relay info for relay ID ${id}:`,
-								err.toString(),
-							);
-							return null;
-						},
-					);
-			}
-		}
-		return { curMeetInfo, curSwimmerInfo, curRelayInfo };
-	}, [searchParams, swimmers, meets, relays, events, getRelayLegsForRelay]);
-
-	return { curMeetInfo, curSwimmerInfo, curRelayInfo, setSearchParams };
+	return { filters, setSearchParams };
 }
 
 export type SearchParamHandler = ReturnType<typeof useSearchParamHandler>;

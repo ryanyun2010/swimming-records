@@ -37,6 +37,17 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 				<div className="section-block">
 					<div className="section-header">
 						<div className="section-bar" />
+						<button className="section-title">Record Progressions</button>
+						<button type="button" onClick={() => setSearchParams({
+							srs_only: "true",
+						})} className="back-button">
+							See School Record Progressions
+						</button>
+					</div>
+				</div>
+				<div className="section-block">
+					<div className="section-header">
+						<div className="section-bar" />
 						<h2 className="section-title">Recent Meets</h2>
 					</div>
 					<ul className="card-list">{meetCards}</ul>

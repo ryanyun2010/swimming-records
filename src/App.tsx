@@ -5,10 +5,11 @@ import AdminPage from "./AdminPage/AdminPage";
 import { useSwimData } from "./hooks/useSwimData";
 import { useParsedTimes } from "./hooks/useParsedTimes";
 import { useRelayHelpers } from "./hooks/useRelayHelpers";
-import { useSearchParamHandler } from "./hooks/useSearchParamHandler";
+import { useSearchParamHandler, is_filtered } from "./hooks/useSearchParamHandler";
 import { useTimeFilterer } from "./hooks/useTimeFilterer";
 import { RecentMeets } from "./components/RecentMeets";
 import { Search } from "./components/Search";
+import { useRelayRecordInfo } from "./hooks/useRelayRecordInfo";
 
 function Home() {
 	const data = useSwimData();
@@ -21,11 +22,12 @@ function Home() {
 	);
 
 	const relayHelpers = useRelayHelpers(parsedTimes, data.relayLegs);
-	const searchParamHandler = useSearchParamHandler(data, relayHelpers);
-	const timeFilterer = useTimeFilterer(parsedTimes, data, relayHelpers, searchParamHandler);
+	const searchParamHandler = useSearchParamHandler();
+	const relayRecordInfo = useRelayRecordInfo(data);
+	const timeFilterer = useTimeFilterer(parsedTimes, data, relayHelpers, searchParamHandler, relayRecordInfo);
 
-	const { curMeetInfo, curSwimmerInfo, curRelayInfo } = searchParamHandler;
-	if (curMeetInfo == null && curSwimmerInfo == null && curRelayInfo == null) {
+
+	if (!is_filtered(searchParamHandler.filters)) {
 		return <RecentMeets data={data} searchParamHandler={searchParamHandler} />;
 	}
 	return (
@@ -35,6 +37,7 @@ function Home() {
 			relayHelpers={relayHelpers}
 			curRelays={timeFilterer.currentRelays}
 			curParsedTimes={timeFilterer.currentTimes}
+			relayRecordInfo={relayRecordInfo}
 		/>
 	);
 }
