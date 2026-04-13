@@ -92,7 +92,9 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			let right = indices[indiciesIndex][1];
 			if (i <= right && i >=left) {
 				parts.push(<span key={i} style={{
-					color: "var(--accent-color)",
+					color: "orange",
+					fontWeight: "bold",
+					textDecoration: "underline",
 				}}>{name[i]}</span>);
 			} else {
 				parts.push(<span key={i}>{name[i]}</span>);
