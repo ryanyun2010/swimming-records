@@ -153,7 +153,16 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		}
 		return results.map((result, index) => {
 			if (result.matches != null && result.matches.length > 0 && result.matches[0].indices != null) {
-				const indices = (result.matches && result.matches[0] && result.matches[0].indices) ? result.matches[0].indices : [];
+				let indices: number[][] = [];
+				const words = searchQuery.split(" ").filter(word => word.length > 0);
+				for (let word of words) {
+					let startIndex = result.item.name.toLowerCase().indexOf(word.toLowerCase());
+					if (startIndex == -1) {
+						continue;
+					}
+					let endIndex = startIndex + word.length - 1;
+					indices.push([startIndex, endIndex]);
+				}
 				return (
 				<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
 				{
