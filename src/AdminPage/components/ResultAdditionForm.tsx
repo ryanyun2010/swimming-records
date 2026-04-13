@@ -18,7 +18,7 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 		[data.meets],
 	);
 	const events = useMemo(
-		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
+		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)).filter(e => !e.is_relay),
 		[data.events],
 	);
 	const [isValid, setIsValid] = useState(true);
