@@ -551,3 +551,6 @@
 	font-size: 1rem;
 	padding-left: 0.8rem;
 }
+html {
+	zoom: 80%;
+}
