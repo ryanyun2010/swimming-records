@@ -69,7 +69,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 			readCSV(file)
 				.andThen((rows) => {
 					if (rows.length < 2) {
-						return errAsync(new Errors.MalformedResponse("CSV must include a header and at least one row."));
+						return errAsync(
+							new Errors.MalformedResponse("CSV must include a header and at least one row."),
+						);
 					}
 
 					const swimmers = Object.values(data.swimmers);
@@ -91,7 +93,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						}
 						if (row.length === 9 || row.length > 10) {
 							return errAsync(
-								new Errors.MalformedResponse(`Row ${line} has invalid number of columns: ${row.join(",")}`),
+								new Errors.MalformedResponse(
+									`Row ${line} has invalid number of columns: ${row.join(",")}`,
+								),
 							);
 						}
 
@@ -123,7 +127,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								);
 							}
 							const swimmerIds = swimmerNames.map((name) => findSwimmerIdByCsvName(swimmers, name));
-							console.log("swimmerIds: " + swimmerIds.join(",") + " for names: " + swimmerNames.join(","));
+							console.log(
+								"swimmerIds: " + swimmerIds.join(",") + " for names: " + swimmerNames.join(","),
+							);
 							if (swimmerIds.some((id) => id == null)) {
 								return errAsync(
 									new Errors.MalformedResponse(
@@ -161,9 +167,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						const invalidReason = (row[6] ?? "").trim() || null;
 						const timeSeconds = parseTimeToSeconds(timeRaw);
 						if (timeSeconds == null) {
-							return errAsync(
-								new Errors.MalformedResponse(`Row ${line} has invalid time: ${timeRaw}`),
-							);
+							return errAsync(new Errors.MalformedResponse(`Row ${line} has invalid time: ${timeRaw}`));
 						}
 						const swimmerId = findSwimmerIdByCsvName(swimmers, swimmerName);
 						if (swimmerId == null) {
@@ -175,18 +179,14 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 						}
 						const meetId = findMeetIdByName(meets, meetName);
 						if (meetId == null) {
-							return errAsync(
-								new Errors.MalformedResponse(`Row ${line} meet not found: ${meetName}`),
-							);
+							return errAsync(new Errors.MalformedResponse(`Row ${line} meet not found: ${meetName}`));
 						}
 
 						const swimmer = swimmers[swimmerId];
-						const swimmer_is_male = swimmer.gender == 'male';
+						const swimmer_is_male = swimmer.gender == "male";
 						let eventId = findEventIdByLabel(events, eventLabel, swimmer_is_male);
 						if (eventId == null) {
-							return errAsync(
-								new Errors.MalformedResponse(`Row ${line} event not found: ${eventLabel}`),
-							);
+							return errAsync(new Errors.MalformedResponse(`Row ${line} event not found: ${eventLabel}`));
 						}
 
 						resultRows.push({
@@ -229,9 +229,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 
 					return addIndividuals.andThen(() => {
 						const relayTasks = relayRows.map((relay) => {
-							const swimmersForRelay = relay.swimmer_ids
-								.map((id) => swimmers[id])
-								.filter(Boolean);
+							const swimmersForRelay = relay.swimmer_ids.map((id) => swimmers[id]).filter(Boolean);
 							if (swimmersForRelay.length !== 4) {
 								return errAsync(
 									new Errors.MalformedResponse(
@@ -239,13 +237,13 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 									),
 								);
 							}
-							const swimmer_is_male = swimmersForRelay[0].gender == 'male';
+							const swimmer_is_male = swimmersForRelay[0].gender == "male";
 							let relayEventId: number | null = null;
 							let legSpecs: { distance: number; stroke: string }[] = [];
 							if (relay.relay_type === "200_mr") {
 								relayEventId =
 									findEventIdByLabel(events, "200 medley relay", swimmer_is_male) ??
-									findEventIdBySpec(events, 200, "medley",swimmer_is_male);
+									findEventIdBySpec(events, 200, "medley", swimmer_is_male);
 								legSpecs = [
 									{ distance: 50, stroke: "back" },
 									{ distance: 50, stroke: "breast" },
@@ -254,8 +252,8 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								];
 							} else if (relay.relay_type === "200_fr") {
 								relayEventId =
-									findEventIdByLabel(events, "200 freestyle relay",swimmer_is_male) ??
-									findEventIdBySpec(events, 200, "freestyle",swimmer_is_male);
+									findEventIdByLabel(events, "200 freestyle relay", swimmer_is_male) ??
+									findEventIdBySpec(events, 200, "freestyle", swimmer_is_male);
 								legSpecs = [
 									{ distance: 50, stroke: "free" },
 									{ distance: 50, stroke: "free" },
@@ -264,8 +262,8 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 								];
 							} else if (relay.relay_type === "400_fr") {
 								relayEventId =
-									findEventIdByLabel(events, "400 freestyle relay",swimmer_is_male) ??
-									findEventIdBySpec(events, 400, "freestyle",swimmer_is_male);
+									findEventIdByLabel(events, "400 freestyle relay", swimmer_is_male) ??
+									findEventIdBySpec(events, 400, "freestyle", swimmer_is_male);
 								legSpecs = [
 									{ distance: 100, stroke: "free" },
 									{ distance: 100, stroke: "free" },
@@ -280,9 +278,7 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 
 							if (relayEventId == null) {
 								return errAsync(
-									new Errors.MalformedResponse(
-										`Relay event not found for type ${relay.relay_type}`,
-									),
+									new Errors.MalformedResponse(`Relay event not found for type ${relay.relay_type}`),
 								);
 							}
 
@@ -359,9 +355,9 @@ export function BulkResultsUpload({ data, databaseHandler }: BulkResultsUploadPr
 		<section className="accent-card admin-card">
 			<h3 className="admin-card-title">Add Results (CSV)</h3>
 			<p className="admin-help">
-				Legacy CSV format (header + rows). Non-relay rows use columns 5-7 for time, validity, and
-				invalid reason. Relay rows include a type column ("Relay") and use columns 8-10 for time,
-				validity, and invalid reason.
+				Legacy CSV format (header + rows). Non-relay rows use columns 5-7 for time, validity, and invalid
+				reason. Relay rows include a type column ("Relay") and use columns 8-10 for time, validity, and invalid
+				reason.
 			</p>
 			<form onSubmit={onSubmit} className="admin-form">
 				<div className="admin-form-grid">

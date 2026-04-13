@@ -13,12 +13,12 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 		() => Object.values(data.swimmers).sort((a, b) => a.last_name.localeCompare(b.last_name)),
 		[data.swimmers],
 	);
-	const meets = useMemo(
-		() => Object.values(data.meets).sort((a, b) => a.date.localeCompare(b.date)),
-		[data.meets],
-	);
+	const meets = useMemo(() => Object.values(data.meets).sort((a, b) => a.date.localeCompare(b.date)), [data.meets]);
 	const events = useMemo(
-		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)).filter(e => !e.is_relay),
+		() =>
+			Object.values(data.events)
+				.sort((a, b) => a.name.localeCompare(b.name))
+				.filter((e) => !e.is_relay),
 		[data.events],
 	);
 	const [isValid, setIsValid] = useState(true);
@@ -26,7 +26,7 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 	const swimmer_is_male = useMemo(() => {
 		if (selectedSwimmerID == null) return null;
 		const swimmer = data.swimmers[selectedSwimmerID];
-		return swimmer.gender == 'male';
+		return swimmer.gender == "male";
 	}, [selectedSwimmerID, swimmers]);
 
 	const onSubmit = useCallback(
@@ -68,9 +68,7 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 			<h3 className="admin-card-title">Add Result</h3>
 			<form onSubmit={onSubmit} className="admin-form">
 				<div className="admin-form-grid">
-					<select name="swimmer_id" required 
-						onChange={(e) => setSelectedSwimmerID(Number(e.target.value))}
-					>
+					<select name="swimmer_id" required onChange={(e) => setSelectedSwimmerID(Number(e.target.value))}>
 						<option value="">Select swimmer</option>
 						{swimmers.map((s) => (
 							<option key={s.id} value={s.id}>
@@ -91,13 +89,17 @@ export function ResultAdditionForm({ data, databaseHandler }: ResultAdditionForm
 					<select name="event_id" required>
 						{swimmer_is_male == null ? (
 							<option value="">Select swimmer first</option>
-						) : (<option value="">Select event</option>)}
+						) : (
+							<option value="">Select event</option>
+						)}
 
-						{events.map((e) => swimmer_is_male != null && e.is_male == swimmer_is_male ?(
-							<option key={e.id} value={e.id}>
-								{e.name}
-							</option>
-						): null)}
+						{events.map((e) =>
+							swimmer_is_male != null && e.is_male == swimmer_is_male ? (
+								<option key={e.id} value={e.id}>
+									{e.name}
+								</option>
+							) : null,
+						)}
 					</select>
 
 					<input name="time" type="text" placeholder="Time (seconds or m:ss.xx)" required />

@@ -26,7 +26,6 @@ function Home() {
 	const relayRecordInfo = useRelayRecordInfo(data);
 	const timeFilterer = useTimeFilterer(parsedTimes, data, relayHelpers, searchParamHandler, relayRecordInfo);
 
-
 	if (!is_filtered(searchParamHandler.filters)) {
 		return <RecentMeets data={data} searchParamHandler={searchParamHandler} />;
 	}

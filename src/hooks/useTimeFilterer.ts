@@ -47,7 +47,7 @@ export function useTimeFilterer(
 			timesToShow = timesToShow.filter((t) => t.meet_id === filters.meet_id);
 			relaysToShow = relaysToShow.filter((r) => r.meet_id === filters.meet_id);
 		}
-		
+
 		if (filters.swimmer_id != null) {
 			timesToShow = timesToShow.filter((t) => t.swimmer_id === filters.swimmer_id);
 			relaysToShow = relaysToShow.filter((r) =>
@@ -72,17 +72,11 @@ export function useTimeFilterer(
 
 		if (filters.cur_prs_only) {
 			timesToShow = timesToShow.filter((t) => t.current_PR != null);
-			relaysToShow = relaysToShow.filter((r) => {
-				const info = relayRecordInfo[r.id];
-				return info?.current_PR != null;
-			});
+			relaysToShow = [];
 		}
 		if (filters.prs_only) {
 			timesToShow = timesToShow.filter((t) => t.current_PR != null || t.previous_PR != null);
-			relaysToShow = relaysToShow.filter((r) => {
-				const info = relayRecordInfo[r.id];
-				return info?.current_PR != null || info?.previous_PR != null;
-			});
+			relaysToShow = [];
 		}
 		if (filters.cur_srs_only) {
 			timesToShow = timesToShow.filter((t) => t.current_SR != null);
@@ -100,10 +94,7 @@ export function useTimeFilterer(
 		}
 		if (filters.fts_only) {
 			timesToShow = timesToShow.filter((t) => t.current_PR?.change === null || t.previous_PR?.change === null);
-			relaysToShow = relaysToShow.filter((r) => {
-				const info = relayRecordInfo[r.id];
-				return info && (info.current_PR?.change === null || info.previous_PR?.change === null);
-			});
+			relaysToShow = [];
 		}
 		return [timesToShow, relaysToShow];
 	}, [filters, parsedTimes, relays, getRelayLegsForRelay, getParsedTimesForRelay, relayRecordInfo]);

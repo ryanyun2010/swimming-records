@@ -16,7 +16,7 @@ type SearchProps = {
 	relayHelpers: RelayHelpers;
 	curRelays: Relay[];
 	curParsedTimes: ParsedTime[];
-	relayRecordInfo: Record<number,RelayRecordInfo>;
+	relayRecordInfo: Record<number, RelayRecordInfo>;
 };
 
 export function Search({
@@ -28,7 +28,15 @@ export function Search({
 	relayRecordInfo,
 }: SearchProps): JSX.Element {
 	const { setSearchParams, filters } = searchParamHandler;
-	const showMeetSummary = filters.meet_id != null && filters.event_id == null && filters.relay_id == null && filters.swimmer_id == null && !filters.cur_prs_only && !filters.prs_only && !filters.cur_srs_only && !filters.srs_only;
+	const showMeetSummary =
+		filters.meet_id != null &&
+		filters.event_id == null &&
+		filters.relay_id == null &&
+		filters.swimmer_id == null &&
+		!filters.cur_prs_only &&
+		!filters.prs_only &&
+		!filters.cur_srs_only &&
+		!filters.srs_only;
 
 	const curMeetInfo = useMemo(() => {
 		if (filters.meet_id == null) return null;
@@ -59,14 +67,8 @@ export function Search({
 		const countRelay = (relayId: number) => {
 			const info = relayRecordInfo[relayId];
 			if (!info) return;
-			const hasPR = info.current_PR != null || info.previous_PR != null;
-			const hasCurrentPR = info.current_PR != null;
-			const hasFTS = info.current_PR?.change === null || info.previous_PR?.change === null;
 			const hasSR = info.current_SR != null || info.previous_SR != null;
 			const hasCurrentSR = info.current_SR != null;
-			if (hasPR) prs += 1;
-			if (hasCurrentPR) prsCurrent += 1;
-			if (hasFTS) fts += 1;
 			if (hasSR) srs += 1;
 			if (hasCurrentSR) srsCurrent += 1;
 		};
@@ -84,7 +86,14 @@ export function Search({
 			distanceByName.set(event.name, event.distance);
 		});
 		return [...curParsedTimes]
-			.filter((t) => t.type === "individual" || (t.type === "relay_leg" && filters.note_legs && t.relay_leg_id != null && data.relayLegs[t.relay_leg_id].leg_order === 1))
+			.filter(
+				(t) =>
+					t.type === "individual" ||
+					(t.type === "relay_leg" &&
+						filters.note_legs &&
+						t.relay_leg_id != null &&
+						data.relayLegs[t.relay_leg_id].leg_order === 1),
+			)
 			.sort((a, b) => {
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
@@ -107,7 +116,11 @@ export function Search({
 			distanceByName.set(event.name, event.distance);
 		});
 		return [...curParsedTimes]
-			.filter((t) => t.type === "relay_leg" && !(filters.note_legs && t.relay_leg_id != null && data.relayLegs[t.relay_leg_id].leg_order === 1))
+			.filter(
+				(t) =>
+					t.type === "relay_leg" &&
+					!(filters.note_legs && t.relay_leg_id != null && data.relayLegs[t.relay_leg_id].leg_order === 1),
+			)
 			.sort((a, b) => {
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
@@ -150,7 +163,11 @@ export function Search({
 							<div className="hero-eyebrow">Records View</div>
 							<h1 className="hero-title">Nueva Swimming Records</h1>
 							<div className="hero-subtitle">
-								<Header searchParamHandler={searchParamHandler} data={data} relayHelpers={relayHelpers} />
+								<Header
+									searchParamHandler={searchParamHandler}
+									data={data}
+									relayHelpers={relayHelpers}
+								/>
 							</div>
 						</div>
 						<button type="button" onClick={() => setSearchParams({})} className="back-button">
@@ -172,56 +189,68 @@ export function Search({
 							</div>
 						</div>
 						<div className="meet-overview-grid">
-							<div className="meet-overview-stat stat-fts" onClick = {() => setSearchParams(
-								{
-									fts_only: "true",
-									note_legs: "true",
-									meet_id: filters.meet_id?.toString()??"",
+							<div
+								className="meet-overview-stat stat-fts"
+								onClick={() =>
+									setSearchParams({
+										fts_only: "true",
+										note_legs: "true",
+										meet_id: filters.meet_id?.toString() ?? "",
+									})
 								}
-							)}>
+								style={{ cursor: "pointer" }}
+							>
 								<div className="stat-label">FIRST TIME SWIMS</div>
 								<div className="stat-value">{meetSummary.fts}</div>
 							</div>
-							<div className="meet-overview-stat stat-pr"
-								onClick={() => setSearchParams(
-									{
+							<div
+								className="meet-overview-stat stat-pr"
+								onClick={() =>
+									setSearchParams({
 										prs_only: "true",
 										note_legs: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
-									}
-								)}
+									})
+								}
+								style={{ cursor: "pointer" }}
 							>
 								<div className="stat-label">PERSONAL RECORDS SET</div>
 								<div className="stat-value">
 									{meetSummary.prs}
-									{meetSummary.prsCurrent > 0 ? <span className="stat-inline">{meetSummary.prsCurrent} still current</span> : null}
+									{meetSummary.prsCurrent > 0 ? (
+										<span className="stat-inline">{meetSummary.prsCurrent} still current</span>
+									) : null}
 								</div>
 							</div>
-							<div className="meet-overview-stat stat-sr" onClick = {
-								() => setSearchParams(
-									{
+							<div
+								className="meet-overview-stat stat-sr"
+								onClick={() =>
+									setSearchParams({
 										srs_only: "true",
 										note_legs: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
-									}
-								)}
-								>
+									})
+								}
+								style={{ cursor: "pointer" }}
+							>
 								<div className="stat-label">SCHOOL RECORDS SET</div>
 								<div className="stat-value">
 									{meetSummary.srs}
-									{meetSummary.srsCurrent > 0 ? <span className="stat-inline">{meetSummary.srsCurrent} still current</span> : null}
+									{meetSummary.srsCurrent > 0 ? (
+										<span className="stat-inline">{meetSummary.srsCurrent} still current</span>
+									) : null}
 								</div>
 							</div>
 						</div>
 					</div>
 				) : null}
-					
+
 				{sortedIndividualTimes.length > 0 ? (
 					<div className="section-block">
 						<div className="section-header section-header-sticky">
 							<div className="section-bar" />
 							<div className="section-title-row">
-								<h2 className="section-title">{filters.note_legs ? "Flat Start" :"Individual"}</h2>
+								<h2 className="section-title">{filters.note_legs ? "Flat Start" : "Individual"}</h2>
 								<span className="section-count">{sortedIndividualTimes.length}</span>
 							</div>
 						</div>

@@ -153,7 +153,7 @@ export function useParsedTimes(data: SwimData): Res<ParsedTime[], Errors.NotFoun
 			}
 			let timep = times[timepid];
 
-			const leg_order = recordProg.leg_id ? relayLegs[recordProg.leg_id]?.leg_order ?? null : null;
+			const leg_order = recordProg.leg_id ? (relayLegs[recordProg.leg_id]?.leg_order ?? null) : null;
 			// Leg 1 (flat start) shares the same event category as individual swims.
 			// Legs 2-4 are a distinct event category from leg 1/individual.
 			const legClass = leg_order != null && leg_order !== 1 ? "relay" : "indiv";

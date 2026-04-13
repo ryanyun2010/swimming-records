@@ -49,7 +49,7 @@ export function findSwimmerIdByCsvName(
 	swimmers: { id: number; first_name: string; last_name: string; graduating: number }[],
 	nameWithGrad: string,
 ): number | null {
-	const match = nameWithGrad.replace('"', '').match(/(.+?)\s+'(\d{2})$/);
+	const match = nameWithGrad.replace('"', "").match(/(.+?)\s+'(\d{2})$/);
 	if (!match) return null;
 	const namePart = match[1].trim();
 	const gradSuffix = Number(match[2]);
@@ -84,11 +84,7 @@ export function findMeetIdByName(meets: { id: number; name: string }[], name: st
 	return matches.length === 1 ? matches[0].id : null;
 }
 
-export function findEventIdByLabel(
-	events: SEvent[],
-	label: string,
-	male: boolean,
-): number | null {
+export function findEventIdByLabel(events: SEvent[], label: string, male: boolean): number | null {
 	let target = normalizeName(label.replace(/\(.*\)/g, "").trim());
 	if (target == "50free" || target == "100free" || target == "200free" || target == "500free") {
 		target = target.replace("free", "freestyle");
@@ -117,12 +113,7 @@ export function findEventIdByLabel(
 	return matches.length === 1 ? matches[0].id : null;
 }
 
-export function findEventIdBySpec(
-	events: SEvent[],
-	distance: number,
-	stroke: string,
-	male: boolean,
-): number | null {
+export function findEventIdBySpec(events: SEvent[], distance: number, stroke: string, male: boolean): number | null {
 	const targetStroke = normalizeStroke(stroke);
 	const matches = events.filter(
 		(e) => e.distance === distance && normalizeStroke(e.stroke) === targetStroke && e.is_male == male,

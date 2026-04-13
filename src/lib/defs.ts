@@ -83,4 +83,3 @@ export type Swimmer = z.infer<typeof swimmerSchema>;
 export interface IDedObject {
 	id: number;
 }
-

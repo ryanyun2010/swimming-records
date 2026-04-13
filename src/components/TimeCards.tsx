@@ -6,7 +6,7 @@ import { formatChange, formatDate, formatTime } from "../lib/utils";
 import { ErrorRes } from "../lib/errors";
 import * as Errors from "../lib/errors";
 import { Result as Res, err, ok } from "neverthrow";
-import { findEventIdByLabel } from "../AdminPage/utils"; 
+import { findEventIdByLabel } from "../AdminPage/utils";
 
 type TimeCardsProps = {
 	data: SwimData;
@@ -46,9 +46,11 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 				<div className="result-row">
 					<div className="name-line">
 						<span
+							style={{ cursor: "pointer" }}
 							onClick={() =>
-								setSearchParams({
-									swimmer_id: t.swimmer_id.toString(),
+								setSearchParams((prev) => {
+									prev.set("swimmer_id", t.swimmer_id.toString());
+									return prev;
 								})
 							}
 							className="name-link"
@@ -56,11 +58,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 							{t.swimmer_first_name} {t.swimmer_last_name} '{t.swimmer_year % 100}
 						</span>
 						<span className="divider-dot">•</span>
-						<span className="tag tag-event" onClick = {
-							() => setSearchParams({
-								event_id: findEventIdByLabel(Object.values(data.events), t.event_name, t.event_name.includes("Boys"))?.toString() ?? ""
-							})
-						}>{t.event_name}</span>
+						<span className="tag tag-event">{t.event_name}</span>
 						<div className="tag-row">
 							{t.type == "relay_leg" ? (
 								<span
@@ -68,8 +66,9 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 									className="tag tag-meta"
 									onClick={() => {
 										if (relayLeg)
-											setSearchParams({
-												relay_id: relayLeg.relay_id.toString(),
+											setSearchParams((prev) => {
+												prev.set("relay_id", relayLeg.relay_id.toString());
+												return prev;
 											});
 									}}
 								>
@@ -81,99 +80,130 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 							{isDQ ? <span className="tag tag-dq">Invalid{dqReason ? `: ${dqReason}` : ""}</span> : null}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
-									<span className="tag tag-sr-first" onClick = {
-										() => {
-											setSearchParams({
-												srs_only: "true",
-												note_legs: "true",
-												meet_id: filters.meet_id?.toString() ??"",
-											})
-										}
-									}>SCHOOL RECORD: FIRST TIME</span>
+									<span
+										className="tag tag-sr-first"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
+										SCHOOL RECORD: FIRST TIME
+									</span>
 								) : (
-									<span className="tag tag-sr" onClick = {
-										() => {
-											setSearchParams({
-												srs_only: "true",
-												meet_id: filters.meet_id?.toString() ??"",
-										note_legs: "true",
-											})
-										}
-									}>SCHOOL RECORD {srDelta}</span>
+									<span
+										className="tag tag-sr"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
+										SCHOOL RECORD {srDelta}
+									</span>
 								)
 							) : null}
-							{isPersonalRecord ? <span className="tag tag-pr" onClick ={
-								() => {
-									setSearchParams({
-										prs_only: "true",
-										meet_id: filters.meet_id?.toString() ?? "",
-										swimmer_id: t.swimmer_id.toString(),
-										note_legs: "true",
-									})
-								}
-							}>PR {prDelta}</span> : null}
-							{isFirstTimeSwim ? <span className="tag tag-fts" onClick={
-								() => {
-									setSearchParams({
-										prs_only: "true",
-										meet_id: filters.meet_id?.toString() ?? "",
-										swimmer_id: t.swimmer_id.toString(),
-										note_legs: "true",
-									})
-								}
-							}>FTS</span> : null}
+							{isPersonalRecord ? (
+								<span
+									className="tag tag-pr"
+									onClick={() => {
+										setSearchParams((prev) => {
+											prev.set("prs_only", "true");
+											prev.set("note_legs", "true");
+											return prev;
+										});
+									}}
+									style={{ cursor: "pointer" }}
+								>
+									PR {prDelta}
+								</span>
+							) : null}
+							{isFirstTimeSwim ? (
+								<span
+									className="tag tag-fts"
+									onClick={() => {
+										setSearchParams((prev) => {
+											prev.set("prs_only", "true");
+											prev.set("swimmer_id", t.swimmer_id.toString());
+											prev.set("note_legs", "true");
+											return prev;
+										});
+									}}
+									style={{ cursor: "pointer" }}
+								>
+									FTS
+								</span>
+							) : null}
 							{previousPR != null ? (
 								previousPR.change === null ? (
-									<span key="prev-pr" className="tag tag-fts" onClick={
-										() => {
-											setSearchParams({
-												prs_only: "true",
-												meet_id: filters.meet_id?.toString() ?? "",
-												swimmer_id: t.swimmer_id.toString(),
-										note_legs: "true",
-											})
-										}
-									}>
+									<span
+										key="prev-pr"
+										className="tag tag-fts"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("prs_only", "true");
+												prev.set("swimmer_id", t.swimmer_id.toString());
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
 										FTS
 									</span>
 								) : (
-									<span key={`prev-pr`} className="tag tag-pr-prev" onClick ={
-										() => {
-											setSearchParams({
-												prs_only: "true",
-												meet_id: filters.meet_id?.toString() ?? "",
-												swimmer_id: t.swimmer_id.toString(),
-										note_legs: "true",
-											})
-										}
-									}>
+									<span
+										key={`prev-pr`}
+										className="tag tag-pr-prev"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("prs_only", "true");
+												prev.set("swimmer_id", t.swimmer_id.toString());
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
 										PREVIOUS PR {formatChange(previousPR.change)}
 									</span>
 								)
 							) : null}
 							{previousSR != null ? (
 								previousSR.change === null ? (
-									<span key={`prev-sr`} className="tag tag-sr-first" onClick = {
-										() => {
-											setSearchParams({
-												srs_only: "true",
-												meet_id: filters.meet_id?.toString() ?? "",
-										note_legs: "true",
-											})
-										}
-									}>
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-first"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
 										PREVIOUS SCHOOL RECORD: FIRST TIME
 									</span>
 								) : (
-									<span key={`prev-sr`} className="tag tag-sr-prev" onClick = {
-										() => {
-											setSearchParams({
-												srs_only: "true",
-												meet_id: filters.meet_id?.toString() ?? "",
-										note_legs: "true",
-											})
-										}
-									}>
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-prev"
+										onClick={() => {
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("note_legs", "true");
+												return prev;
+											});
+										}}
+										style={{ cursor: "pointer" }}
+									>
 										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
 									</span>
 								)

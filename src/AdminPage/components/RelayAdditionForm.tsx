@@ -19,10 +19,7 @@ type LegData = {
 };
 
 export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormProps) {
-	const meets = useMemo(
-		() => Object.values(data.meets).sort((a, b) => a.date.localeCompare(b.date)),
-		[data.meets],
-	);
+	const meets = useMemo(() => Object.values(data.meets).sort((a, b) => a.date.localeCompare(b.date)), [data.meets]);
 	const events = useMemo(
 		() => Object.values(data.events).sort((a, b) => a.name.localeCompare(b.name)),
 		[data.events],
@@ -44,9 +41,7 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		const stroke = normalizeStroke(selectedRelayEvent.stroke);
 		if (stroke.includes("medley")) {
 			return nonRelayEvents.filter(
-				(e) =>
-					e.distance === 50 &&
-					["back", "breast", "fly", "freestyle"].includes(normalizeStroke(e.stroke)),
+				(e) => e.distance === 50 && ["back", "breast", "fly", "freestyle"].includes(normalizeStroke(e.stroke)),
 			);
 		}
 		if (stroke.includes("freestyle")) {
@@ -63,17 +58,40 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		const stroke = normalizeStroke(selectedRelayEvent.stroke);
 		if (stroke.includes("medley")) {
 			return [
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "back" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "breast" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "fly" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
+				legEventOptions.find(
+					(e) =>
+						normalizeStroke(e.stroke) === "back" &&
+						e.distance === 50 &&
+						e.is_male === selectedRelayEvent.is_male,
+				)?.id ?? null,
+				legEventOptions.find(
+					(e) =>
+						normalizeStroke(e.stroke) === "breast" &&
+						e.distance === 50 &&
+						e.is_male === selectedRelayEvent.is_male,
+				)?.id ?? null,
+				legEventOptions.find(
+					(e) =>
+						normalizeStroke(e.stroke) === "fly" &&
+						e.distance === 50 &&
+						e.is_male === selectedRelayEvent.is_male,
+				)?.id ?? null,
+				legEventOptions.find(
+					(e) =>
+						normalizeStroke(e.stroke) === "freestyle" &&
+						e.distance === 50 &&
+						e.is_male === selectedRelayEvent.is_male,
+				)?.id ?? null,
 			];
 		}
 		if (stroke.includes("freestyle")) {
 			const legDistance = selectedRelayEvent.distance === 400 ? 100 : 50;
 			const freeId =
 				legEventOptions.find(
-					(e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === legDistance && e.is_male == selectedRelayEvent.is_male,
+					(e) =>
+						normalizeStroke(e.stroke) === "freestyle" &&
+						e.distance === legDistance &&
+						e.is_male == selectedRelayEvent.is_male,
 				)?.id ?? null;
 			return [freeId, freeId, freeId, freeId];
 		}
@@ -81,10 +99,13 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 	}, [legEventOptions, selectedRelayEvent]);
 
 	const swimmers = useMemo(
-		() => Object.values(data.swimmers).sort((a, b) => a.last_name.localeCompare(b.last_name)).filter((s => {
-			if (!selectedRelayEvent) return true;
-			return selectedRelayEvent.is_male === (s.gender === 'male');
-		})),
+		() =>
+			Object.values(data.swimmers)
+				.sort((a, b) => a.last_name.localeCompare(b.last_name))
+				.filter((s) => {
+					if (!selectedRelayEvent) return true;
+					return selectedRelayEvent.is_male === (s.gender === "male");
+				}),
 		[data.swimmers, selectedRelayEvent],
 	);
 

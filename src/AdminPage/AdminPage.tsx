@@ -20,9 +20,7 @@ export default function AdminPage() {
 						<div>
 							<div className="hero-eyebrow">Admin Console</div>
 							<h1 className="hero-title">Swimming Records Admin</h1>
-							<p className="hero-subtitle">
-								Manage swimmers, meets, results, and relays. 
-							</p>
+							<p className="hero-subtitle">Manage swimmers, meets, results, and relays.</p>
 						</div>
 						<div className={loggedIn ? "admin-auth" : "admin-auth admin-auth-centered"}>
 							<GoogleAuthSection onLogin={onLogin} loggedIn={loggedIn} userEmail={userEmail} />

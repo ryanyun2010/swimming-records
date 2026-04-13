@@ -52,6 +52,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 						});
 				}}
 				className="name-link"
+				style={{ cursor: "pointer" }}
 			>
 				{swimmer.first_name} {swimmer.last_name} '{(swimmer.graduating ?? 0) % 100}
 			</span>
@@ -83,13 +84,17 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 									],
 						)}
 						<span className="divider-dot">•</span>
-						<span className="tag tag-event"
-							onClick = {
-								() => setSearchParams({
-									event_id: r.event_id.toString(),
+						<span
+							className="tag tag-event"
+							onClick={() =>
+								setSearchParams((prev) => {
+									prev.set("event_id", r.event_id.toString());
+									return prev;
 								})
 							}
-						>{event.name}</span>
+						>
+							{event.name}
+						</span>
 						<div className="tag-row">
 							<span
 								className="tag tag-meta"
@@ -105,41 +110,60 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 							{isDQ ? <span className="tag tag-dq">Invalid{dqReason ? `: ${dqReason}` : ""}</span> : null}
 							{isSchoolRecord ? (
 								isSchoolRecordFirst ? (
-									<span className="tag tag-sr-first" onClick = {
-										() => setSearchParams({
-											srs_only: "true",
-											event_id: r.event_id.toString(),
-										})
-									}
-									>SCHOOL RECORD: FIRST TIME</span>
-								) : (
-									<span className="tag tag-sr" onClick = 
-										{
-											() => setSearchParams({
-												srs_only: "true",
-												event_id: r.event_id.toString(),
+									<span
+										className="tag tag-sr-first"
+										onClick={() =>
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("event_id", r.event_id.toString());
+												return prev;
 											})
-									}
-										>SCHOOL RECORD {srDelta}</span>
+										}
+									>
+										SCHOOL RECORD: FIRST TIME
+									</span>
+								) : (
+									<span
+										className="tag tag-sr"
+										onClick={() =>
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("event_id", r.event_id.toString());
+												return prev;
+											})
+										}
+									>
+										SCHOOL RECORD {srDelta}
+									</span>
 								)
 							) : null}
 							{previousSR != null ? (
 								previousSR.change === null ? (
-									<span key={`prev-sr`} className="tag tag-sr-first" onClick = {
-										() => setSearchParams({
-											srs_only: "true",
-											event_id: r.event_id.toString(),
-										})
-									}>
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-first"
+										onClick={() =>
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("event_id", r.event_id.toString());
+												return prev;
+											})
+										}
+									>
 										PREVIOUS SCHOOL RECORD: FIRST TIME
 									</span>
 								) : (
-									<span key={`prev-sr`} className="tag tag-sr-prev" onClick = {
-										() => setSearchParams({
-											srs_only: "true",
-											event_id: r.event_id.toString(),
-										})
-									}>
+									<span
+										key={`prev-sr`}
+										className="tag tag-sr-prev"
+										onClick={() =>
+											setSearchParams((prev) => {
+												prev.set("srs_only", "true");
+												prev.set("event_id", r.event_id.toString());
+												return prev;
+											})
+										}
+									>
 										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
 									</span>
 								)
@@ -162,7 +186,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 		const t = curRelays[index];
 		const prev = index > 0 ? curRelays[index - 1] : null;
 		const eventName = events[t.event_id]?.name ?? "";
-		const prevEventName = prev ? events[prev.event_id]?.name ?? "" : "";
+		const prevEventName = prev ? (events[prev.event_id]?.name ?? "") : "";
 		const addEventGap = prev != null && eventName !== prevEventName;
 		if (index == 0 || addEventGap) {
 			rendered.push(

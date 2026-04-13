@@ -13,15 +13,19 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 	const meetCards = Object.values(meets)
 		.sort((a, b) => b.date.localeCompare(a.date))
 		.map((m) => (
-		<li key={m.id} className="accent-card meet-card" onClick={() => setSearchParams({ meet_id: m.id.toString() })}>
-			<div className="meet-row">
-				<div className="meet-title">{m.name}</div>
-				<div className="meet-meta">
-					{m.location} · {formatDate(m.date)}
+			<li
+				key={m.id}
+				className="accent-card meet-card"
+				onClick={() => setSearchParams({ meet_id: m.id.toString() })}
+			>
+				<div className="meet-row">
+					<div className="meet-title">{m.name}</div>
+					<div className="meet-meta">
+						{m.location} · {formatDate(m.date)}
+					</div>
 				</div>
-			</div>
-		</li>
-	));
+			</li>
+		));
 	return (
 		<div className="app-shell">
 			<div className="app-inner">
@@ -37,11 +41,17 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 				<div className="section-block">
 					<div className="section-header">
 						<div className="section-bar" />
-						<button type="button" onClick={() => setSearchParams({
-							srs_only: "true",
-							note_legs: "true",
-						})} className="back-button">
-							See Current School Records 
+						<button
+							type="button"
+							onClick={() =>
+								setSearchParams({
+									srs_only: "true",
+									note_legs: "true",
+								})
+							}
+							className="back-button"
+						>
+							See Current School Records
 						</button>
 					</div>
 				</div>
