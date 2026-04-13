@@ -76,7 +76,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		return searchables;
 	}, [data]);
 
-	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.3, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
+	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.1, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
 	const renderNameWithHighlight = (name: string, indices: number[][]): JSX.Element => {
 		if (indices.length === 0) {
 			return <span>{name}</span>;
@@ -92,9 +92,8 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			let right = indices[indiciesIndex][1];
 			if (i <= right && i >=left) {
 				parts.push(<span key={i} style={{
-					color: "orange",
+					color: "rgb(10,51,181)",
 					fontWeight: "bold",
-					textDecoration: "underline",
 				}}>{name[i]}</span>);
 			} else {
 				parts.push(<span key={i}>{name[i]}</span>);
