@@ -91,7 +91,7 @@ export function fetchAndParse<T>(url: string, schema: z.ZodSchema<T>): ResultAsy
 		getResponseJSONAndParse(
 			res,
 			schema,
-			(e) => new Errors.MalformedResponse(`Failed to parse response from ${url}: ${JSON.stringify(e)}`),
+			(e) => new Errors.MalformedResponse(`Failed to parse response from ${url}: ${e.toString()}`),
 		),
 	);
 }
