@@ -163,6 +163,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 					let endIndex = startIndex + word.length - 1;
 					indices.push([startIndex, endIndex]);
 				}
+				indices.sort((a, b) => a[0] - b[0]);
 				return (
 				<li key={index} className="accent-card result-card" onClick={() => setSearchParams(result.item.searchParams)} style = {{cursor: "pointer"}}>
 				{
