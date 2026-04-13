@@ -73,7 +73,7 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 			const legDistance = selectedRelayEvent.distance === 400 ? 100 : 50;
 			const freeId =
 				legEventOptions.find(
-					(e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === legDistance,
+					(e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === legDistance && e.is_male == selectedRelayEvent.is_male,
 				)?.id ?? null;
 			return [freeId, freeId, freeId, freeId];
 		}
