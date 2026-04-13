@@ -88,7 +88,7 @@ export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps):
 		if (swimmer) {
 			elements.push(
 				<li>
-					Including Swimmer {swimmer.first_name} {swimmer.last_name} Only
+					Including Swimmer {swimmer.first_name} {swimmer.last_name} Only{" "}
 					<span
 						className="remove_filter"
 						onClick={() =>
