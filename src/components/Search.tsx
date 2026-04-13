@@ -36,7 +36,9 @@ export function Search({
 		!filters.cur_prs_only &&
 		!filters.prs_only &&
 		!filters.cur_srs_only &&
-		!filters.srs_only;
+		!filters.srs_only &&
+		!filters.fts_only;
+	;
 
 	const curMeetInfo = useMemo(() => {
 		if (filters.meet_id == null) return null;
