@@ -39,29 +39,40 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 					</div>
 				</div>
 				<div className="section-block">
-					<div className="section-header">
+					<div
+					className="section-header"
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap", // key: allows wrapping when no space
+						gap: "0.5rem",
+						padding: "0 5rem",
+					}}
+					>
 						<button
-							type="button"
-							onClick={() =>
-								setSearchParams({
-									srs_only: "true",
-									note_legs: "true",
-								})
-							}
-							className="back-button"
-							style = {{position: "absolute", left: "5rem", paddingBottom: "0.5rem"}}
+						type="button"
+						onClick={() =>
+							setSearchParams({
+								srs_only: "true",
+								note_legs: "true",
+							})
+						}
+						style={{ minWidth: "200px",minHeight: "60px" }}
+						className="back-button"
 						>
-							See School Record Progressions
-						</button>
+						See School Record Progressions
+					</button>
+
 						<button
-							type="button"
-							onClick={() =>
-								setSearchParams({
-									search: "true",
-								})
-							}
-							className="back-button"
-							style = {{position: "absolute", right: "5rem", paddingBottom: "0.5rem"}}
+						type="button"
+						onClick={() =>
+							setSearchParams({
+								search: "true",
+							})
+						}
+						className="back-button"
+						style={{ minWidth: "200px",minHeight: "60px" }}
 						>
 						Search for anything else you want 🔍
 						</button>
