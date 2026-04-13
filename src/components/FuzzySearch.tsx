@@ -25,23 +25,23 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		});
 		for (const swimmer of Object.values(data.swimmers)) {
 			searchables.push({
-				name: `All swims for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} graduating ${swimmer.graduating}`,
+				name: `All swims for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
 				searchParams: { swimmer_id: swimmer.id.toString() },
 			});
 			searchables.push({
-				name: `Personal record progressions for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} graduating ${swimmer.graduating}`,
+				name: `Personal record progressions for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
 				searchParams: { swimmer_id: swimmer.id.toString(), prs_only: "true" },
 			});
 			searchables.push({
-				name: `Current personal records for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} graduating ${swimmer.graduating}`,
+				name: `Current personal records for ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
 				searchParams: { swimmer_id: swimmer.id.toString(), cur_prs_only: "true" },
 			});
 			searchables.push({
-				name: `School records held at some point by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} graduating ${swimmer.graduating}`,
+				name: `School records held at some point by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
 				searchParams: { swimmer_id: swimmer.id.toString(), srs_only: "true" },
 			});
 			searchables.push({
-				name: `School records currently held by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} graduating ${swimmer.graduating}`,
+				name: `School records currently held by ${swimmer.gender == 'male' ? 'Boys' : 'Girls'} Swimmer: ${swimmer.first_name} ${swimmer.last_name} '${swimmer.graduating}`,
 				searchParams: { swimmer_id: swimmer.id.toString(), srs_only: "true" },
 			});
 		}
@@ -76,13 +76,14 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		return searchables;
 	}, [data]);
 
-	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.05, includeScore: true, useTokenSearch: true}), [elementsSearchable]);
+	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.7, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
 
 	const resultCards: JSX.Element[] = useMemo(() => {
 		if (searchQuery.length == 0) {
 			return [];
 		}
 		const results = fuse.search(searchQuery).sort((a, b) => a.score! - b.score!);
+		console.log(results[0].matches);
 		if (results.length == 0) {
 			return [<li key="no-results" className="accent-card result-card no-results">
 				No results found for "{searchQuery}"
