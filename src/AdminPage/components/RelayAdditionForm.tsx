@@ -67,10 +67,10 @@ export function RelayAdditionForm({ data, databaseHandler }: RelayAdditionFormPr
 		const stroke = normalizeStroke(selectedRelayEvent.stroke);
 		if (stroke.includes("medley")) {
 			return [
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "back" && e.distance === 50)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "breast" && e.distance === 50)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "fly" && e.distance === 50)?.id ?? null,
-				legEventOptions.find((e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === 50)?.id ?? null,
+				legEventOptions.find((e) => normalizeStroke(e.stroke) === "back" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
+				legEventOptions.find((e) => normalizeStroke(e.stroke) === "breast" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
+				legEventOptions.find((e) => normalizeStroke(e.stroke) === "fly" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
+				legEventOptions.find((e) => normalizeStroke(e.stroke) === "freestyle" && e.distance === 50 && e.is_male === selectedRelayEvent.is_male)?.id ?? null,
 			];
 		}
 		if (stroke.includes("freestyle")) {
