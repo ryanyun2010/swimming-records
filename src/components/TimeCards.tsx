@@ -58,7 +58,18 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 							{t.swimmer_first_name} {t.swimmer_last_name} '{t.swimmer_year % 100}
 						</span>
 						<span className="divider-dot">•</span>
-						<span className="tag tag-event">{t.event_name}</span>
+						<span className="tag tag-event"
+							style={{ cursor: "pointer" }}
+							onClick={() => {
+								const eventId = Object.values(data.events).find((e) => e.name === t.event_name)?.id;
+								if (eventId != null) {
+									setSearchParams((prev) => {
+										prev.set("event_id", eventId.toString());
+										return prev;
+									});
+								}
+							}}
+						>{t.event_name}</span>
 						<div className="tag-row">
 							{t.type == "relay_leg" ? (
 								<span
