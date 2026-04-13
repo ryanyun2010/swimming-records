@@ -76,7 +76,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		return searchables;
 	}, [data]);
 
-	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.02, includeScore: true, useTokenSearch: true,findAllMatches: true, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
+	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.4, includeScore: true, useTokenSearch: true,findAllMatches: false, ignoreLocation: true,includeMatches: true}), [elementsSearchable]);
 	const renderNameWithHighlight = (name: string, indices: number[][]): JSX.Element => {
 		if (indices.length === 0) {
 			return <span>{name}</span>;
