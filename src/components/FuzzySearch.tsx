@@ -156,12 +156,17 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 				let indices: number[][] = [];
 				const words = searchQuery.split(" ").filter(word => word.length > 0);
 				for (let word of words) {
-					let startIndex = result.item.name.toLowerCase().indexOf(word.toLowerCase());
-					if (startIndex == -1) {
-						continue;
+					let startIndicies = [];
+					let last_index = 0;
+					while (result.item.name.toLowerCase().indexOf(word.toLowerCase(), last_index) !== 1) {
+						let index = result.item.name.toLowerCase().indexOf(word.toLowerCase(), last_index);
+						startIndicies.push(index);
+						last_index = index + word.length;
 					}
-					let endIndex = startIndex + word.length - 1;
-					indices.push([startIndex, endIndex]);
+					for (let startIndex of startIndicies) {
+						let endIndex = startIndex + word.length - 1;
+						indices.push([startIndex, endIndex]);
+					}
 				}
 				indices.sort((a, b) => a[0] - b[0]);
 				return (
