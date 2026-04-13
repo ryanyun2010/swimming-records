@@ -82,17 +82,25 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			return <span>{name}</span>;
 		}
 		const parts: JSX.Element[] = [];
-		let lastIndex = 0;
-		indices.forEach(([start, end], index) => {
-			if (lastIndex < start) {
-				parts.push(<span key={`${index}-before`}>{name.slice(lastIndex, start)}</span>);
+		let indiciesIndex = 0;
+		for (let i = 0; i < name.length; i++) {
+			if (indiciesIndex >= indices.length) {
+				parts.push(<span key={i}>{name[i]}</span>);
+				continue;
 			}
-			parts.push(<span key={`${index}-match`} style={{
-				color: "var(--accent-color)"
+			let left = indices[indiciesIndex][0];
+			let right = indices[indiciesIndex][1];
+			if (i <= right && i >=left) {
+				parts.push(<span key={i} style={{
+					color: "var(--accent-color)",
+				}}>{name[i]}</span>);
+			} else {
+				parts.push(<span key={i}>{name[i]}</span>);
 			}
-			} >{name.slice(start, end + 1)}</span>);
-			lastIndex = end + 1;
-		});
+			if (i > right) {
+				indiciesIndex++;
+			}
+		}
 		return <span>{parts}</span>;
 	}
 	const resultCards: JSX.Element[] = useMemo(() => {
