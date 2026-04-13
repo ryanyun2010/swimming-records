@@ -13,8 +13,9 @@ export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps):
 	const { filters, setSearchParams } = searchParamHandler;
 	let elements: JSX.Element[] = [];
 	if (filters.relay_id != null) {
-		const event_name = data.events[data.relays[filters.relay_id].event_id]?.name || "Unknown Event";
-		const swimmer_names = relayHelpers
+		if (data.relays[filters.relay_id] != null) {
+			const event_name = data.events[data.relays[filters.relay_id].event_id]?.name || "Unknown Event";
+			const swimmer_names = relayHelpers
 			.getRelayLegsForRelay(filters.relay_id)
 			.unwrapOr([])
 			.map((leg) => {
@@ -22,23 +23,24 @@ export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps):
 				const swimmer = data.swimmers[swimmer_id];
 				return swimmer ? `${swimmer.first_name} ${swimmer.last_name}` : "Unknown Swimmer";
 			});
-		const relay_date = data.meets[data.relays[filters.relay_id].meet_id]?.date || "Unknown Date";
-		elements.push(
-			<li>
+			const relay_date = data.meets[data.relays[filters.relay_id].meet_id]?.date || "Unknown Date";
+			elements.push(
+				<li>
 				Relay {event_name} | {swimmer_names.join(", ")} | {formatDate(relay_date)} Only{" "}
 				<span
-					className="remove_filter"
-					onClick={() =>
-						setSearchParams((prev) => {
-							prev.delete("relay_id");
-							return prev;
-						})
-					}
+				className="remove_filter"
+				onClick={() =>
+					setSearchParams((prev) => {
+						prev.delete("relay_id");
+						return prev;
+					})
+				}
 				>
-					X
+				X
 				</span>
-			</li>,
-		);
+				</li>,
+			);
+		}
 	}
 	if (filters.meet_id != null) {
 		const meet = data.meets[filters.meet_id];
