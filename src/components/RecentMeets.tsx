@@ -40,7 +40,6 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 				</div>
 				<div className="section-block">
 					<div className="section-header">
-						<div className="section-bar" />
 						<button
 							type="button"
 							onClick={() =>
@@ -50,8 +49,21 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 								})
 							}
 							className="back-button"
+							style = {{position: "absolute", left: "5rem"}}
 						>
 							See School Record Progressions
+						</button>
+						<button
+							type="button"
+							onClick={() =>
+								setSearchParams({
+									search: "true",
+								})
+							}
+							className="back-button"
+							style = {{position: "absolute", right: "5rem"}}
+						>
+						Search for anything else you want 🔍
 						</button>
 					</div>
 				</div>

@@ -9,6 +9,7 @@ import { useSearchParamHandler, is_filtered } from "./hooks/useSearchParamHandle
 import { useTimeFilterer } from "./hooks/useTimeFilterer";
 import { RecentMeets } from "./components/RecentMeets";
 import { Search } from "./components/Search";
+import { FuzzySearch } from "./components/FuzzySearch";
 import { useRelayRecordInfo } from "./hooks/useRelayRecordInfo";
 
 function Home() {
@@ -28,6 +29,9 @@ function Home() {
 
 	if (!is_filtered(searchParamHandler.filters)) {
 		return <RecentMeets data={data} searchParamHandler={searchParamHandler} />;
+	}
+	if (searchParamHandler.filters.search) {
+		return <FuzzySearch data={data} searchParamHandler={searchParamHandler} />;
 	}
 	return (
 		<Search

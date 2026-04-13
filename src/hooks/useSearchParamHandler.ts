@@ -13,6 +13,7 @@ export interface Filters {
 	relay_id: number | null;
 	fts_only: boolean;
 	note_legs?: boolean;
+	search?: boolean;
 }
 
 export function is_filtered(filters: Filters) {
@@ -24,7 +25,9 @@ export function is_filtered(filters: Filters) {
 		filters.event_id !== null ||
 		filters.meet_id !== null ||
 		filters.swimmer_id !== null ||
-		filters.relay_id !== null
+		filters.relay_id !== null ||
+		filters.fts_only ||
+		filters.search
 	);
 }
 
@@ -43,6 +46,7 @@ export function useSearchParamHandler() {
 			relay_id: searchParams.get("relay_id") ? Number(searchParams.get("relay_id")) : null,
 			fts_only: searchParams.get("fts_only") === "true",
 			note_legs: searchParams.get("note_legs") === "true",
+			search: searchParams.get("search") === "true",
 		};
 	}, [searchParams]);
 
