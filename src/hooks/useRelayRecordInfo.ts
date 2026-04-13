@@ -2,9 +2,7 @@ import { useMemo } from "react";
 import { SwimData } from "./useSwimData";
 
 export type RelayRecordInfo = {
-	current_PR: { change: number | null } | null;
 	current_SR: { change: number | null } | null;
-	previous_PR: { change: number | null; til: string } | null;
 	previous_SR: { change: number | null; til: string } | null;
 };
 
@@ -12,12 +10,11 @@ export function useRelayRecordInfo(data: SwimData): Record<number, RelayRecordIn
 	const { recordProgs, relays, meets } = data;
 	return useMemo(() => {
 		const info: Record<number, RelayRecordInfo> = {};
-		const lastPR: Record<string, number> = {};
 		const lastSR: Record<number, number> = {};
 
 		const ensure = (relayId: number): RelayRecordInfo => {
 			if (!info[relayId]) {
-				info[relayId] = { current_PR: null, current_SR: null, previous_PR: null, previous_SR: null };
+				info[relayId] = { current_SR: null, previous_SR: null };
 			}
 			return info[relayId];
 		};
@@ -33,18 +30,6 @@ export function useRelayRecordInfo(data: SwimData): Record<number, RelayRecordIn
 			const curInfo = ensure(relayId);
 
 			if (!recordProg.school_record) {
-				const key = `${recordProg.swimmer_id}-${recordProg.event_id}`;
-				const lastId = lastPR[key];
-				if (lastId !== undefined && relays[lastId]) {
-					const lastInfo = ensure(lastId);
-					const lastCur = lastInfo.current_PR ?? { change: null };
-					lastInfo.previous_PR = { change: lastCur.change, til: meetDate };
-					lastInfo.current_PR = null;
-					curInfo.current_PR = { change: relay.time_ms - relays[lastId].time_ms };
-				} else {
-					curInfo.current_PR = { change: null };
-				}
-				lastPR[key] = relayId;
 			} else {
 				const key = recordProg.event_id;
 				const lastId = lastSR[key];

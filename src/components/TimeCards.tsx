@@ -85,6 +85,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 										() => {
 											setSearchParams({
 												srs_only: "true",
+												note_legs: "true",
 												meet_id: filters.meet_id?.toString() ??"",
 											})
 										}
@@ -95,6 +96,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 											setSearchParams({
 												srs_only: "true",
 												meet_id: filters.meet_id?.toString() ??"",
+										note_legs: "true",
 											})
 										}
 									}>SCHOOL RECORD {srDelta}</span>
@@ -106,6 +108,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 										prs_only: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
 										swimmer_id: t.swimmer_id.toString(),
+										note_legs: "true",
 									})
 								}
 							}>PR {prDelta}</span> : null}
@@ -115,6 +118,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 										prs_only: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
 										swimmer_id: t.swimmer_id.toString(),
+										note_legs: "true",
 									})
 								}
 							}>FTS</span> : null}
@@ -126,6 +130,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 												prs_only: "true",
 												meet_id: filters.meet_id?.toString() ?? "",
 												swimmer_id: t.swimmer_id.toString(),
+										note_legs: "true",
 											})
 										}
 									}>
@@ -138,6 +143,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 												prs_only: "true",
 												meet_id: filters.meet_id?.toString() ?? "",
 												swimmer_id: t.swimmer_id.toString(),
+										note_legs: "true",
 											})
 										}
 									}>
@@ -152,6 +158,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 											setSearchParams({
 												srs_only: "true",
 												meet_id: filters.meet_id?.toString() ?? "",
+										note_legs: "true",
 											})
 										}
 									}>
@@ -163,6 +170,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 											setSearchParams({
 												srs_only: "true",
 												meet_id: filters.meet_id?.toString() ?? "",
+										note_legs: "true",
 											})
 										}
 									}>

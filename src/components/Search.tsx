@@ -175,6 +175,7 @@ export function Search({
 							<div className="meet-overview-stat stat-fts" onClick = {() => setSearchParams(
 								{
 									fts_only: "true",
+									note_legs: "true",
 									meet_id: filters.meet_id?.toString()??"",
 								}
 							)}>
@@ -185,6 +186,7 @@ export function Search({
 								onClick={() => setSearchParams(
 									{
 										prs_only: "true",
+										note_legs: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
 									}
 								)}
@@ -199,6 +201,7 @@ export function Search({
 								() => setSearchParams(
 									{
 										srs_only: "true",
+										note_legs: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
 									}
 								)}
