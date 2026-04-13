@@ -49,7 +49,7 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 								})
 							}
 							className="back-button"
-							style = {{position: "absolute", left: "5rem"}}
+							style = {{position: "absolute", left: "5rem", paddingBottom: "0.5rem"}}
 						>
 							See School Record Progressions
 						</button>
@@ -61,7 +61,7 @@ export function RecentMeets({ data, searchParamHandler }: RecentMeetsProps): JSX
 								})
 							}
 							className="back-button"
-							style = {{position: "absolute", right: "5rem"}}
+							style = {{position: "absolute", right: "5rem", paddingBottom: "0.5rem"}}
 						>
 						Search for anything else you want 🔍
 						</button>

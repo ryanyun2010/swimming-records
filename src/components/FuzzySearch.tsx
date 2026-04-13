@@ -76,7 +76,8 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 		return searchables;
 	}, [data]);
 
-	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.05, includeScore: true }), [elementsSearchable]);
+	const fuse = useMemo(() => new Fuse(elementsSearchable, { keys: ["name"], threshold: 0.05, includeScore: true, useTokenSearch: true}), [elementsSearchable]);
+
 	const resultCards: JSX.Element[] = useMemo(() => {
 		if (searchQuery.length == 0) {
 			return [];
@@ -99,17 +100,16 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 				<div className="app-inner">
 					<div className="accent-card hero-card">
 						<div className="hero-row">
-							<div>
+							<div style = {{width: "100%"}}>
 								<div className="hero-eyebrow">Search</div>
 								<input type="text" placeholder="Search for a swimmer, event, or meet..." 
-									style={{width: "100%", padding: "0.5rem", fontSize: "3rem", borderRadius: "0.5rem", border: "1px solid #ccc", marginTop: "1rem"}}
+									style={{width: "100%", padding: "0.5rem", fontSize: "1.5rem", borderRadius: "0.5rem", border: "1px solid #ccc", marginTop: "1rem", textAlign:"center"}}
 									onChange={(e) => setSearchQuery(e.target.value)} />
 							</div>
 							<button type="button" onClick={() => setSearchParams({})} className="back-button">
 								Back to Meets
 							</button>
 						</div>
-					</div>
 					</div>
 					<div className="section-block">
 						<div className="section-header section-header-sticky">
@@ -121,6 +121,7 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 						<ul className="card-list">
 							{...resultCards}
 						</ul>
+					</div>
 					</div>
 			</div>
 
