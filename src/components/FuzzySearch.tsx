@@ -102,8 +102,8 @@ export function FuzzySearch({searchParamHandler, data}: {searchParamHandler: Sea
 			}
 			let left = indices[indiciesIndex][0];
 			let right = indices[indiciesIndex][1];
-			if (right - left < 1 || i < left || i > right) {
-				if (i > right || right - left < 3) {
+			if (i < left || i > right) {
+				if (i > right) {
 					indiciesIndex++;
 				}
 				if (!lastSpanHighlighted) {
