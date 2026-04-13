@@ -92,6 +92,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 									return prev;
 								})
 							}
+							style={{ cursor: "pointer" }}
 						>
 							{event.name}
 						</span>
@@ -119,6 +120,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 												return prev;
 											})
 										}
+										style={{ cursor: "pointer" }}
 									>
 										SCHOOL RECORD: FIRST TIME
 									</span>
@@ -132,6 +134,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 												return prev;
 											})
 										}
+										style={{ cursor: "pointer" }}
 									>
 										SCHOOL RECORD {srDelta}
 									</span>
@@ -149,6 +152,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 												return prev;
 											})
 										}
+										style={{ cursor: "pointer" }}
 									>
 										PREVIOUS SCHOOL RECORD: FIRST TIME
 									</span>
@@ -163,6 +167,7 @@ export function RelayCards({ data, curRelays, searchParamHandler, relayHelpers }
 												return prev;
 											})
 										}
+										style={{ cursor: "pointer" }}
 									>
 										PREVIOUS SCHOOL RECORD {formatChange(previousSR.change)}
 									</span>
