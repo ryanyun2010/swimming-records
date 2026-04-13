@@ -9,6 +9,7 @@ import { RelayHelpers } from "../hooks/useRelayHelpers";
 import { RelayCards } from "./RelayCards";
 import { formatDate } from "../lib/utils";
 import { useRelayRecordInfo } from "../hooks/useRelayRecordInfo";
+import { findEventIdByLabel } from "../AdminPage/utils";
 
 type SearchProps = {
 	data: SwimData;
@@ -83,8 +84,13 @@ export function Search({
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
 				if (distanceA !== distanceB) return distanceA - distanceB;
-				const eventCompare = a.event_name.localeCompare(b.event_name);
+				let aeventc = a.event_name.replace(/(Boys|Girls)/g, "");
+				let beventc = b.event_name.replace(/(Boys|Girls)/g, "");
+				const eventCompare = aeventc.localeCompare(beventc);
 				if (eventCompare !== 0) return eventCompare;
+				let malea = a.event_name.includes("Boys");
+				let maleb = b.event_name.includes("Boys");
+				if (malea !== maleb) return malea ? 1 : -1;
 				return b.time - a.time;
 			});
 	}, [curParsedTimes, data]);
@@ -101,8 +107,13 @@ export function Search({
 				const distanceA = distanceByName.get(a.event_name) ?? 0;
 				const distanceB = distanceByName.get(b.event_name) ?? 0;
 				if (distanceA !== distanceB) return distanceA - distanceB;
-				const eventCompare = a.event_name.localeCompare(b.event_name);
+				let aeventc = a.event_name.replace(/(Boys|Girls)/g, "");
+				let beventc = b.event_name.replace(/(Boys|Girls)/g, "");
+				const eventCompare = aeventc.localeCompare(beventc);
 				if (eventCompare !== 0) return eventCompare;
+				let malea = a.event_name.includes("Boys");
+				let maleb = b.event_name.includes("Boys");
+				if (malea !== maleb) return malea ? 1 : -1;
 				return b.time - a.time;
 			});
 	}, [curParsedTimes, data]);
@@ -117,8 +128,11 @@ export function Search({
 			if (distanceA !== distanceB) return distanceA - distanceB;
 			const eventNameA = eventA?.name ?? "";
 			const eventNameB = eventB?.name ?? "";
-			const eventCompare = eventNameA.localeCompare(eventNameB);
+			let aeventc = eventNameA.replace(/(Boys|Girls)/g, "");
+			let beventc = eventNameB.replace(/(Boys|Girls)/g, "");
+			const eventCompare = aeventc.localeCompare(beventc);
 			if (eventCompare !== 0) return eventCompare;
+			if (eventA.is_male !== eventB.is_male) return eventA.is_male ? 1 : -1;
 			return b.time_ms - a.time_ms;
 		});
 	}, [curRelays, data]);
