@@ -127,6 +127,7 @@ export function TimeCards({ data, curParsedTimes, searchParamHandler }: TimeCard
 										setSearchParams((prev) => {
 											prev.set("prs_only", "true");
 											prev.set("note_legs", "true");
+											prev.set("swimmer_id", t.swimmer_id.toString());
 											return prev;
 										});
 									}}
