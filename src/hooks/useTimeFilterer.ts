@@ -96,6 +96,10 @@ export function useTimeFilterer(
 			timesToShow = timesToShow.filter((t) => t.current_PR?.change === null || t.previous_PR?.change === null);
 			relaysToShow = [];
 		}
+		
+		if (filters.no_fts) {
+			timesToShow = timesToShow.filter((t) => !((t.current_PR != null && t.current_PR.change == null)) || (t.previous_PR != null && t.previous_PR.change == null));
+		}
 		return [timesToShow, relaysToShow];
 	}, [filters, parsedTimes, relays, getRelayLegsForRelay, getParsedTimesForRelay, relayRecordInfo]);
 

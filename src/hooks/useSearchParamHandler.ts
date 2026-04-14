@@ -14,6 +14,7 @@ export interface Filters {
 	fts_only: boolean;
 	note_legs?: boolean;
 	search?: boolean;
+	no_fts?: boolean;
 }
 
 export function is_filtered(filters: Filters) {
@@ -27,7 +28,8 @@ export function is_filtered(filters: Filters) {
 		filters.swimmer_id !== null ||
 		filters.relay_id !== null ||
 		filters.fts_only ||
-		filters.search
+		filters.search ||
+		filters.no_fts
 	);
 }
 
@@ -47,6 +49,7 @@ export function useSearchParamHandler() {
 			fts_only: searchParams.get("fts_only") === "true",
 			note_legs: searchParams.get("note_legs") === "true",
 			search: searchParams.get("search") === "true",
+			no_fts: searchParams.get("no_fts") === "true"
 		};
 	}, [searchParams]);
 

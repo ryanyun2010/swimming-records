@@ -177,12 +177,30 @@ export function Header({ searchParamHandler, data, relayHelpers }: HeaderProps):
 	if (filters.fts_only)
 		elements.push(
 			<li>
-				First time swims Only{" "}
+				First Time Swims Only{" "}
 				<span
 					className="remove_filter"
 					onClick={() =>
 						setSearchParams((prev) => {
 							prev.delete("fts_only");
+							return prev;
+						})
+					}
+				>
+					X
+				</span>
+			</li>,
+		);
+
+	if (filters.no_fts)
+		elements.push(
+			<li>
+				No first time swims{" "}
+				<span
+					className="remove_filter"
+					onClick={() =>
+						setSearchParams((prev) => {
+							prev.delete("no_fts");
 							return prev;
 						})
 					}

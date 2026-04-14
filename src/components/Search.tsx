@@ -37,7 +37,8 @@ export function Search({
 		!filters.prs_only &&
 		!filters.cur_srs_only &&
 		!filters.srs_only &&
-		!filters.fts_only;
+		!filters.fts_only &&
+		!filters.no_fts;
 	;
 
 	const curMeetInfo = useMemo(() => {
@@ -212,6 +213,7 @@ export function Search({
 									setSearchParams({
 										prs_only: "true",
 										note_legs: "true",
+										no_fts: "true",
 										meet_id: filters.meet_id?.toString() ?? "",
 									})
 								}
