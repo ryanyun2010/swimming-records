@@ -56,7 +56,7 @@ export function Search({
 
 		const countTime = (t: ParsedTime) => {
 			const hasPR = (t.current_PR != null && t.current_PR.change != null) || (t.previous_PR != null && t.previous_PR.change != null);
-			const hasCurrentPR = t.current_PR != null;
+			const hasCurrentPR = t.current_PR != null && t.current_PR.change != null;
 			const hasFTS = t.current_PR?.change === null || t.previous_PR?.change === null;
 			const hasSR = t.current_SR != null || t.previous_SR != null;
 			const hasCurrentSR = t.current_SR != null;
